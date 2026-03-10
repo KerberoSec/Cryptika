@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 # Cryptika — Complete Technical Reference
 
@@ -2264,5 +2264,4 @@ SOFTWARE.
 *Security is not a feature — it is the foundation everything else is built on.*
 
 </div>
-#   C r y p t i k a  
- 
+#
