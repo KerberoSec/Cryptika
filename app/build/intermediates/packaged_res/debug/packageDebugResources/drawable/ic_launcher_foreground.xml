@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Material Design "Lock" icon scaled to 3× (72×72) and centred in the 108×108 safe zone.
+  Original 24×24 coordinates scaled by 3, then offset by (18, 18).
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Lock body + shackle exterior -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M72,42h-3V36c0,-8.28,-6.72,-15,-15,-15c-8.28,0,-15,6.72,-15,15v6H36c-3.3,0,-6,2.7,-6,6v30c0,3.3,2.7,6,6,6h36c3.3,0,6,-2.7,6,-6V48C78,45.3,75.3,42,72,42z
+        M54,69c-3.3,0,-6,-2.7,-6,-6c0,-3.3,2.7,-6,6,-6c3.3,0,6,2.7,6,6C60,66.3,57.3,69,54,69z
+        M63.3,42H44.7V36c0,-5.13,4.17,-9.3,9.3,-9.3c5.13,0,9.3,4.17,9.3,9.3V42z"/>
+</vector>

@@ -1,0 +1,21 @@
+{
+  "name": "hacksecure-relay-server",
+  "version": "1.0.0",
+  "description": "HackSecure blind relay server — routes encrypted packets without inspecting content",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "tweetnacl": "^1.0.3",
+    "ws": "^8.16.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
