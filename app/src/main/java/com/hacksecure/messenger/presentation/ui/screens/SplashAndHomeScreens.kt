@@ -100,6 +100,7 @@ fun HomeScreen(
     onNavigateToQrScan: () -> Unit,
     onNavigateToChat: (String) -> Unit,
     onNavigateToSettings: () -> Unit,
+    onNavigateToContactDiscovery: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -136,6 +137,9 @@ fun HomeScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = onNavigateToContactDiscovery) {
+                        Icon(Icons.Filled.PersonAdd, "Add Contact by Username")
+                    }
                     IconButton(onClick = onNavigateToQrDisplay) {
                         Icon(Icons.Filled.QrCode, "My QR Code")
                     }

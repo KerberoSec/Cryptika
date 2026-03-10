@@ -3,9 +3,11 @@ package com.cryptika.messenger.di
 
 import android.content.Context
 import com.cryptika.messenger.BuildConfig
+import com.cryptika.messenger.data.local.AuthStore
 import com.cryptika.messenger.data.local.db.*
 import com.cryptika.messenger.data.local.keystore.KeystoreManager
 import com.cryptika.messenger.data.remote.ServerConfig
+import com.cryptika.messenger.data.remote.api.AuthApi
 import com.cryptika.messenger.data.remote.api.RelayApi
 import com.cryptika.messenger.data.remote.websocket.RelayWebSocketClient
 import com.cryptika.messenger.data.repository.*
@@ -94,6 +96,15 @@ object AppModule {
             .create(RelayApi::class.java)
 
     @Provides @Singleton
+    fun provideAuthApi(okHttpClient: OkHttpClient): AuthApi =
+        Retrofit.Builder()
+            .baseUrl("http://localhost/")
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(AuthApi::class.java)
+
+    @Provides @Singleton
     fun provideRelayWebSocketClient(
         okHttpClient: OkHttpClient,
         serverConfig: ServerConfig
@@ -116,6 +127,14 @@ object AppModule {
         dao: MessageDao,
         keystoreManager: KeystoreManager
     ): MessageRepository = MessageRepositoryImpl(dao, keystoreManager)
+
+    @Provides @Singleton
+    fun provideAuthRepository(
+        authApi: AuthApi,
+        authStore: AuthStore,
+        serverConfig: ServerConfig,
+        identityRepository: IdentityRepository
+    ): AuthRepository = AuthRepositoryImpl(authApi, authStore, serverConfig, identityRepository)
 }
 
 private fun String.hexToByteArray(): ByteArray {

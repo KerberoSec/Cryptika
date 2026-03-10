@@ -19,18 +19,22 @@ import dagger.hilt.android.AndroidEntryPoint
 // NAVIGATION ROUTES
 // ══════════════════════════════════════════════════════════════════════════════
 object Routes {
-    const val SPLASH         = "splash"
-    const val HOME           = "home"
-    const val QR_DISPLAY     = "qr_display"
-    const val QR_SCAN        = "qr_scan"
-    const val CONTACT_CONFIRM = "contact_confirm/{pubKeyB64}"
-    const val CHAT           = "chat/{contactId}"
-    const val SETTINGS       = "settings"
+    const val AUTH             = "auth"
+    const val SPLASH           = "splash"
+    const val HOME             = "home"
+    const val QR_DISPLAY       = "qr_display"
+    const val QR_SCAN          = "qr_scan"
+    const val CONTACT_CONFIRM  = "contact_confirm/{pubKeyB64}"
+    const val CONTACT_DISCOVERY = "contact_discovery"
+    const val CHAT             = "chat/{contactId}"
+    const val EPHEMERAL_CHAT   = "ephemeral_chat/{sessionUUID}"
+    const val SETTINGS         = "settings"
     /** Call screen: contactId + isIncoming flag */
-    const val CALL           = "call/{contactId}/{isIncoming}"
+    const val CALL             = "call/{contactId}/{isIncoming}"
 
     fun contactConfirm(pubKeyB64: String) = "contact_confirm/$pubKeyB64"
     fun chat(contactId: String) = "chat/$contactId"
+    fun ephemeralChat(sessionUUID: String) = "ephemeral_chat/$sessionUUID"
     fun call(contactId: String, isIncoming: Boolean = false) =
         "call/$contactId/$isIncoming"
 }
@@ -91,8 +95,19 @@ fun CryptikaNavGraph() {
 
     NavHost(
         navController = navController,
-        startDestination = Routes.SPLASH
+        startDestination = Routes.AUTH
     ) {
+        // ── Auth ─────────────────────────────────────────────────────────────
+        composable(Routes.AUTH) {
+            AuthScreen(
+                onAuthenticated = {
+                    navController.navigate(Routes.SPLASH) {
+                        popUpTo(Routes.AUTH) { inclusive = true }
+                    }
+                }
+            )
+        }
+
         // ── Splash ──────────────────────────────────────────────────────────
         composable(Routes.SPLASH) {
             SplashScreen(
@@ -110,7 +125,37 @@ fun CryptikaNavGraph() {
                 onNavigateToQrDisplay = { navController.navigate(Routes.QR_DISPLAY) },
                 onNavigateToQrScan = { navController.navigate(Routes.QR_SCAN) },
                 onNavigateToChat = { contactId -> navController.navigate(Routes.chat(contactId)) },
-                onNavigateToSettings = { navController.navigate(Routes.SETTINGS) }
+                onNavigateToSettings = { navController.navigate(Routes.SETTINGS) },
+                onNavigateToContactDiscovery = { navController.navigate(Routes.CONTACT_DISCOVERY) }
+            )
+        }
+
+        // ── Contact Discovery ────────────────────────────────────────────────
+        composable(Routes.CONTACT_DISCOVERY) {
+            ContactDiscoveryScreen(
+                onBack = { navController.popBackStack() },
+                onSessionCreated = { sessionUUID, peerIdHash, peerPubKeyB64, peerNickname ->
+                    navController.navigate(Routes.ephemeralChat(sessionUUID)) {
+                        popUpTo(Routes.HOME)
+                    }
+                }
+            )
+        }
+
+        // ── Ephemeral Chat ───────────────────────────────────────────
+        composable(
+            Routes.EPHEMERAL_CHAT,
+            arguments = listOf(navArgument("sessionUUID") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val sessionUUID = backStackEntry.arguments?.getString("sessionUUID") ?: ""
+            ChatScreen(
+                contactId = "",
+                sessionUUID = sessionUUID,
+                onBack = {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.HOME) { inclusive = true }
+                    }
+                }
             )
         }
 

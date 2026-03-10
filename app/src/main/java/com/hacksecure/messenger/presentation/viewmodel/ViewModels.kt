@@ -308,7 +308,9 @@ data class ChatUiState(
     val isLoading: Boolean = true,
     val inputText: String = "",
     val selectedExpirySeconds: Int = 1800,
-    val serverRelayUrl: String = ""
+    val serverRelayUrl: String = "",
+    val isEphemeral: Boolean = false,
+    val ephemeralState: EphemeralSessionState = EphemeralSessionState.None
 )
 
 sealed class ChatEvent {
@@ -329,6 +331,7 @@ class ChatViewModel @Inject constructor(
     private val relayApi: RelayApi,
     private val serverConfig: ServerConfig,
     private val backgroundConnectionManager: com.cryptika.messenger.data.remote.BackgroundConnectionManager,
+    private val ephemeralSessionManager: com.cryptika.messenger.data.remote.EphemeralSessionManager,
     @dagger.hilt.android.qualifiers.ApplicationContext private val appContext: android.content.Context
 ) : ViewModel(), DefaultLifecycleObserver {
 
@@ -347,6 +350,11 @@ class ChatViewModel @Inject constructor(
 
     /** In-memory de-duplication for relay messages processed this session. */
     private val seenMessageIds = mutableSetOf<String>()
+
+    /** True when this ChatViewModel is driving an ephemeral (contact-discovery) session. */
+    @Volatile private var isEphemeralMode = false
+    @Volatile private var ephemeralSessionUUID: String? = null
+    private var ephemeralCountdownJob: kotlinx.coroutines.Job? = null
 
     /**
      * Tracks the single scheduled-expiry coroutine.  We only ever need one: it fires at the
@@ -390,6 +398,108 @@ class ChatViewModel @Inject constructor(
             messageRepository.getMessages(conversationId!!).collect { messages ->
                 _uiState.update { it.copy(messages = messages) }
                 scheduleNextExpiry(messages)
+            }
+        }
+    }
+
+    // ── Ephemeral session init ───────────────────────────────────────────────
+
+    /**
+     * Initialises the chat in ephemeral mode, backed by [EphemeralSessionManager].
+     * Messages use in-memory storage; the session auto-destroys after its TTL.
+     */
+    fun initEphemeralSession(sessionUUID: String) {
+        isEphemeralMode = true
+        ephemeralSessionUUID = sessionUUID
+
+        viewModelScope.launch {
+            val contactId = ephemeralSessionManager.getContactId(sessionUUID) ?: return@launch
+            val contact = withContext(Dispatchers.IO) {
+                contactRepository.getContact(contactId)
+            } ?: return@launch
+
+            val identity = withContext(Dispatchers.IO) {
+                identityRepository.getLocalIdentity()
+            } ?: return@launch
+
+            conversationId = sessionUUID  // use sessionUUID as conversationId
+            activeContact = contact
+            myIdentity = identity
+
+            val expiresAt = ephemeralSessionManager.getExpiresAt(sessionUUID)
+
+            _uiState.update {
+                it.copy(
+                    contact = contact,
+                    isLoading = false,
+                    isEphemeral = true,
+                    selectedExpirySeconds = 1800,
+                    serverRelayUrl = serverConfig.relayBaseUrl,
+                    ephemeralState = EphemeralSessionState.Active(
+                        remainingMs = (expiresAt - System.currentTimeMillis()).coerceAtLeast(0),
+                        expiresAt = expiresAt
+                    )
+                )
+            }
+
+            // Register with EphemeralSessionManager to receive packets
+            ephemeralSessionManager.registerChatHandler(
+                sessionUUID = sessionUUID,
+                packetHandler = { msgId, packetBytes -> receiveMessage(msgId, packetBytes) },
+                onSessionReady = { processor ->
+                    messageProcessor = processor
+                    _uiState.update {
+                        it.copy(
+                            sessionEstablished = true,
+                            connectionState = ConnectionState.CONNECTED_RELAY
+                        )
+                    }
+                    viewModelScope.launch { _events.emit(ChatEvent.SessionSecured) }
+                }
+            )
+
+            // If session already has a processor, adopt it
+            ephemeralSessionManager.getMessageProcessor(sessionUUID)?.let { existing ->
+                messageProcessor = existing
+                _uiState.update {
+                    it.copy(sessionEstablished = true, connectionState = ConnectionState.CONNECTED_RELAY)
+                }
+            }
+
+            // Countdown timer
+            startEphemeralCountdown(expiresAt)
+
+            // Room flow for messages stored under the sessionUUID conversation
+            withContext(Dispatchers.IO) {
+                try { messageRepository.deleteExpiredMessages() } catch (_: Exception) {}
+            }
+            messageRepository.getMessages(sessionUUID).collect { messages ->
+                _uiState.update { it.copy(messages = messages) }
+                scheduleNextExpiry(messages)
+            }
+        }
+    }
+
+    private fun startEphemeralCountdown(expiresAt: Long) {
+        ephemeralCountdownJob?.cancel()
+        ephemeralCountdownJob = viewModelScope.launch {
+            while (true) {
+                val remaining = expiresAt - System.currentTimeMillis()
+                if (remaining <= 0) {
+                    _uiState.update {
+                        it.copy(ephemeralState = EphemeralSessionState.Expired)
+                    }
+                    break
+                }
+                _uiState.update {
+                    it.copy(
+                        ephemeralState = EphemeralSessionState.Active(
+                            remainingMs = remaining,
+                            expiresAt = expiresAt
+                        )
+                    )
+                }
+                kotlinx.coroutines.delay(1000)
             }
         }
     }
@@ -438,6 +548,7 @@ class ChatViewModel @Inject constructor(
 
     // App Lifecycle -- reconnect when app returns from background
     override fun onStart(owner: LifecycleOwner) {
+        if (isEphemeralMode) return  // ephemeral sessions are managed by EphemeralSessionManager
         val convId = conversationId ?: return
         val contact = activeContact ?: return
 
@@ -531,14 +642,22 @@ class ChatViewModel @Inject constructor(
                     messageRepository.saveMessage(message, plaintextBytes)
                 }
 
-                // Step 3 & 4: send via BGM's WebSocket, then update state
+                // Step 3 & 4: send via appropriate WebSocket, then update state
                 if (wirePacketBytes != null) {
                     val sendSuccess = withContext(Dispatchers.IO) {
-                        backgroundConnectionManager.sendPacket(
-                            convId = convId,
-                            messageId = messageId,
-                            packet = wirePacketBytes
-                        )
+                        if (isEphemeralMode && ephemeralSessionUUID != null) {
+                            ephemeralSessionManager.sendPacket(
+                                sessionUUID = ephemeralSessionUUID!!,
+                                messageId = messageId,
+                                packet = wirePacketBytes
+                            )
+                        } else {
+                            backgroundConnectionManager.sendPacket(
+                                convId = convId,
+                                messageId = messageId,
+                                packet = wirePacketBytes
+                            )
+                        }
                     }
                     val finalState = if (sendSuccess) MessageState.SENT else MessageState.FAILED
                     withContext(Dispatchers.IO) {
@@ -664,8 +783,12 @@ class ChatViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         nextExpiryJob?.cancel()
-        // Unregister from BGM � BGM keeps the connection alive for background message delivery
-        conversationId?.let { backgroundConnectionManager.unregisterChatHandler(it) }
+        ephemeralCountdownJob?.cancel()
+        if (isEphemeralMode) {
+            ephemeralSessionUUID?.let { ephemeralSessionManager.unregisterChatHandler(it) }
+        } else {
+            conversationId?.let { backgroundConnectionManager.unregisterChatHandler(it) }
+        }
     }
 
     // -- Retry connection -------------------------------------------------------
@@ -684,12 +807,21 @@ class ChatViewModel @Inject constructor(
                             val result = withContext(Dispatchers.Default) {
                                 processor.send(plaintext = deletePayload, expirySeconds = 0)
                             }
+                            val delMsgId = UUID.randomUUID().toString()
                             withContext(Dispatchers.IO) {
-                                backgroundConnectionManager.sendPacket(
-                                    convId = convId,
-                                    messageId = UUID.randomUUID().toString(),
-                                    packet = result.first
-                                )
+                                if (isEphemeralMode && ephemeralSessionUUID != null) {
+                                    ephemeralSessionManager.sendPacket(
+                                        sessionUUID = ephemeralSessionUUID!!,
+                                        messageId = delMsgId,
+                                        packet = result.first
+                                    )
+                                } else {
+                                    backgroundConnectionManager.sendPacket(
+                                        convId = convId,
+                                        messageId = delMsgId,
+                                        packet = result.first
+                                    )
+                                }
                             }
                         }
                     } catch (_: Exception) {}
@@ -703,6 +835,7 @@ class ChatViewModel @Inject constructor(
 
     /** Re-establish relay connection after a disconnection or URL change. */
     fun retryConnection() {
+        if (isEphemeralMode) return  // ephemeral sessions cannot be manually retried
         val convId = conversationId ?: return
         val contact = activeContact ?: return
         val identity = myIdentity ?: return

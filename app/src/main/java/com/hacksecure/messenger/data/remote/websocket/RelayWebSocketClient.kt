@@ -126,7 +126,10 @@ class RelayWebSocketClient(
 
     private fun connectInternal(conversationId: String, authToken: String, identityHash: String = "") {
         val idParam = if (identityHash.isNotEmpty()) "&id=$identityHash" else ""
-        val url = "${serverConfig.relayBaseUrl}/ws?conv=$conversationId$idParam"
+        // Support session-based routing: if conversationId is a UUID-style session, use ?session=
+        val isSession = conversationId.length == 36 && conversationId.count { it == '-' } == 4
+        val routeParam = if (isSession) "session=$conversationId&token=$authToken" else "conv=$conversationId$idParam"
+        val url = "${serverConfig.relayBaseUrl}/ws?$routeParam"
         val request = Request.Builder()
             .url(url)
             .addHeader("Authorization", "Bearer $authToken")

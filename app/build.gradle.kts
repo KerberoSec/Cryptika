@@ -36,11 +36,11 @@ android {
         buildConfigField(
             "String",
             "SERVER_PUBLIC_KEY_HEX",
-            "\"40d2741437877e85fc86799bee6942028189f990b8dc8f1e28edf90b54ac88c5\""
+            "\"a96a2946035dff2d11ac86b57f65ec2f4cc83349040237073834c6d4c08c1ec1\""
         )
         // LAN IP for release / physical device builds
-        buildConfigField("String", "RELAY_BASE_URL", "\"ws://13.203.169.244:8443\"")
-        buildConfigField("String", "API_BASE_URL", "\"http://13.203.169.244:8443\"")
+        buildConfigField("String", "RELAY_BASE_URL", "\"ws://13.235.150.23:8443\"")
+        buildConfigField("String", "API_BASE_URL", "\"http://13.235.150.23:8443\"")
         buildConfigField("String", "APP_VERSION", "\"1.0.0\"")
     }
 
@@ -77,6 +77,9 @@ android {
 dependencies {
     // ── Cryptography ─────────────────────────────────────────────────────────
     implementation("org.bouncycastle:bcprov-jdk15on:1.70")
+
+    // ── Secure Storage ───────────────────────────────────────────────────────
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
     // ── Compose BOM ──────────────────────────────────────────────────────────
     implementation(platform("androidx.compose:compose-bom:2024.02.00"))
