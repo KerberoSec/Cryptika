@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  cryptika-server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: cryptika-relay-server
+    restart: unless-stopped
+    ports:
+      - "8443:8443"
+    environment:
+      - NODE_ENV=production
+      - PORT=8443
+      # Optional: Set server private key to persist across restarts
+      # - SERVER_PRIVATE_KEY_HEX=your_64_char_hex_key_here
+    volumes:
+      # Optional: Mount volume to persist server keys
+      - server-data:/usr/src/app/data
+    networks:
+      - cryptika-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8443/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  server-data:
+    driver: local
+
+networks:
+  cryptika-network:
+    driver: bridge

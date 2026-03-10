@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Networking -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+    <!-- Camera for QR scanning -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+
+    <!-- WorkManager -->
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
+    <!-- Vibrate for notifications -->
+    <uses-permission android:name="android.permission.VIBRATE"/>
+
+    <!-- Foreground service: keeps WebSocket connections alive in background -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <!-- API 34: required for foreground service type "remoteMessaging" -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING"/>
+    <!-- API 34: required for foreground service type "microphone" (voice calls) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE"/>
+
+    <!-- Voice calls — microphone capture and audio mode control -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+
+    <application
+        android:name=".CryptikaApp"
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="false"
+        android:label="Cryptika"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Cryptika"
+        android:hardwareAccelerated="true"
+        android:usesCleartextTraffic="${usesCleartextTraffic}">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+
+            <!-- Deep link handler for QR codes -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="cryptika" android:host="id"/>
+            </intent-filter>
+        </activity>
+
+        <!-- WorkManager Provider -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove"/>
+        </provider>
+
+        <!-- Foreground service: holds process alive so BackgroundConnectionManager
+             can maintain WebSocket relay connections while app is backgrounded -->
+        <service
+            android:name=".data.remote.ConnectionForegroundService"
+            android:foregroundServiceType="remoteMessaging"
+            android:exported="false"/>
+
+        <!-- Foreground service: keeps AudioRecord/AudioTrack alive during an active call
+             when the app is backgrounded (microphone type required on API 29+) -->
+        <service
+            android:name=".data.remote.CallForegroundService"
+            android:foregroundServiceType="microphone"
+            android:exported="false"/>
+
+    </application>
+
+</manifest>
