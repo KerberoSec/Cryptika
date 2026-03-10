@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.cryptika.messenger.app-mergeDebugResources-74:/values-ca/values-ca.xml",
+            "outputFile": "com.cryptika.messenger.app-mergeDebugResources-75:/values-ca/values-ca.xml",
             "map": [
                 {
                     "source": "C:\\Users\\arung\\.gradle\\caches\\transforms-3\\909ff35b04ae253a3fd0a23509d57c8a\\transformed\\jetified-zxing-android-embedded-4.3.0\\res\\values-ca\\values-ca.xml",

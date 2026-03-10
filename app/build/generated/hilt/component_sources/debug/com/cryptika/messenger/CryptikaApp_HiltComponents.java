@@ -2,9 +2,11 @@ package com.cryptika.messenger;
 
 import androidx.hilt.work.HiltWrapper_WorkerFactoryModule;
 import com.cryptika.messenger.di.AppModule;
+import com.cryptika.messenger.presentation.viewmodel.AuthViewModel_HiltModules;
 import com.cryptika.messenger.presentation.viewmodel.CallViewModel_HiltModules;
 import com.cryptika.messenger.presentation.viewmodel.ChatViewModel_HiltModules;
 import com.cryptika.messenger.presentation.viewmodel.ContactConfirmViewModel_HiltModules;
+import com.cryptika.messenger.presentation.viewmodel.ContactDiscoveryViewModel_HiltModules;
 import com.cryptika.messenger.presentation.viewmodel.HomeViewModel_HiltModules;
 import com.cryptika.messenger.presentation.viewmodel.QrDisplayViewModel_HiltModules;
 import com.cryptika.messenger.presentation.viewmodel.QrScanViewModel_HiltModules;
@@ -164,9 +166,11 @@ public final class CryptikaApp_HiltComponents {
 
   @Subcomponent(
       modules = {
+          AuthViewModel_HiltModules.KeyModule.class,
           CallViewModel_HiltModules.KeyModule.class,
           ChatViewModel_HiltModules.KeyModule.class,
           ContactConfirmViewModel_HiltModules.KeyModule.class,
+          ContactDiscoveryViewModel_HiltModules.KeyModule.class,
           ActivityCBuilderModule.class,
           ViewModelCBuilderModule.class,
           HiltWrapper_ActivityRetainedComponentManager_LifecycleModule.class,
@@ -211,9 +215,11 @@ public final class CryptikaApp_HiltComponents {
 
   @Subcomponent(
       modules = {
+          AuthViewModel_HiltModules.BindsModule.class,
           CallViewModel_HiltModules.BindsModule.class,
           ChatViewModel_HiltModules.BindsModule.class,
           ContactConfirmViewModel_HiltModules.BindsModule.class,
+          ContactDiscoveryViewModel_HiltModules.BindsModule.class,
           HiltWrapper_HiltViewModelFactory_ViewModelModule.class,
           HomeViewModel_HiltModules.BindsModule.class,
           QrDisplayViewModel_HiltModules.BindsModule.class,

@@ -1,4 +1,4 @@
-#Tue Mar 10 22:14:09 IST 2026
+#Wed Mar 11 01:01:31 IST 2026
 path.4=12/classes.dex
 path.3=11/classes.dex
 path.2=10/classes.dex
@@ -19,6 +19,7 @@ base.8=C\:\\Users\\arung\\OneDrive\\Desktop\\HackSecureMessenger_v1.0.2_fixed\\H
 base.7=C\:\\Users\\arung\\OneDrive\\Desktop\\HackSecureMessenger_v1.0.2_fixed\\HackSecureMessenger\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\1\\classes.dex
 base.6=C\:\\Users\\arung\\OneDrive\\Desktop\\HackSecureMessenger_v1.0.2_fixed\\HackSecureMessenger\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\14\\classes.dex
 base.5=C\:\\Users\\arung\\OneDrive\\Desktop\\HackSecureMessenger_v1.0.2_fixed\\HackSecureMessenger\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\13\\classes.dex
+renamed.17=classes18.dex
 renamed.9=classes10.dex
 renamed.16=classes17.dex
 renamed.8=classes9.dex
@@ -28,6 +29,7 @@ renamed.13=classes14.dex
 renamed.12=classes13.dex
 renamed.11=classes12.dex
 renamed.10=classes11.dex
+base.17=C\:\\Users\\arung\\OneDrive\\Desktop\\HackSecureMessenger_v1.0.2_fixed\\HackSecureMessenger\\app\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes4.dex
 base.16=C\:\\Users\\arung\\OneDrive\\Desktop\\HackSecureMessenger_v1.0.2_fixed\\HackSecureMessenger\\app\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes3.dex
 base.15=C\:\\Users\\arung\\OneDrive\\Desktop\\HackSecureMessenger_v1.0.2_fixed\\HackSecureMessenger\\app\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes2.dex
 base.14=C\:\\Users\\arung\\OneDrive\\Desktop\\HackSecureMessenger_v1.0.2_fixed\\HackSecureMessenger\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\9\\classes.dex
@@ -42,6 +44,7 @@ path.11=6/classes.dex
 renamed.7=classes8.dex
 path.16=classes3.dex
 renamed.6=classes7.dex
+path.17=classes4.dex
 renamed.5=classes6.dex
 path.14=9/classes.dex
 renamed.4=classes5.dex

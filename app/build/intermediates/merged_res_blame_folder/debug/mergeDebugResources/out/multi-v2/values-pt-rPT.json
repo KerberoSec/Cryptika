@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.cryptika.messenger.app-mergeDebugResources-74:/values-pt-rPT/values-pt-rPT.xml",
+            "outputFile": "com.cryptika.messenger.app-mergeDebugResources-75:/values-pt-rPT/values-pt-rPT.xml",
             "map": [
                 {
                     "source": "C:\\Users\\arung\\.gradle\\caches\\transforms-3\\a52caf614449866ab0bd7ecbdda2252f\\transformed\\core-1.12.0\\res\\values-pt-rPT\\values-pt-rPT.xml",

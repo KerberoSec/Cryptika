@@ -155,6 +155,7 @@ MERGED from [androidx.datastore:datastore:1.0.0] C:\Users\arung\.gradle\caches\t
 MERGED from [androidx.compose.runtime:runtime-saveable-android:1.6.1] C:\Users\arung\.gradle\caches\transforms-3\de7d790e8db9bbb03af2ce10390215d2\transformed\jetified-runtime-saveable-release\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.compose.runtime:runtime-android:1.6.1] C:\Users\arung\.gradle\caches\transforms-3\4555c234292a6acf02d6c28ce7c23bd3\transformed\jetified-runtime-release\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.annotation:annotation-experimental:1.4.0] C:\Users\arung\.gradle\caches\transforms-3\23999c0e454453e0977f921edc1033e4\transformed\jetified-annotation-experimental-1.4.0\AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.security:security-crypto:1.1.0-alpha06] C:\Users\arung\.gradle\caches\transforms-3\1d89f2a750fd94fa47a664ea02b54daf\transformed\jetified-security-crypto-1.1.0-alpha06\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\arung\.gradle\caches\transforms-3\c60468d6735c368d65b4737089a9a58c\transformed\versionedparcelable-1.1.1\AndroidManifest.xml:17:1-27:12
 MERGED from [androidx.arch.core:core-runtime:2.2.0] C:\Users\arung\.gradle\caches\transforms-3\35c09be18a862d9ce786e0bd6b9ee1bb\transformed\core-runtime-2.2.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\arung\.gradle\caches\transforms-3\630c0f639c5a754ced3b3c22079656ad\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:17:1-55:12
@@ -460,6 +461,8 @@ MERGED from [androidx.compose.runtime:runtime-android:1.6.1] C:\Users\arung\.gra
 MERGED from [androidx.compose.runtime:runtime-android:1.6.1] C:\Users\arung\.gradle\caches\transforms-3\4555c234292a6acf02d6c28ce7c23bd3\transformed\jetified-runtime-release\AndroidManifest.xml:5:5-44
 MERGED from [androidx.annotation:annotation-experimental:1.4.0] C:\Users\arung\.gradle\caches\transforms-3\23999c0e454453e0977f921edc1033e4\transformed\jetified-annotation-experimental-1.4.0\AndroidManifest.xml:5:5-44
 MERGED from [androidx.annotation:annotation-experimental:1.4.0] C:\Users\arung\.gradle\caches\transforms-3\23999c0e454453e0977f921edc1033e4\transformed\jetified-annotation-experimental-1.4.0\AndroidManifest.xml:5:5-44
+MERGED from [androidx.security:security-crypto:1.1.0-alpha06] C:\Users\arung\.gradle\caches\transforms-3\1d89f2a750fd94fa47a664ea02b54daf\transformed\jetified-security-crypto-1.1.0-alpha06\AndroidManifest.xml:20:5-44
+MERGED from [androidx.security:security-crypto:1.1.0-alpha06] C:\Users\arung\.gradle\caches\transforms-3\1d89f2a750fd94fa47a664ea02b54daf\transformed\jetified-security-crypto-1.1.0-alpha06\AndroidManifest.xml:20:5-44
 MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\arung\.gradle\caches\transforms-3\c60468d6735c368d65b4737089a9a58c\transformed\versionedparcelable-1.1.1\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\arung\.gradle\caches\transforms-3\c60468d6735c368d65b4737089a9a58c\transformed\versionedparcelable-1.1.1\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.arch.core:core-runtime:2.2.0] C:\Users\arung\.gradle\caches\transforms-3\35c09be18a862d9ce786e0bd6b9ee1bb\transformed\core-runtime-2.2.0\AndroidManifest.xml:20:5-44

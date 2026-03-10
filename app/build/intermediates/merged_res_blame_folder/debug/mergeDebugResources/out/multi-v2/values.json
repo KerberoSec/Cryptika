@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.cryptika.messenger.app-mergeDebugResources-74:/values/values.xml",
+            "outputFile": "com.cryptika.messenger.app-mergeDebugResources-75:/values/values.xml",
             "map": [
                 {
                     "source": "C:\\Users\\arung\\.gradle\\caches\\transforms-3\\3d5e58853f2f8b3f0b7f671c8974db1d\\transformed\\jetified-camera-view-1.3.1\\res\\values\\values.xml",

@@ -89,6 +89,24 @@ enum class ConnectionState {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
+// EPHEMERAL SESSION (Contact Discovery flow)
+// ══════════════════════════════════════════════════════════════════════════════
+/** Represents an accepted ephemeral session ready for navigation. */
+data class EphemeralSessionInfo(
+    val sessionUUID: String,
+    val contactId: String,
+    val peerNickname: String,
+    val expiresAt: Long
+)
+
+/** Observable state for the ephemeral session countdown. */
+sealed class EphemeralSessionState {
+    data class Active(val remainingMs: Long, val expiresAt: Long) : EphemeralSessionState()
+    object Expired : EphemeralSessionState()
+    object None : EphemeralSessionState()
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
 // STAGE 5: MESSAGE
 // ══════════════════════════════════════════════════════════════════════════════
 data class MessageHeader(

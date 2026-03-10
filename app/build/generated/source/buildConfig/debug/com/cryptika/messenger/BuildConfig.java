@@ -10,11 +10,11 @@ public final class BuildConfig {
   public static final int VERSION_CODE = 1;
   public static final String VERSION_NAME = "1.0.0-debug";
   // Field from default config.
-  public static final String API_BASE_URL = "http://13.203.169.244:8443";
+  public static final String API_BASE_URL = "http://13.235.150.23:8443";
   // Field from default config.
   public static final String APP_VERSION = "1.0.0";
   // Field from default config.
-  public static final String RELAY_BASE_URL = "ws://13.203.169.244:8443";
+  public static final String RELAY_BASE_URL = "ws://13.235.150.23:8443";
   // Field from default config.
-  public static final String SERVER_PUBLIC_KEY_HEX = "40d2741437877e85fc86799bee6942028189f990b8dc8f1e28edf90b54ac88c5";
+  public static final String SERVER_PUBLIC_KEY_HEX = "a96a2946035dff2d11ac86b57f65ec2f4cc83349040237073834c6d4c08c1ec1";
 }

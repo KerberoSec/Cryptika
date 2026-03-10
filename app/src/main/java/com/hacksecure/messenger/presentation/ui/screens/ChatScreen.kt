@@ -30,6 +30,7 @@ fun ChatScreen(
     contactId: String,
     onBack: () -> Unit,
     onStartCall: () -> Unit = {},
+    sessionUUID: String? = null,
     viewModel: ChatViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -44,8 +45,12 @@ fun ChatScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(viewModel) }
     }
 
-    LaunchedEffect(contactId) {
-        viewModel.initConversation(contactId)
+    LaunchedEffect(contactId, sessionUUID) {
+        if (sessionUUID != null) {
+            viewModel.initEphemeralSession(sessionUUID)
+        } else {
+            viewModel.initConversation(contactId)
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -87,6 +92,9 @@ fun ChatScreen(
         }
     }
 
+    // Ephemeral session expired overlay
+    val isEphemeralExpired = state.ephemeralState is com.cryptika.messenger.domain.model.EphemeralSessionState.Expired
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
@@ -95,18 +103,21 @@ fun ChatScreen(
                 connectionState = state.connectionState,
                 sessionEstablished = state.sessionEstablished,
                 onBack = onBack,
-                onStartCall = onStartCall
+                onStartCall = if (state.isEphemeral) {{}} else onStartCall,
+                ephemeralState = state.ephemeralState
             )
         },
         bottomBar = {
-            ChatInputBar(
-                text = state.inputText,
-                onTextChange = viewModel::updateInputText,
-                onSend = viewModel::sendMessage,
-                sessionEstablished = state.sessionEstablished,
-                expirySeconds = state.selectedExpirySeconds,
-                onTimerClick = { showExpiryPicker = true }
-            )
+            if (!isEphemeralExpired) {
+                ChatInputBar(
+                    text = state.inputText,
+                    onTextChange = viewModel::updateInputText,
+                    onSend = viewModel::sendMessage,
+                    sessionEstablished = state.sessionEstablished,
+                    expirySeconds = state.selectedExpirySeconds,
+                    onTimerClick = { showExpiryPicker = true }
+                )
+            }
         }
     ) { padding ->
         LazyColumn(
@@ -145,6 +156,50 @@ fun ChatScreen(
                 )
             }
         }
+
+        // Expired overlay for ephemeral sessions
+        if (isEphemeralExpired) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.7f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Icon(
+                            Icons.Filled.TimerOff,
+                            contentDescription = null,
+                            modifier = Modifier.size(48.dp),
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                        Text(
+                            "Session Expired",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                        Text(
+                            "This ephemeral session has ended.\nAll messages have been destroyed.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                        Button(onClick = onBack) {
+                            Text("Return")
+                        }
+                    }
+                }
+            }
+        }
     }
 
     // Expiry picker bottom sheet
@@ -167,7 +222,8 @@ private fun ChatTopBar(
     connectionState: ConnectionState,
     sessionEstablished: Boolean,
     onBack: () -> Unit,
-    onStartCall: () -> Unit = {}
+    onStartCall: () -> Unit = {},
+    ephemeralState: com.cryptika.messenger.domain.model.EphemeralSessionState = com.cryptika.messenger.domain.model.EphemeralSessionState.None
 ) {
     TopAppBar(
         title = {
@@ -182,11 +238,32 @@ private fun ChatTopBar(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     ConnectionIndicator(connectionState)
-                    Text(
-                        text = connectionState.label,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = connectionState.indicatorColor()
-                    )
+                    when (val es = ephemeralState) {
+                        is com.cryptika.messenger.domain.model.EphemeralSessionState.Active -> {
+                            val mins = (es.remainingMs / 60000).toInt()
+                            val secs = ((es.remainingMs % 60000) / 1000).toInt()
+                            Text(
+                                text = "Ephemeral • ${mins}m ${secs}s",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = if (es.remainingMs < 120_000) MaterialTheme.colorScheme.error
+                                        else MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        is com.cryptika.messenger.domain.model.EphemeralSessionState.Expired -> {
+                            Text(
+                                text = "Session Expired",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                        else -> {
+                            Text(
+                                text = connectionState.label,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = connectionState.indicatorColor()
+                            )
+                        }
+                    }
                 }
             }
         },

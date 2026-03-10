@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.cryptika.messenger.app-mergeDebugResources-74:/values-bs/values-bs.xml",
+            "outputFile": "com.cryptika.messenger.app-mergeDebugResources-75:/values-bs/values-bs.xml",
             "map": [
                 {
                     "source": "C:\\Users\\arung\\.gradle\\caches\\transforms-3\\a52caf614449866ab0bd7ecbdda2252f\\transformed\\core-1.12.0\\res\\values-bs\\values-bs.xml",
