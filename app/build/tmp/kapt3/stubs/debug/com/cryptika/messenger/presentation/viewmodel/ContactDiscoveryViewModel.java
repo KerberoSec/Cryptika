@@ -49,7 +49,8 @@ public final class ContactDiscoveryViewModel extends androidx.lifecycle.ViewMode
      * Completes the contact setup: joins the ephemeral session with the user-chosen display name,
      * then transitions to the accepted state so navigation occurs.
      */
-    public final void confirmSetup(@org.jetbrains.annotations.NotNull()
+    public final void confirmSetup(@kotlin.Suppress(names = {"UNUSED_PARAMETER"})
+    @org.jetbrains.annotations.NotNull()
     java.lang.String displayName) {
     }
     

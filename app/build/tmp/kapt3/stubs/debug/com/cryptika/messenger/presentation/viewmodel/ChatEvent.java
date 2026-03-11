@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.*;
 import java.util.UUID;
 import javax.inject.Inject;
 
-@kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000&\n\u0002\u0018\u0002\n\u0002\u0010\u0000\n\u0002\b\u0007\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0000\b6\u0018\u00002\u00020\u0001:\u0006\u0003\u0004\u0005\u0006\u0007\bB\u0007\b\u0004\u00a2\u0006\u0002\u0010\u0002\u0082\u0001\u0006\t\n\u000b\f\r\u000e\u00a8\u0006\u000f"}, d2 = {"Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent;", "", "()V", "ForceLogout", "MessageRejected", "RetrySucceeded", "SessionSecured", "ShowError", "Snackbar", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$ForceLogout;", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$MessageRejected;", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$RetrySucceeded;", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$SessionSecured;", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$ShowError;", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$Snackbar;", "Cryptika_debug"})
+@kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000*\n\u0002\u0018\u0002\n\u0002\u0010\u0000\n\u0002\b\b\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0000\b6\u0018\u00002\u00020\u0001:\u0007\u0003\u0004\u0005\u0006\u0007\b\tB\u0007\b\u0004\u00a2\u0006\u0002\u0010\u0002\u0082\u0001\u0007\n\u000b\f\r\u000e\u000f\u0010\u00a8\u0006\u0011"}, d2 = {"Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent;", "", "()V", "ForceLogout", "MessageRejected", "PeerDisconnected", "RetrySucceeded", "SessionSecured", "ShowError", "Snackbar", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$ForceLogout;", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$MessageRejected;", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$PeerDisconnected;", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$RetrySucceeded;", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$SessionSecured;", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$ShowError;", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$Snackbar;", "Cryptika_debug"})
 public abstract class ChatEvent {
     
     private ChatEvent() {
@@ -76,6 +76,18 @@ public abstract class ChatEvent {
         @org.jetbrains.annotations.NotNull()
         public java.lang.String toString() {
             return null;
+        }
+    }
+    
+    /**
+     * Emitted when the peer disconnects (e.g. screen off).
+     */
+    @kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000\f\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\b\u0002\b\u00c6\u0002\u0018\u00002\u00020\u0001B\u0007\b\u0002\u00a2\u0006\u0002\u0010\u0002\u00a8\u0006\u0003"}, d2 = {"Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$PeerDisconnected;", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent;", "()V", "Cryptika_debug"})
+    public static final class PeerDisconnected extends com.cryptika.messenger.presentation.viewmodel.ChatEvent {
+        @org.jetbrains.annotations.NotNull()
+        public static final com.cryptika.messenger.presentation.viewmodel.ChatEvent.PeerDisconnected INSTANCE = null;
+        
+        private PeerDisconnected() {
         }
     }
     

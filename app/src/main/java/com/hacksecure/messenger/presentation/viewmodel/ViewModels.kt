@@ -326,6 +326,8 @@ sealed class ChatEvent {
     object RetrySucceeded : ChatEvent()
     /** Emitted when the ephemeral session expires or disconnects — triggers full logout. */
     object ForceLogout : ChatEvent()
+    /** Emitted when the peer disconnects (e.g. screen off). */
+    object PeerDisconnected : ChatEvent()
 }
 
 @HiltViewModel
@@ -446,7 +448,7 @@ class ChatViewModel @Inject constructor(
                     contact = contact,
                     isLoading = false,
                     isEphemeral = true,
-                    selectedExpirySeconds = 1800,
+                    selectedExpirySeconds = 3,
                     serverRelayUrl = serverConfig.relayBaseUrl,
                     ephemeralState = EphemeralSessionState.Active(
                         remainingMs = (expiresAt - System.currentTimeMillis()).coerceAtLeast(0),
@@ -468,6 +470,14 @@ class ChatViewModel @Inject constructor(
                         )
                     }
                     viewModelScope.launch { _events.emit(ChatEvent.SessionSecured) }
+                },
+                onPeerDisconnected = {
+                    viewModelScope.launch {
+                        _events.emit(ChatEvent.PeerDisconnected)
+                        // Small delay so the user can see the notification
+                        kotlinx.coroutines.delay(1500)
+                        _events.emit(ChatEvent.ForceLogout)
+                    }
                 }
             )
 

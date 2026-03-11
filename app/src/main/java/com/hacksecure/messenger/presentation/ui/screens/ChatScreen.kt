@@ -80,6 +80,9 @@ fun ChatScreen(
                 )
                 is ChatEvent.SessionSecured -> snackbarHostState.showSnackbar("Session secured")
                 is ChatEvent.RetrySucceeded -> snackbarHostState.showSnackbar("Messages re-queued")
+                is ChatEvent.PeerDisconnected -> snackbarHostState.showSnackbar(
+                    "Peer disconnected — session destroyed. All data wiped."
+                )
                 is ChatEvent.ForceLogout -> onForceLogout()
                 else -> {}
             }
@@ -692,7 +695,7 @@ private fun ConnectionTroubleshootCard(
                 )
             }
             Text(
-                "Make sure both devices are online and the server is reachable.",
+                "User is currently unavailable",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onErrorContainer
             )

@@ -785,9 +785,18 @@ wss.on("connection", (ws, req) => {
 
     ws.on("close", () => {
       room.delete(ws);
+      // Notify remaining peer that this user disconnected
+      const PEER_DISCONNECTED = Buffer.from([0xFF, 0xFE, ...Buffer.from("PEER_DISCONNECTED")]);
+      for (const peer of room) {
+        if (peer.readyState === WebSocket.OPEN) {
+          try { peer.send(PEER_DISCONNECTED, { binary: true }); } catch (_) {}
+        }
+      }
+      // Destroy the entire session when a participant leaves
       if (room.size === 0) {
         conversationSockets.delete(sessionId);
       }
+      destroySession(sessionId);
     });
 
     ws.on("error", () => { room.delete(ws); });
