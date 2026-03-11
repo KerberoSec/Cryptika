@@ -68,20 +68,29 @@ class EphemeralSessionManager @Inject constructor(
     private val _activeSessions = MutableStateFlow<List<String>>(emptyList())
     val activeSessions: StateFlow<List<String>> = _activeSessions
 
+    // Special control frame: 0xFF 0xFE + "PEER_DISCONNECTED"
+    // Sent by the server when the peer's WebSocket closes.
+    private val PEER_DISCONNECTED_PREFIX = byteArrayOf(0xFF.toByte(), 0xFE.toByte())
+    private val PEER_DISCONNECTED_TAG = "PEER_DISCONNECTED"
+
     // ── Callbacks from ChatViewModel ─────────────────────────────────────────
 
     private val chatPacketHandlers =
         ConcurrentHashMap<String, suspend (msgId: String, packet: ByteArray) -> Unit>()
     private val sessionReadyCallbacks =
         ConcurrentHashMap<String, suspend (MessageProcessor) -> Unit>()
+    private val peerDisconnectedCallbacks =
+        ConcurrentHashMap<String, suspend () -> Unit>()
 
     fun registerChatHandler(
         sessionUUID: String,
         packetHandler: suspend (String, ByteArray) -> Unit,
-        onSessionReady: suspend (MessageProcessor) -> Unit
+        onSessionReady: suspend (MessageProcessor) -> Unit,
+        onPeerDisconnected: suspend () -> Unit = {}
     ) {
         chatPacketHandlers[sessionUUID] = packetHandler
         sessionReadyCallbacks[sessionUUID] = onSessionReady
+        peerDisconnectedCallbacks[sessionUUID] = onPeerDisconnected
         sessions[sessionUUID]?.messageProcessor?.let {
             scope.launch { onSessionReady(it) }
         }
@@ -90,6 +99,7 @@ class EphemeralSessionManager @Inject constructor(
     fun unregisterChatHandler(sessionUUID: String) {
         chatPacketHandlers.remove(sessionUUID)
         sessionReadyCallbacks.remove(sessionUUID)
+        peerDisconnectedCallbacks.remove(sessionUUID)
     }
 
     // ── Session lifecycle ─────────────────────────────────────────────────────
@@ -181,6 +191,11 @@ class EphemeralSessionManager @Inject constructor(
                     is com.cryptika.messenger.data.remote.websocket.RelayEvent.MessageReceived -> {
                         val packetBytes = event.message.packetBytes
                         when {
+                            isPeerDisconnectedSignal(packetBytes) -> {
+                                Log.d(TAG, "Peer disconnected from session ${session.sessionUUID.take(8)}...")
+                                peerDisconnectedCallbacks[session.sessionUUID]?.invoke()
+                                destroySession(session.sessionUUID)
+                            }
                             handshakeManager.isHandshakeOffer(packetBytes) -> {
                                 completeHandshake(session, packetBytes)
                             }
@@ -195,10 +210,14 @@ class EphemeralSessionManager @Inject constructor(
 
                     is com.cryptika.messenger.data.remote.websocket.RelayEvent.Disconnected -> {
                         Log.d(TAG, "Session ${session.sessionUUID.take(8)}... disconnected")
+                        peerDisconnectedCallbacks[session.sessionUUID]?.invoke()
+                        destroySession(session.sessionUUID)
                     }
 
                     is com.cryptika.messenger.data.remote.websocket.RelayEvent.Error -> {
                         Log.e(TAG, "Session ${session.sessionUUID.take(8)}... error", event.throwable)
+                        peerDisconnectedCallbacks[session.sessionUUID]?.invoke()
+                        destroySession(session.sessionUUID)
                     }
                 }
             }
@@ -362,6 +381,14 @@ class EphemeralSessionManager @Inject constructor(
 
     private fun updateActiveSessionsList() {
         _activeSessions.value = sessions.keys.toList()
+    }
+
+    /** Check if a received packet is the PEER_DISCONNECTED control frame. */
+    private fun isPeerDisconnectedSignal(data: ByteArray): Boolean {
+        if (data.size < PEER_DISCONNECTED_PREFIX.size + PEER_DISCONNECTED_TAG.length) return false
+        if (data[0] != PEER_DISCONNECTED_PREFIX[0] || data[1] != PEER_DISCONNECTED_PREFIX[1]) return false
+        val tag = String(data, PEER_DISCONNECTED_PREFIX.size, data.size - PEER_DISCONNECTED_PREFIX.size, Charsets.UTF_8)
+        return tag == PEER_DISCONNECTED_TAG
     }
 
     private fun String.hexToBytes(): ByteArray {

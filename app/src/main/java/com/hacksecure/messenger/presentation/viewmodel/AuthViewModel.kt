@@ -114,7 +114,7 @@ class ContactDiscoveryViewModel @Inject constructor(
     val uiState: StateFlow<ContactDiscoveryUiState> = _uiState.asStateFlow()
 
     fun sendContactRequest(targetUsername: String) {
-        val nickname = authRepository.getUsername() ?: "Anonymous"
+        val nickname = "User_${java.util.UUID.randomUUID().toString().take(8)}"
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null, requestSent = false) }
             authRepository.sendContactRequest(targetUsername, nickname)
@@ -171,15 +171,16 @@ class ContactDiscoveryViewModel @Inject constructor(
      * Completes the contact setup: joins the ephemeral session with the user-chosen display name,
      * then transitions to the accepted state so navigation occurs.
      */
-    fun confirmSetup(displayName: String) {
+    fun confirmSetup(@Suppress("UNUSED_PARAMETER") displayName: String) {
         val setup = _uiState.value.pendingSetup ?: return
+        val randomName = "User_${java.util.UUID.randomUUID().toString().take(8)}"
         viewModelScope.launch {
             ephemeralSessionManager.joinSession(
                 sessionUUID = setup.sessionUUID,
                 expiresAt = setup.expiresAt,
                 peerIdentityHash = setup.peerIdentityHash,
                 peerPublicKeyB64 = setup.peerPublicKeyB64,
-                peerNickname = displayName.ifBlank { setup.peerNickname }
+                peerNickname = randomName
             )
             _uiState.update {
                 it.copy(
@@ -190,7 +191,7 @@ class ContactDiscoveryViewModel @Inject constructor(
                         serverTime = setup.serverTime,
                         peerIdentityHash = setup.peerIdentityHash,
                         peerPublicKeyB64 = setup.peerPublicKeyB64,
-                        peerNickname = displayName.ifBlank { setup.peerNickname }
+                        peerNickname = randomName
                     )
                 )
             }

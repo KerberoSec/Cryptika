@@ -36,7 +36,7 @@ android {
         buildConfigField(
             "String",
             "SERVER_PUBLIC_KEY_HEX",
-            "\"8ec9c08c218bb80336198575a44e3195abafa4688867dd44600feda077dbb4fc\""
+            "\"fd4f25c6431c8372254b049c4cc67f784a8b50e6742e227479ad0752c1902822\""
         )
         // LAN IP for release / physical device builds
         buildConfigField("String", "RELAY_BASE_URL", "\"ws://13.235.150.23:8443\"")

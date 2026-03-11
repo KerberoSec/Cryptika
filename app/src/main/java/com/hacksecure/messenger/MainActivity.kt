@@ -106,6 +106,24 @@ class MainActivity : ComponentActivity() {
         super.onResume()
     }
 
+    /** Back / Home / Minimize → destroy all sessions, wipe auth, force re-enter username */
+    override fun onStop() {
+        super.onStop()
+        if (!isChangingConfigurations) {
+            wipeScope.launch {
+                withContext(Dispatchers.IO) {
+                    ephemeralSessionManager.destroyAllSessions()
+                    backgroundConnectionManager.stopAll()
+                }
+                authRepository.logout()
+                val restart = Intent(this@MainActivity, MainActivity::class.java)
+                restart.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                startActivity(restart)
+                finish()
+            }
+        }
+    }
+
     private fun applyScreenshotBlockingPreference() {
         val prefs = getSharedPreferences("cryptika_settings", MODE_PRIVATE)
         val blockingEnabled = prefs.getBoolean("screenshot_blocking", true)

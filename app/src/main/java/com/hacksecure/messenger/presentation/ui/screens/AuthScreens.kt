@@ -197,12 +197,12 @@ fun ContactDiscoveryScreen(
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(
-                        if (setup.isRequester) "Contact accepted:" else "Contact request from:",
+                        if (setup.isRequester) "Contact accepted" else "New contact request",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        setup.peerNickname,
+                        "Anonymous",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -229,24 +229,13 @@ fun ContactDiscoveryScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
-                    HorizontalDivider()
 
-                    OutlinedTextField(
-                        value = setupDisplayName,
-                        onValueChange = { /* handled by secure keyboard */ },
-                        label = { Text("Contact Name") },
-                        placeholder = { Text(setup.peerNickname) },
-                        singleLine = true,
-                        readOnly = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        leadingIcon = { Icon(Icons.Default.Person, null) }
-                    )
                 }
             },
             confirmButton = {
                 Button(
                     onClick = {
-                        viewModel.confirmSetup(setupDisplayName.trim().ifBlank { setup.peerNickname })
+                        viewModel.confirmSetup("")
                         setupDisplayName = ""
                     }
                 ) {
