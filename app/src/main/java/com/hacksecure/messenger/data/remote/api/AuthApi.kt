@@ -10,23 +10,13 @@ import retrofit2.http.Url
 
 // ── Request / Response DTOs ──────────────────────────────────────────────────
 
-data class RegisterRequest(
+data class EnterRequest(
     val username: String,
-    val password: String,
     val identityHashHex: String,
     val publicKeyB64: String
 )
 
-data class RegisterResponse(val status: String)
-
-data class LoginRequest(
-    val username: String,
-    val password: String,
-    val identityHashHex: String,
-    val publicKeyB64: String
-)
-
-data class LoginResponse(
+data class EnterResponse(
     val token: String,
     val contactToken: String,
     val expiresAt: Long
@@ -69,7 +59,8 @@ data class AcceptedSession(
     val expiresAt: Long,
     val serverTime: Long,
     val peerIdentityHash: String,
-    val peerPublicKeyB64: String
+    val peerPublicKeyB64: String,
+    val peerNickname: String = ""
 )
 
 data class AcceptedSessionsResponse(val sessions: List<AcceptedSession>)
@@ -81,10 +72,7 @@ data class BurnResponse(val status: String)
 interface AuthApi {
 
     @POST
-    suspend fun register(@Url url: String, @Body request: RegisterRequest): RegisterResponse
-
-    @POST
-    suspend fun login(@Url url: String, @Body request: LoginRequest): LoginResponse
+    suspend fun enter(@Url url: String, @Body request: EnterRequest): EnterResponse
 
     @POST
     suspend fun sendContactRequest(

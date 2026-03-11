@@ -24,47 +24,15 @@ class AuthRepositoryImpl @Inject constructor(
 
     private fun authHeader(): String = "Bearer ${authStore.jwtToken.orEmpty()}"
 
-    override suspend fun register(username: String, password: String): Result<Unit> =
+    override suspend fun enter(username: String): Result<Unit> =
         withContext(Dispatchers.IO) {
             try {
                 val identity = identityRepository.getLocalIdentity()
                     ?: identityRepository.generateIdentity()
-                val response = authApi.register(
-                    url = "${serverConfig.apiBaseUrl}/api/v1/auth/register",
-                    request = RegisterRequest(
+                val response = authApi.enter(
+                    url = "${serverConfig.apiBaseUrl}/api/v1/auth/enter",
+                    request = EnterRequest(
                         username = username,
-                        password = password,
-                        identityHashHex = identity.identityHex,
-                        publicKeyB64 = Base64.encodeToString(identity.publicKeyBytes, Base64.NO_WRAP)
-                    )
-                )
-                // Server returns {status:"ok"} on success, or throws on HTTP error
-                if (response.status != "ok") {
-                    Result.failure(Exception("Registration failed"))
-                } else {
-                    Result.success(Unit)
-                }
-            } catch (e: HttpException) {
-                val errorBody = e.response()?.errorBody()?.string()
-                val msg = try {
-                    JSONObject(errorBody ?: "").optString("error", "Registration failed")
-                } catch (_: Exception) { "Registration failed" }
-                Result.failure(Exception(msg))
-            } catch (e: Exception) {
-                Result.failure(e)
-            }
-        }
-
-    override suspend fun login(username: String, password: String): Result<Unit> =
-        withContext(Dispatchers.IO) {
-            try {
-                val identity = identityRepository.getLocalIdentity()
-                    ?: identityRepository.generateIdentity()
-                val response = authApi.login(
-                    url = "${serverConfig.apiBaseUrl}/api/v1/auth/login",
-                    request = LoginRequest(
-                        username = username,
-                        password = password,
                         identityHashHex = identity.identityHex,
                         publicKeyB64 = Base64.encodeToString(identity.publicKeyBytes, Base64.NO_WRAP)
                     )
@@ -77,8 +45,8 @@ class AuthRepositoryImpl @Inject constructor(
             } catch (e: HttpException) {
                 val errorBody = e.response()?.errorBody()?.string()
                 val msg = try {
-                    JSONObject(errorBody ?: "").optString("error", "Invalid credentials")
-                } catch (_: Exception) { "Invalid credentials" }
+                    JSONObject(errorBody ?: "").optString("error", "Entry failed")
+                } catch (_: Exception) { "Entry failed" }
                 Result.failure(Exception(msg))
             } catch (e: Exception) {
                 Result.failure(e)

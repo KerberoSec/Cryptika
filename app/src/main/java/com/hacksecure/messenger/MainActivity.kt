@@ -1,6 +1,10 @@
 // Navigation.kt + MainActivity.kt
 package com.cryptika.messenger
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
@@ -9,11 +13,16 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.*
 import androidx.navigation.*
 import androidx.navigation.compose.*
+import com.cryptika.messenger.data.remote.BackgroundConnectionManager
+import com.cryptika.messenger.data.remote.EphemeralSessionManager
+import com.cryptika.messenger.domain.repository.AuthRepository
 import com.cryptika.messenger.presentation.ui.screens.*
 import com.cryptika.messenger.presentation.ui.theme.CryptikaTheme
 import com.cryptika.messenger.presentation.viewmodel.CallViewModel
 import com.cryptika.messenger.worker.MessageExpiryWorker
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.*
+import javax.inject.Inject
 
 // ══════════════════════════════════════════════════════════════════════════════
 // NAVIGATION ROUTES
@@ -45,6 +54,32 @@ object Routes {
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    @Inject lateinit var ephemeralSessionManager: EphemeralSessionManager
+    @Inject lateinit var backgroundConnectionManager: BackgroundConnectionManager
+    @Inject lateinit var authRepository: AuthRepository
+
+    private val wipeScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+
+    /** Screen-off → destroy all sessions, wipe auth, force re-register */
+    private val screenOffReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == Intent.ACTION_SCREEN_OFF) {
+                wipeScope.launch {
+                    withContext(Dispatchers.IO) {
+                        ephemeralSessionManager.destroyAllSessions()
+                        backgroundConnectionManager.stopAll()
+                    }
+                    authRepository.logout()
+                    // Restart activity so nav graph resets to AUTH
+                    val restart = Intent(this@MainActivity, MainActivity::class.java)
+                    restart.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    startActivity(restart)
+                    finish()
+                }
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -52,11 +87,19 @@ class MainActivity : ComponentActivity() {
         MessageExpiryWorker.schedule(this)
         MessageExpiryWorker.runOnce(this)
 
+        registerReceiver(screenOffReceiver, IntentFilter(Intent.ACTION_SCREEN_OFF))
+
         setContent {
             CryptikaTheme {
                 CryptikaNavGraph()
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        try { unregisterReceiver(screenOffReceiver) } catch (_: Exception) {}
+        wipeScope.cancel()
     }
 
     override fun onResume() {
@@ -95,6 +138,13 @@ fun CryptikaNavGraph() {
         navController = navController,
         startDestination = Routes.AUTH
     ) {
+        // Shared force-logout: clear back stack and navigate to AUTH
+        val forceLogout: () -> Unit = {
+            navController.navigate(Routes.AUTH) {
+                popUpTo(0) { inclusive = true }
+            }
+        }
+
         // ── Auth ─────────────────────────────────────────────────────────────
         composable(Routes.AUTH) {
             AuthScreen(
@@ -132,6 +182,7 @@ fun CryptikaNavGraph() {
         composable(Routes.CONTACT_DISCOVERY) {
             ContactDiscoveryScreen(
                 onBack = { navController.popBackStack() },
+                onLogout = forceLogout,
                 onSessionCreated = { sessionUUID, peerIdHash, peerPubKeyB64, peerNickname ->
                     navController.navigate(Routes.ephemeralChat(sessionUUID)) {
                         popUpTo(Routes.HOME)
@@ -153,7 +204,8 @@ fun CryptikaNavGraph() {
                     navController.navigate(Routes.HOME) {
                         popUpTo(Routes.HOME) { inclusive = true }
                     }
-                }
+                },
+                onForceLogout = forceLogout
             )
         }
 
@@ -225,7 +277,8 @@ fun CryptikaNavGraph() {
         composable(Routes.SETTINGS) {
             SettingsScreen(
                 onBack = { navController.popBackStack() },
-                onNavigateToQrDisplay = { navController.navigate(Routes.QR_DISPLAY) }
+                onNavigateToQrDisplay = { navController.navigate(Routes.QR_DISPLAY) },
+                onForceLogout = forceLogout
             )
         }
     }

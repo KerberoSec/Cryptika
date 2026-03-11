@@ -24,9 +24,7 @@ data class AuthUiState(
     val isLoading: Boolean = false,
     val isLoggedIn: Boolean = false,
     val error: String? = null,
-    val registerSuccess: Boolean = false,
-    val username: String? = null,
-    val credentialsBurned: Boolean = false
+    val username: String? = null
 )
 
 @HiltViewModel
@@ -36,41 +34,24 @@ class AuthViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthUiState(
-        isLoggedIn = authRepository.isLoggedIn(),
-        credentialsBurned = authRepository.isCredentialsBurned()
+        isLoggedIn = authRepository.isLoggedIn()
     ))
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
-    fun register(username: String, password: String) {
-        if (username.length < 2) {
-            _uiState.update { it.copy(error = "Username must be at least 2 characters") }
-            return
-        }
-        if (password.length < 8) {
-            _uiState.update { it.copy(error = "Password must be at least 8 characters") }
-            return
-        }
-        if (!username.matches(Regex("^[a-zA-Z0-9_]+$"))) {
-            _uiState.update { it.copy(error = "Username can only contain letters, numbers, and underscores") }
+    /** Passwordless entry — just a public username, case-sensitive. */
+    fun enter(username: String) {
+        if (username.isBlank()) {
+            _uiState.update { it.copy(error = "Username cannot be empty") }
             return
         }
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            authRepository.register(username, password)
-                .onSuccess {
-                    _uiState.update { it.copy(isLoading = false, registerSuccess = true) }
-                }
-                .onFailure { e ->
-                    _uiState.update { it.copy(isLoading = false, error = "Registration failed: ${e.message}") }
-                }
-        }
-    }
-
-    fun login(username: String, password: String) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-            authRepository.login(username, password)
+            // Ensure a fresh identity exists
+            if (identityRepository.getLocalIdentity() == null) {
+                identityRepository.generateIdentity()
+            }
+            authRepository.enter(username)
                 .onSuccess {
                     _uiState.update {
                         it.copy(
@@ -81,7 +62,7 @@ class AuthViewModel @Inject constructor(
                     }
                 }
                 .onFailure { e ->
-                    _uiState.update { it.copy(isLoading = false, error = "Login failed: ${e.message}") }
+                    _uiState.update { it.copy(isLoading = false, error = "Entry failed: ${e.message}") }
                 }
         }
     }
@@ -94,64 +75,33 @@ class AuthViewModel @Inject constructor(
     fun clearError() {
         _uiState.update { it.copy(error = null) }
     }
-
-    fun clearRegisterSuccess() {
-        _uiState.update { it.copy(registerSuccess = false) }
-    }
-
-    /**
-     * Re-registration: delete old identity, clear burned state, generate new identity,
-     * then register with new credentials for a new ephemeral session.
-     */
-    fun reRegister(username: String, password: String) {
-        if (username.length < 2) {
-            _uiState.update { it.copy(error = "Username must be at least 2 characters") }
-            return
-        }
-        if (password.length < 8) {
-            _uiState.update { it.copy(error = "Password must be at least 8 characters") }
-            return
-        }
-        if (!username.matches(Regex("^[a-zA-Z0-9_]+$"))) {
-            _uiState.update { it.copy(error = "Username can only contain letters, numbers, and underscores") }
-            return
-        }
-
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-            try {
-                // 1. Delete old identity — new identity key pair for unlinkability
-                identityRepository.deleteIdentity()
-                // 2. Generate fresh identity
-                identityRepository.generateIdentity()
-                // 3. Clear burned state and logout old session
-                authRepository.logout()
-                _uiState.update { it.copy(credentialsBurned = false) }
-
-                // 4. Register with new identity
-                authRepository.register(username, password)
-                    .onSuccess {
-                        _uiState.update { it.copy(isLoading = false, registerSuccess = true, isLoggedIn = false) }
-                    }
-                    .onFailure { e ->
-                        _uiState.update { it.copy(isLoading = false, error = "Re-registration failed: ${e.message}") }
-                    }
-            } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false, error = "Re-registration failed: ${e.message}") }
-            }
-        }
-    }
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CONTACT DISCOVERY UI STATE
 // ══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Holds session info while the user is naming the contact and verifying the fingerprint,
+ * before the ephemeral session is actually joined.
+ */
+data class PendingSessionSetup(
+    val sessionUUID: String,
+    val expiresAt: Long,
+    val serverTime: Long,
+    val peerIdentityHash: String,
+    val peerPublicKeyB64: String,
+    val peerNickname: String,
+    val isRequester: Boolean = false
+)
+
 data class ContactDiscoveryUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val requestSent: Boolean = false,
     val pendingRequests: List<PendingRequest> = emptyList(),
-    val acceptedSession: AcceptRequestResponse? = null
+    val acceptedSession: AcceptRequestResponse? = null,
+    val pendingSetup: PendingSessionSetup? = null
 )
 
 @HiltViewModel
@@ -195,19 +145,19 @@ class ContactDiscoveryViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, error = null) }
             authRepository.acceptRequest(requestId)
                 .onSuccess { response ->
-                    // Join the ephemeral session via EphemeralSessionManager
-                    ephemeralSessionManager.joinSession(
-                        sessionUUID = response.sessionUUID,
-                        expiresAt = response.expiresAt,
-                        peerIdentityHash = response.peerIdentityHash,
-                        peerPublicKeyB64 = response.peerPublicKeyB64,
-                        peerNickname = response.peerNickname
-                    )
+                    // Don't join yet — show contact setup dialog first
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            acceptedSession = response,
-                            pendingRequests = it.pendingRequests.filter { p -> p.requestId != requestId }
+                            pendingRequests = it.pendingRequests.filter { p -> p.requestId != requestId },
+                            pendingSetup = PendingSessionSetup(
+                                sessionUUID = response.sessionUUID,
+                                expiresAt = response.expiresAt,
+                                serverTime = response.serverTime,
+                                peerIdentityHash = response.peerIdentityHash,
+                                peerPublicKeyB64 = response.peerPublicKeyB64,
+                                peerNickname = response.peerNickname
+                            )
                         )
                     }
                 }
@@ -215,6 +165,40 @@ class ContactDiscoveryViewModel @Inject constructor(
                     _uiState.update { it.copy(isLoading = false, error = e.message) }
                 }
         }
+    }
+
+    /**
+     * Completes the contact setup: joins the ephemeral session with the user-chosen display name,
+     * then transitions to the accepted state so navigation occurs.
+     */
+    fun confirmSetup(displayName: String) {
+        val setup = _uiState.value.pendingSetup ?: return
+        viewModelScope.launch {
+            ephemeralSessionManager.joinSession(
+                sessionUUID = setup.sessionUUID,
+                expiresAt = setup.expiresAt,
+                peerIdentityHash = setup.peerIdentityHash,
+                peerPublicKeyB64 = setup.peerPublicKeyB64,
+                peerNickname = displayName.ifBlank { setup.peerNickname }
+            )
+            _uiState.update {
+                it.copy(
+                    pendingSetup = null,
+                    acceptedSession = AcceptRequestResponse(
+                        sessionUUID = setup.sessionUUID,
+                        expiresAt = setup.expiresAt,
+                        serverTime = setup.serverTime,
+                        peerIdentityHash = setup.peerIdentityHash,
+                        peerPublicKeyB64 = setup.peerPublicKeyB64,
+                        peerNickname = displayName.ifBlank { setup.peerNickname }
+                    )
+                )
+            }
+        }
+    }
+
+    fun cancelSetup() {
+        _uiState.update { it.copy(pendingSetup = null) }
     }
 
     fun rejectRequest(requestId: String) {
@@ -247,32 +231,34 @@ class ContactDiscoveryViewModel @Inject constructor(
         _uiState.update { it.copy(requestSent = false) }
     }
 
+    /** Logout: destroy all sessions, clear auth state. */
+    fun logout() {
+        ephemeralSessionManager.destroyAllSessions()
+        authRepository.logout()
+    }
+
     /**
      * Polls the server for sessions accepted by the OTHER party (requester side).
      * When a session is found, joins it via EphemeralSessionManager and surfaces it.
      */
     fun pollAcceptedSessions() {
         viewModelScope.launch {
+            // Don't poll if user is already setting up a contact
+            if (_uiState.value.pendingSetup != null) return@launch
             authRepository.getAcceptedSessions()
                 .onSuccess { sessions ->
                     val session = sessions.firstOrNull() ?: return@onSuccess
-                    // Join this session
-                    ephemeralSessionManager.joinSession(
-                        sessionUUID = session.sessionUUID,
-                        expiresAt = session.expiresAt,
-                        peerIdentityHash = session.peerIdentityHash,
-                        peerPublicKeyB64 = session.peerPublicKeyB64,
-                        peerNickname = "Contact"  // server doesn't return nickname for requester
-                    )
+                    // Show contact setup dialog instead of joining immediately
                     _uiState.update {
                         it.copy(
-                            acceptedSession = AcceptRequestResponse(
+                            pendingSetup = PendingSessionSetup(
                                 sessionUUID = session.sessionUUID,
                                 expiresAt = session.expiresAt,
                                 serverTime = session.serverTime,
                                 peerIdentityHash = session.peerIdentityHash,
                                 peerPublicKeyB64 = session.peerPublicKeyB64,
-                                peerNickname = "Contact"
+                                peerNickname = session.peerNickname.ifBlank { "Contact" },
+                                isRequester = true
                             )
                         )
                     }

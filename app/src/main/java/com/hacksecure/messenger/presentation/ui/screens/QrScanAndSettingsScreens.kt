@@ -28,6 +28,7 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.zxing.*
 import com.google.zxing.common.HybridBinarizer
+import com.cryptika.messenger.presentation.ui.components.SecureKeyboard
 import com.cryptika.messenger.domain.model.AppVersion
 import com.cryptika.messenger.presentation.ui.theme.*
 import com.cryptika.messenger.presentation.viewmodel.*
@@ -78,6 +79,7 @@ fun QrScanScreen(
 
     var showManualEntry by remember { mutableStateOf(false) }
     var manualCode by remember { mutableStateOf("") }
+    var keyboardVisible by remember { mutableStateOf(false) }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -94,6 +96,17 @@ fun QrScanScreen(
                     }
                 }
             )
+        },
+        bottomBar = {
+            if (showManualEntry) {
+                SecureKeyboard(
+                    visible = keyboardVisible,
+                    onKeyPress = { key -> manualCode += key },
+                    onBackspace = { if (manualCode.isNotEmpty()) manualCode = manualCode.dropLast(1) },
+                    onDone = { keyboardVisible = false },
+                    onToggle = { keyboardVisible = !keyboardVisible }
+                )
+            }
         }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
@@ -112,12 +125,15 @@ fun QrScanScreen(
                     )
                     OutlinedTextField(
                         value = manualCode,
-                        onValueChange = { manualCode = it },
+                        onValueChange = { /* handled by secure keyboard */ },
                         label = { Text("Contact code") },
                         placeholder = { Text("cryptika://id/v1/...") },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { keyboardVisible = true },
                         minLines = 3,
-                        maxLines = 6
+                        maxLines = 6,
+                        readOnly = true
                     )
                     Button(
                         onClick = {
@@ -264,6 +280,7 @@ fun ContactConfirmScreen(
     val state by viewModel.state.collectAsState()
     var displayName by remember { mutableStateOf("") }
     var showKeyChangeDialog by remember { mutableStateOf<com.cryptika.messenger.domain.model.Contact?>(null) }
+    var keyboardVisible by remember { mutableStateOf(false) }
 
     // Decode the public key
     val (publicKeyBytes, identityHash, fingerprintHex) = remember(publicKeyB64) {
@@ -312,6 +329,15 @@ fun ContactConfirmScreen(
                 title = { Text("Verify Contact") },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, "Back") } }
             )
+        },
+        bottomBar = {
+            SecureKeyboard(
+                visible = keyboardVisible,
+                onKeyPress = { key -> displayName += key },
+                onBackspace = { if (displayName.isNotEmpty()) displayName = displayName.dropLast(1) },
+                onDone = { keyboardVisible = false },
+                onToggle = { keyboardVisible = !keyboardVisible }
+            )
         }
     ) { padding ->
         Column(
@@ -351,11 +377,14 @@ fun ContactConfirmScreen(
 
             OutlinedTextField(
                 value = displayName,
-                onValueChange = { displayName = it },
+                onValueChange = { /* handled by secure keyboard */ },
                 label = { Text("Contact Name") },
                 placeholder = { Text("Enter a name for this contact") },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { keyboardVisible = true },
                 singleLine = true,
+                readOnly = true,
                 leadingIcon = { Icon(Icons.Filled.Person, null) }
             )
 
@@ -397,9 +426,15 @@ fun ContactConfirmScreen(
 fun SettingsScreen(
     onBack: () -> Unit,
     onNavigateToQrDisplay: () -> Unit,
+    onForceLogout: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
+
+    // Navigate to auth when identity is regenerated (force logout)
+    LaunchedEffect(state.forceLogout) {
+        if (state.forceLogout) onForceLogout()
+    }
 
     if (state.showRegenerateConfirm) {
         AlertDialog(
@@ -407,7 +442,7 @@ fun SettingsScreen(
             icon = { Icon(Icons.Filled.Warning, null, tint = MaterialTheme.colorScheme.error) },
             title = { Text("Regenerate Identity?") },
             text = {
-                Text("This will create a new identity key, making you unrecognizable to all existing contacts. They will see a key change warning. This cannot be undone.")
+                Text("This will destroy all active sessions, log you out, and create a new identity key. You will need to register again. This cannot be undone.")
             },
             confirmButton = {
                 Button(

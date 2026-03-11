@@ -324,6 +324,8 @@ sealed class ChatEvent {
     object Snackbar : ChatEvent()
     /** Emitted when re-queuing previously-FAILED messages on reconnect. */
     object RetrySucceeded : ChatEvent()
+    /** Emitted when the ephemeral session expires or disconnects — triggers full logout. */
+    object ForceLogout : ChatEvent()
 }
 
 @HiltViewModel
@@ -500,6 +502,8 @@ class ChatViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(ephemeralState = EphemeralSessionState.Expired)
                     }
+                    // Trigger force-logout when session expires
+                    _events.emit(ChatEvent.ForceLogout)
                     break
                 }
                 _uiState.update {
@@ -889,12 +893,15 @@ data class SettingsUiState(
     val showRegenerateConfirm: Boolean = false,
     val serverRelayUrl: String = "",
     val pingStatus: String = "",
-    val isPinging: Boolean = false
+    val isPinging: Boolean = false,
+    val forceLogout: Boolean = false
 )
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val identityRepository: IdentityRepository,
+    private val ephemeralSessionManager: com.cryptika.messenger.data.remote.EphemeralSessionManager,
+    private val authRepository: AuthRepository,
     @dagger.hilt.android.qualifiers.ApplicationContext private val appContext: android.content.Context,
     private val serverConfig: com.cryptika.messenger.data.remote.ServerConfig
 ) : ViewModel() {
@@ -924,13 +931,15 @@ class SettingsViewModel @Inject constructor(
 
     fun regenerateIdentity() {
         viewModelScope.launch(Dispatchers.IO) {
+            // Destroy all active sessions first
+            ephemeralSessionManager.destroyAllSessions()
+            // Delete old identity and generate new one
             identityRepository.deleteIdentity()
-            val newIdentity = identityRepository.generateIdentity()
+            identityRepository.generateIdentity()
+            // Logout — force re-register
+            authRepository.logout()
             _uiState.update {
-                it.copy(
-                    fingerprintHex = newIdentity.identityHex.chunked(8).joinToString(" "),
-                    showRegenerateConfirm = false
-                )
+                it.copy(showRegenerateConfirm = false, forceLogout = true)
             }
         }
     }
