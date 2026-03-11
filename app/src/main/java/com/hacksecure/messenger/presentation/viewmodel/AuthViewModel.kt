@@ -36,8 +36,8 @@ class AuthViewModel @Inject constructor(
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
     fun register(username: String, password: String) {
-        if (username.length < 12) {
-            _uiState.update { it.copy(error = "Username must be at least 12 characters") }
+        if (username.length < 2) {
+            _uiState.update { it.copy(error = "Username must be at least 2 characters") }
             return
         }
         if (password.length < 8) {

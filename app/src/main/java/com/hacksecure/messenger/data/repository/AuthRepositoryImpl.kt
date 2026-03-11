@@ -9,6 +9,8 @@ import com.cryptika.messenger.domain.repository.AuthRepository
 import com.cryptika.messenger.domain.repository.IdentityRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import retrofit2.HttpException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -36,8 +38,18 @@ class AuthRepositoryImpl @Inject constructor(
                         publicKeyB64 = Base64.encodeToString(identity.publicKeyBytes, Base64.NO_WRAP)
                     )
                 )
-                // Server always returns "ok" for anti-enumeration — treat as success
-                Result.success(Unit)
+                // Server returns {status:"ok"} on success, or throws on HTTP error
+                if (response.status != "ok") {
+                    Result.failure(Exception("Registration failed"))
+                } else {
+                    Result.success(Unit)
+                }
+            } catch (e: HttpException) {
+                val errorBody = e.response()?.errorBody()?.string()
+                val msg = try {
+                    JSONObject(errorBody ?: "").optString("error", "Registration failed")
+                } catch (_: Exception) { "Registration failed" }
+                Result.failure(Exception(msg))
             } catch (e: Exception) {
                 Result.failure(e)
             }
@@ -62,6 +74,12 @@ class AuthRepositoryImpl @Inject constructor(
                 authStore.username = username
                 authStore.tokenExpiresAt = response.expiresAt
                 Result.success(Unit)
+            } catch (e: HttpException) {
+                val errorBody = e.response()?.errorBody()?.string()
+                val msg = try {
+                    JSONObject(errorBody ?: "").optString("error", "Invalid credentials")
+                } catch (_: Exception) { "Invalid credentials" }
+                Result.failure(Exception(msg))
             } catch (e: Exception) {
                 Result.failure(e)
             }

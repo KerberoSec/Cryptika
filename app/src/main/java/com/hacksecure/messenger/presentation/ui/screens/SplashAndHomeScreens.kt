@@ -138,10 +138,7 @@ fun HomeScreen(
                 },
                 actions = {
                     IconButton(onClick = onNavigateToContactDiscovery) {
-                        Icon(Icons.Filled.PersonAdd, "Add Contact by Username")
-                    }
-                    IconButton(onClick = onNavigateToQrDisplay) {
-                        Icon(Icons.Filled.QrCode, "My QR Code")
+                        Icon(Icons.Filled.PersonAdd, "Add Contact")
                     }
                     IconButton(onClick = onNavigateToSettings) {
                         Icon(Icons.Filled.Settings, "Settings")
@@ -154,10 +151,10 @@ fun HomeScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = onNavigateToQrScan,
+                onClick = onNavigateToContactDiscovery,
                 containerColor = MaterialTheme.colorScheme.primary
             ) {
-                Icon(Icons.Filled.QrCodeScanner, "Scan QR to add contact", tint = Color.Black)
+                Icon(Icons.Filled.PersonAdd, "Add contact", tint = Color.Black)
             }
         }
     ) { padding ->
@@ -194,7 +191,7 @@ private fun EmptyHomeState(modifier: Modifier = Modifier) {
     Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Icon(
-                Icons.Filled.QrCodeScanner,
+                Icons.Filled.PersonAdd,
                 null,
                 modifier = Modifier.size(64.dp),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
@@ -205,7 +202,7 @@ private fun EmptyHomeState(modifier: Modifier = Modifier) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
-                "Tap + to scan a contact's QR code",
+                "Tap + to add a contact by username",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )
@@ -242,7 +239,8 @@ private fun ConversationRow(item: ConversationUiItem, onClick: () -> Unit, onDel
         Column(modifier = Modifier.weight(1f)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
@@ -257,11 +255,32 @@ private fun ConversationRow(item: ConversationUiItem, onClick: () -> Unit, onDel
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
-                Text(
-                    text = formatTimestamp(item.lastMessageAt),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = formatTimestamp(item.lastMessageAt),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    if (item.unreadCount > 0) {
+                        Box(
+                            modifier = Modifier
+                                .size(22.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = if (item.unreadCount > 99) "99+" else item.unreadCount.toString(),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontSize = 10.sp
+                            )
+                        }
+                    }
+                }
             }
             Text(
                 text = "End-to-End Encrypted",

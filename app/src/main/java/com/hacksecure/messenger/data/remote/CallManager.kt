@@ -138,6 +138,7 @@ class CallManager @Inject constructor(
     private val sendSequenceAtomic = AtomicInteger(0)
     @Volatile private var lastAudioRxMs: Long = 0L
     @Volatile private var isMuted: Boolean = false
+    private val cleanupLock = Any()
 
     // ── Speaker state (AudioManager) ──────────────────────────────────────────
     private val audioManager: AudioManager =
@@ -208,14 +209,17 @@ class CallManager @Inject constructor(
                 encryptKey = enc
                 decryptKey = dec
                 sharedSecret.fill(0)
+                ephemeral.zeroizePrivate()
+                ourEphemeralPair = null
 
                 val packet = buildSignalPacket(CallSignalType.ANSWER, callId, ephemeral.publicKeyBytes)
                 backgroundConnectionManager.sendPacket(convId, "call_answer_${UUID.randomUUID()}", packet)
 
                 pendingOfferEphPub = null
-                startAudio()
                 _callState.value = CallState.ACTIVE
-            } catch (_: Exception) {
+                startAudio()
+            } catch (e: Exception) {
+                Log.e(TAG, "answerCall failed", e)
                 cleanup()
             }
         }
@@ -366,9 +370,10 @@ class CallManager @Inject constructor(
                 ephemeral.zeroizePrivate()   // wipe private key bytes now that DH is done
                 ourEphemeralPair = null
 
-                startAudio()
                 _callState.value = CallState.ACTIVE
-            } catch (_: Exception) {
+                startAudio()
+            } catch (e: Exception) {
+                Log.e(TAG, "handleAnswer failed", e)
                 cleanup()
             }
         }
@@ -399,47 +404,63 @@ class CallManager @Inject constructor(
 
         // Set audio mode for voice communication (enables hardware echo cancellation)
         audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+        // Default to speakerphone so both sides hear each other clearly
+        audioManager.isSpeakerphoneOn = true
+        _isSpeakerOn.value = true
 
         // ── AudioTrack (playback) ──────────────────────────────────────────────
         val minTrackBuf = AudioTrack.getMinBufferSize(
             SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT
         )
-        audioTrack = AudioTrack.Builder()
-            .setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                    .build()
-            )
-            .setAudioFormat(
-                AudioFormat.Builder()
-                    .setSampleRate(SAMPLE_RATE)
-                    .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
-                    .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                    .build()
-            )
-            .setBufferSizeInBytes(minTrackBuf * 4)
-            .setTransferMode(AudioTrack.MODE_STREAM)
-            .build()
-        audioTrack?.play()
+        try {
+            audioTrack = AudioTrack.Builder()
+                .setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                        .build()
+                )
+                .setAudioFormat(
+                    AudioFormat.Builder()
+                        .setSampleRate(SAMPLE_RATE)
+                        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                        .build()
+                )
+                .setBufferSizeInBytes(maxOf(minTrackBuf * 4, FRAME_BYTES * 8))
+                .setTransferMode(AudioTrack.MODE_STREAM)
+                .build()
+            audioTrack?.play()
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to create AudioTrack", e)
+            cleanup()
+            return
+        }
 
         // ── AudioRecord (capture) ─────────────────────────────────────────────
         val minRecBuf = AudioRecord.getMinBufferSize(
             SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT
         )
-        audioRecord = AudioRecord(
-            MediaRecorder.AudioSource.VOICE_COMMUNICATION,
-            SAMPLE_RATE,
-            AudioFormat.CHANNEL_IN_MONO,
-            AudioFormat.ENCODING_PCM_16BIT,
-            maxOf(minRecBuf, FRAME_BYTES * 8)
-        )
-        if (audioRecord?.state != AudioRecord.STATE_INITIALIZED) {
-            // Permission not granted or hardware issue — abort call
+        try {
+            audioRecord = AudioRecord(
+                MediaRecorder.AudioSource.VOICE_COMMUNICATION,
+                SAMPLE_RATE,
+                AudioFormat.CHANNEL_IN_MONO,
+                AudioFormat.ENCODING_PCM_16BIT,
+                maxOf(minRecBuf, FRAME_BYTES * 8)
+            )
+            if (audioRecord?.state != AudioRecord.STATE_INITIALIZED) {
+                // Permission not granted or hardware issue — abort call
+                Log.e(TAG, "AudioRecord not initialized — aborting call")
+                cleanup()
+                return
+            }
+            audioRecord?.startRecording()
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to create AudioRecord", e)
             cleanup()
             return
         }
-        audioRecord?.startRecording()
 
         // ── Capture loop ──────────────────────────────────────────────────────
         captureJob = scope.launch(Dispatchers.IO) {
@@ -447,13 +468,13 @@ class CallManager @Inject constructor(
             val pcmBuf = ByteArray(FRAME_BYTES)
 
             while (isActive && _callState.value == CallState.ACTIVE) {
-                val bytesRead = audioRecord?.read(pcmBuf, 0, FRAME_BYTES) ?: break
-                if (bytesRead <= 0) continue
-
-                val key = encryptKey ?: break
-                if (isMuted) continue  // capture but discard, so buffer stays drained
-
                 try {
+                    val bytesRead = audioRecord?.read(pcmBuf, 0, FRAME_BYTES) ?: break
+                    if (bytesRead <= 0) continue
+
+                    val key = encryptKey ?: break
+                    if (isMuted) continue  // capture but discard, so buffer stays drained
+
                     val seq = sendSequenceAtomic.getAndIncrement()
                     val framePacket = buildAudioFrame(key, pcmBuf.copyOf(bytesRead), seq)
                     backgroundConnectionManager.sendPacket(convId, "af_${seq}", framePacket)
@@ -489,6 +510,7 @@ class CallManager @Inject constructor(
         // Minimum: magic(1) + seq(4) + nonce(12) + aead_tag(16) = 33 bytes
         if (packet.size < 33) return
         val key = decryptKey ?: return
+        val track = audioTrack ?: return
 
         scope.launch(Dispatchers.IO) {
             try {
@@ -503,7 +525,7 @@ class CallManager @Inject constructor(
                     nonce = nonce,
                     additionalData = byteArrayOf()
                 )
-                audioTrack?.write(pcm, 0, pcm.size)
+                track.write(pcm, 0, pcm.size)
             } catch (_: Exception) { /* corrupted or replayed frame — drop silently */ }
         }
     }
@@ -593,43 +615,47 @@ class CallManager @Inject constructor(
         ByteArray(16).also { random.nextBytes(it) }.toHexString()
 
     private fun cleanup() {
-        // Guard: prevent concurrent or duplicate cleanups
-        if (_callState.value == CallState.IDLE) return
-        _callState.value = CallState.ENDING
+        synchronized(cleanupLock) {
+            // Guard: prevent concurrent or duplicate cleanups
+            if (_callState.value == CallState.IDLE) return
+            _callState.value = CallState.ENDING
 
-        // Stop the call foreground service (no-op if never started)
-        CallForegroundService.stop(context)
+            Log.d(TAG, "cleanup() — tearing down call")
 
-        ringTimeoutJob?.cancel(); ringTimeoutJob = null
-        captureJob?.cancel(); captureJob = null
-        watchdogJob?.cancel(); watchdogJob = null
+            // Stop the call foreground service (no-op if never started)
+            CallForegroundService.stop(context)
 
-        try { audioRecord?.stop() } catch (_: Exception) {}
-        try { audioRecord?.release() } catch (_: Exception) {}
-        try { audioTrack?.stop() } catch (_: Exception) {}
-        try { audioTrack?.release() } catch (_: Exception) {}
-        audioRecord = null
-        audioTrack = null
+            ringTimeoutJob?.cancel(); ringTimeoutJob = null
+            captureJob?.cancel(); captureJob = null
+            watchdogJob?.cancel(); watchdogJob = null
 
-        // Restore audio mode
-        audioManager.mode = AudioManager.MODE_NORMAL
-        audioManager.isSpeakerphoneOn = false
-        _isSpeakerOn.value = false
-        _isMutedState.value = false
-        isMuted = false
+            try { audioRecord?.stop() } catch (_: Exception) {}
+            try { audioRecord?.release() } catch (_: Exception) {}
+            try { audioTrack?.stop() } catch (_: Exception) {}
+            try { audioTrack?.release() } catch (_: Exception) {}
+            audioRecord = null
+            audioTrack = null
 
-        // Zeroize call keys
-        encryptKey?.fill(0); encryptKey = null
-        decryptKey?.fill(0); decryptKey = null
-        ourEphemeralPair?.zeroizePrivate(); ourEphemeralPair = null
-        pendingOfferEphPub?.fill(0); pendingOfferEphPub = null
+            // Restore audio mode
+            audioManager.mode = AudioManager.MODE_NORMAL
+            audioManager.isSpeakerphoneOn = false
+            _isSpeakerOn.value = false
+            _isMutedState.value = false
+            isMuted = false
 
-        activeCallId = null
-        activeConvId = null
-        activeContact = null
-        _incomingCallData.value = null
+            // Zeroize call keys
+            encryptKey?.fill(0); encryptKey = null
+            decryptKey?.fill(0); decryptKey = null
+            ourEphemeralPair?.zeroizePrivate(); ourEphemeralPair = null
+            pendingOfferEphPub?.fill(0); pendingOfferEphPub = null
 
-        _callState.value = CallState.IDLE
+            activeCallId = null
+            activeConvId = null
+            activeContact = null
+            _incomingCallData.value = null
+
+            _callState.value = CallState.IDLE
+        }
     }
 
     private fun ByteArray.toHexString(): String = joinToString("") { "%02x".format(it) }

@@ -4,11 +4,21 @@
 package com.cryptika.messenger.data.remote
 
 import android.content.Context
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
+import android.os.Build
 import android.util.Log
+import androidx.core.app.NotificationCompat
+import com.cryptika.messenger.MainActivity
+import com.cryptika.messenger.R
+import com.cryptika.messenger.data.local.db.ConversationDao
+import com.cryptika.messenger.data.local.db.ConversationEntity
 import com.cryptika.messenger.data.remote.api.PresenceRequest
 import com.cryptika.messenger.data.remote.api.RelayApi
 import com.cryptika.messenger.data.remote.api.TicketRequest
@@ -50,6 +60,7 @@ class BackgroundConnectionManager @Inject constructor(
     private val contactRepository: ContactRepository,
     private val identityRepository: IdentityRepository,
     private val messageRepository: MessageRepository,
+    private val conversationDao: ConversationDao,
     private val handshakeManager: HandshakeManager,
     private val identityKeyManager: IdentityKeyManager,
     private val ticketManager: TicketManager,
@@ -79,7 +90,11 @@ class BackgroundConnectionManager @Inject constructor(
         }
     }
 
-    companion object { private const val TAG = "BackgroundConnMgr" }
+    companion object {
+        private const val TAG = "BackgroundConnMgr"
+        private const val MSG_CHANNEL_ID = "cryptika_messages"
+        private const val MSG_NOTIFICATION_ID = 2001
+    }
 
     // ── Per-conversation state ────────────────────────────────────────────────
 
@@ -426,6 +441,24 @@ class BackgroundConnectionManager @Inject constructor(
 
             withContext(Dispatchers.IO) {
                 messageRepository.saveMessage(message, plaintextBytes)
+
+                // Ensure conversation row exists, then increment unread count
+                val existing = conversationDao.getConversation(state.conversationId)
+                if (existing == null) {
+                    conversationDao.insertOrUpdate(
+                        ConversationEntity(
+                            id = state.conversationId,
+                            contactId = state.contact.id,
+                            lastMessageAt = now,
+                            unreadCount = 1
+                        )
+                    )
+                } else {
+                    conversationDao.incrementUnreadCount(state.conversationId, now)
+                }
+
+                // Show notification with unread count
+                showUnreadNotification(state.contact.displayName, state.conversationId)
             }
         } catch (_: CryptoError) {
             // Silently discard messages that fail crypto checks in background
@@ -463,4 +496,60 @@ class BackgroundConnectionManager @Inject constructor(
     }
 
     private fun ByteArray.toHexString(): String = joinToString("") { "%02x".format(it) }
+
+    // ── Unread message notifications ──────────────────────────────────────────
+
+    private fun ensureMessageChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val nm = context.getSystemService(NotificationManager::class.java)
+            if (nm.getNotificationChannel(MSG_CHANNEL_ID) != null) return
+            val channel = NotificationChannel(
+                MSG_CHANNEL_ID,
+                "Messages",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "New message notifications"
+                setShowBadge(true)
+            }
+            nm.createNotificationChannel(channel)
+        }
+    }
+
+    private suspend fun showUnreadNotification(senderName: String, conversationId: String) {
+        ensureMessageChannel()
+        val nm = context.getSystemService(NotificationManager::class.java)
+
+        // Sum all unread counts across conversations
+        val conv = conversationDao.getConversation(conversationId)
+        val unread = conv?.unreadCount ?: 1
+
+        val tapIntent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val pending = PendingIntent.getActivity(
+            context, 0, tapIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(context, MSG_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle(senderName)
+            .setContentText(
+                if (unread == 1) "New message"
+                else "$unread new messages"
+            )
+            .setNumber(unread)
+            .setAutoCancel(true)
+            .setContentIntent(pending)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+            .build()
+
+        nm.notify(MSG_NOTIFICATION_ID, notification)
+    }
+
+    fun clearMessageNotification() {
+        val nm = context.getSystemService(NotificationManager::class.java)
+        nm.cancel(MSG_NOTIFICATION_ID)
+    }
 }

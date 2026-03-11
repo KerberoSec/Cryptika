@@ -26,7 +26,7 @@ const TICKET_EXPIRY_SECONDS = 3600; // 1 hour
 const MAX_CONNECTIONS_PER_CONV = 10;
 const SESSION_TTL_MS = 30 * 60 * 1000; // 30 minutes
 const JWT_EXPIRY = "24h";
-const MIN_USERNAME_LENGTH = 12;
+const MIN_USERNAME_LENGTH = 2;
 const MIN_PASSWORD_LENGTH = 8;
 const ANTI_TIMING_DELAY_MS = 200; // constant delay for auth responses
 
@@ -205,18 +205,18 @@ app.post("/api/v1/auth/register", async (req, res) => {
   try {
     const { username, password, identityHashHex, publicKeyB64 } = req.body;
 
-    // Validate input
+    // Validate input — return real errors for input validation (not enumeration-sensitive)
     if (!username || typeof username !== "string" || username.length < MIN_USERNAME_LENGTH) {
       await antiTimingDelay(startMs);
-      return res.json({ status: "ok" }); // Silent rejection — anti-enumeration
+      return res.status(400).json({ status: "error", error: `Username must be at least ${MIN_USERNAME_LENGTH} characters` });
     }
     if (!password || typeof password !== "string" || password.length < MIN_PASSWORD_LENGTH) {
       await antiTimingDelay(startMs);
-      return res.json({ status: "ok" });
+      return res.status(400).json({ status: "error", error: "Password must be at least 8 characters" });
     }
     if (!/^[a-zA-Z0-9_]+$/.test(username)) {
       await antiTimingDelay(startMs);
-      return res.json({ status: "ok" });
+      return res.status(400).json({ status: "error", error: "Username can only contain letters, numbers, and underscores" });
     }
 
     const usernameLower = username.toLowerCase();
