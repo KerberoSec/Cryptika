@@ -9,6 +9,7 @@ import com.cryptika.messenger.data.local.AuthStore
 import com.cryptika.messenger.data.remote.websocket.RelayWebSocketClient
 import com.cryptika.messenger.domain.crypto.*
 import com.cryptika.messenger.domain.model.*
+import com.cryptika.messenger.domain.repository.AuthRepository
 import com.cryptika.messenger.domain.repository.ContactRepository
 import com.cryptika.messenger.domain.repository.IdentityRepository
 import com.cryptika.messenger.domain.repository.MessageRepository
@@ -41,7 +42,8 @@ class EphemeralSessionManager @Inject constructor(
     private val identityRepository: IdentityRepository,
     private val messageRepository: MessageRepository,
     private val handshakeManager: HandshakeManager,
-    private val identityKeyManager: IdentityKeyManager
+    private val identityKeyManager: IdentityKeyManager,
+    private val authRepository: AuthRepository
 ) {
     companion object {
         private const val TAG = "EphemeralSessionMgr"
@@ -279,10 +281,23 @@ class EphemeralSessionManager @Inject constructor(
         }
     }
 
-    /** Send a packet via an ephemeral session's WebSocket. */
+    /** Send a packet via an ephemeral session's WebSocket. Triggers credential burn on first message. */
     suspend fun sendPacket(sessionUUID: String, messageId: String, packet: ByteArray): Boolean {
         val session = sessions[sessionUUID] ?: return false
-        return session.wsClient.send(sessionUUID, messageId, packet)
+        val result = session.wsClient.send(sessionUUID, messageId, packet)
+        if (result) triggerBurnOnFirstMessage()
+        return result
+    }
+
+    /** Burns server credentials once on the first successfully sent message. */
+    @Volatile private var burnTriggered = false
+    private suspend fun triggerBurnOnFirstMessage() {
+        if (burnTriggered || authRepository.isCredentialsBurned()) return
+        burnTriggered = true
+        scope.launch {
+            Log.d(TAG, "First message sent — burning server credentials")
+            authRepository.burnCredentials()
+        }
     }
 
     fun getMessageProcessor(sessionUUID: String): MessageProcessor? =
@@ -313,8 +328,9 @@ class EphemeralSessionManager @Inject constructor(
         // Close WebSocket
         session.wsClient.disconnect()
 
-        // Zeroize crypto
+        // Zeroize all crypto material (ratchet keys, DH keys, identity buffers)
         session.ephemeralKeyPair?.zeroizePrivate()
+        session.messageProcessor?.zeroize()
         session.messageProcessor = null
 
         // Delete all messages for this conversation
@@ -336,6 +352,7 @@ class EphemeralSessionManager @Inject constructor(
 
     /** Destroy ALL sessions — called on logout or app wipe. */
     fun destroyAllSessions() {
+        burnTriggered = false
         scope.launch {
             for (uuid in sessions.keys.toList()) {
                 destroySession(uuid)

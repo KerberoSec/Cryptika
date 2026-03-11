@@ -74,6 +74,8 @@ data class AcceptedSession(
 
 data class AcceptedSessionsResponse(val sessions: List<AcceptedSession>)
 
+data class BurnResponse(val status: String)
+
 // ── Retrofit Interface ───────────────────────────────────────────────────────
 
 interface AuthApi {
@@ -116,4 +118,10 @@ interface AuthApi {
         @Url url: String,
         @Header("Authorization") auth: String
     ): AcceptedSessionsResponse
+
+    @POST
+    suspend fun burnCredentials(
+        @Url url: String,
+        @Header("Authorization") auth: String
+    ): BurnResponse
 }

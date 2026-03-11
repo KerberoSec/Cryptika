@@ -20,4 +20,10 @@ interface AuthRepository {
     suspend fun acceptRequest(requestId: String): Result<AcceptRequestResponse>
     suspend fun rejectRequest(requestId: String): Result<Unit>
     suspend fun getAcceptedSessions(): Result<List<AcceptedSession>>
+
+    /** Burns credentials on the server and marks local auth as burned. */
+    suspend fun burnCredentials(): Result<Unit>
+
+    /** Whether credentials have been burned (server-side deletion complete). */
+    fun isCredentialsBurned(): Boolean
 }

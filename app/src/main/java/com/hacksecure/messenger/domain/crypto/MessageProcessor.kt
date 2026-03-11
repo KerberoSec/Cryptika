@@ -41,6 +41,14 @@ class MessageProcessor(
 
     private var lastSeenRecvCounter: Long = 0L
 
+    /** Zeroize all crypto material — called during cryptographic erasure. */
+    fun zeroize() {
+        sendRatchet.zeroizeAll()
+        recvRatchet.zeroizeAll()
+        peerPublicKeyBytes.fill(0)
+        myIdentityHash.fill(0)
+    }
+
     // ──────────────────────────────────────────────────────────────────────────
     // SEND PIPELINE
     // ──────────────────────────────────────────────────────────────────────────

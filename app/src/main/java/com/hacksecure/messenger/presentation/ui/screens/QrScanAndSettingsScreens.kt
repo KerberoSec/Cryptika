@@ -464,7 +464,7 @@ fun SettingsScreen(
 
             ListItem(
                 headlineContent = { Text("Screenshot Blocking") },
-                supportingContent = { Text("Prevents screenshots of messages") },
+                supportingContent = { Text("Prevents screenshots inside chat screens") },
                 leadingContent = { Icon(Icons.Filled.NoPhotography, null) },
                 trailingContent = {
                     Switch(
