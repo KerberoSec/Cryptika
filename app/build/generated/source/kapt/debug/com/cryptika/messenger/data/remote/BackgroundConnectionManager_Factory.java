@@ -1,6 +1,7 @@
 package com.cryptika.messenger.data.remote;
 
 import android.content.Context;
+import com.cryptika.messenger.data.local.db.ConversationDao;
 import com.cryptika.messenger.data.remote.api.RelayApi;
 import com.cryptika.messenger.domain.crypto.HandshakeManager;
 import com.cryptika.messenger.domain.crypto.IdentityKeyManager;
@@ -41,6 +42,8 @@ public final class BackgroundConnectionManager_Factory implements Factory<Backgr
 
   private final Provider<MessageRepository> messageRepositoryProvider;
 
+  private final Provider<ConversationDao> conversationDaoProvider;
+
   private final Provider<HandshakeManager> handshakeManagerProvider;
 
   private final Provider<IdentityKeyManager> identityKeyManagerProvider;
@@ -59,6 +62,7 @@ public final class BackgroundConnectionManager_Factory implements Factory<Backgr
       Provider<ContactRepository> contactRepositoryProvider,
       Provider<IdentityRepository> identityRepositoryProvider,
       Provider<MessageRepository> messageRepositoryProvider,
+      Provider<ConversationDao> conversationDaoProvider,
       Provider<HandshakeManager> handshakeManagerProvider,
       Provider<IdentityKeyManager> identityKeyManagerProvider,
       Provider<TicketManager> ticketManagerProvider, Provider<RelayApi> relayApiProvider,
@@ -68,6 +72,7 @@ public final class BackgroundConnectionManager_Factory implements Factory<Backgr
     this.contactRepositoryProvider = contactRepositoryProvider;
     this.identityRepositoryProvider = identityRepositoryProvider;
     this.messageRepositoryProvider = messageRepositoryProvider;
+    this.conversationDaoProvider = conversationDaoProvider;
     this.handshakeManagerProvider = handshakeManagerProvider;
     this.identityKeyManagerProvider = identityKeyManagerProvider;
     this.ticketManagerProvider = ticketManagerProvider;
@@ -79,26 +84,28 @@ public final class BackgroundConnectionManager_Factory implements Factory<Backgr
 
   @Override
   public BackgroundConnectionManager get() {
-    return newInstance(contextProvider.get(), contactRepositoryProvider.get(), identityRepositoryProvider.get(), messageRepositoryProvider.get(), handshakeManagerProvider.get(), identityKeyManagerProvider.get(), ticketManagerProvider.get(), relayApiProvider.get(), serverConfigProvider.get(), okHttpClientProvider.get(), DoubleCheck.lazy(callManagerProvider));
+    return newInstance(contextProvider.get(), contactRepositoryProvider.get(), identityRepositoryProvider.get(), messageRepositoryProvider.get(), conversationDaoProvider.get(), handshakeManagerProvider.get(), identityKeyManagerProvider.get(), ticketManagerProvider.get(), relayApiProvider.get(), serverConfigProvider.get(), okHttpClientProvider.get(), DoubleCheck.lazy(callManagerProvider));
   }
 
   public static BackgroundConnectionManager_Factory create(Provider<Context> contextProvider,
       Provider<ContactRepository> contactRepositoryProvider,
       Provider<IdentityRepository> identityRepositoryProvider,
       Provider<MessageRepository> messageRepositoryProvider,
+      Provider<ConversationDao> conversationDaoProvider,
       Provider<HandshakeManager> handshakeManagerProvider,
       Provider<IdentityKeyManager> identityKeyManagerProvider,
       Provider<TicketManager> ticketManagerProvider, Provider<RelayApi> relayApiProvider,
       Provider<ServerConfig> serverConfigProvider, Provider<OkHttpClient> okHttpClientProvider,
       Provider<CallManager> callManagerProvider) {
-    return new BackgroundConnectionManager_Factory(contextProvider, contactRepositoryProvider, identityRepositoryProvider, messageRepositoryProvider, handshakeManagerProvider, identityKeyManagerProvider, ticketManagerProvider, relayApiProvider, serverConfigProvider, okHttpClientProvider, callManagerProvider);
+    return new BackgroundConnectionManager_Factory(contextProvider, contactRepositoryProvider, identityRepositoryProvider, messageRepositoryProvider, conversationDaoProvider, handshakeManagerProvider, identityKeyManagerProvider, ticketManagerProvider, relayApiProvider, serverConfigProvider, okHttpClientProvider, callManagerProvider);
   }
 
   public static BackgroundConnectionManager newInstance(Context context,
       ContactRepository contactRepository, IdentityRepository identityRepository,
-      MessageRepository messageRepository, HandshakeManager handshakeManager,
-      IdentityKeyManager identityKeyManager, TicketManager ticketManager, RelayApi relayApi,
-      ServerConfig serverConfig, OkHttpClient okHttpClient, Lazy<CallManager> callManager) {
-    return new BackgroundConnectionManager(context, contactRepository, identityRepository, messageRepository, handshakeManager, identityKeyManager, ticketManager, relayApi, serverConfig, okHttpClient, callManager);
+      MessageRepository messageRepository, ConversationDao conversationDao,
+      HandshakeManager handshakeManager, IdentityKeyManager identityKeyManager,
+      TicketManager ticketManager, RelayApi relayApi, ServerConfig serverConfig,
+      OkHttpClient okHttpClient, Lazy<CallManager> callManager) {
+    return new BackgroundConnectionManager(context, contactRepository, identityRepository, messageRepository, conversationDao, handshakeManager, identityKeyManager, ticketManager, relayApi, serverConfig, okHttpClient, callManager);
   }
 }

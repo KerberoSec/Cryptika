@@ -77,7 +77,8 @@ data class ConversationUiItem(
 class HomeViewModel @Inject constructor(
     private val contactRepository: ContactRepository,
     private val identityRepository: IdentityRepository,
-    private val messageRepository: MessageRepository
+    private val messageRepository: MessageRepository,
+    private val conversationDao: com.cryptika.messenger.data.local.db.ConversationDao
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -91,11 +92,14 @@ class HomeViewModel @Inject constructor(
             contactRepository.getContacts().collect { contacts ->
                 val items = contacts.map { contact ->
                     val convId = buildConversationId(myHex, contact.identityHex)
+                    val conv = withContext(Dispatchers.IO) {
+                        conversationDao.getConversation(convId)
+                    }
                     ConversationUiItem(
                         conversationId = convId,
                         contact = contact,
-                        lastMessageAt = contact.verifiedAt,
-                        unreadCount = 0
+                        lastMessageAt = conv?.lastMessageAt ?: contact.verifiedAt,
+                        unreadCount = conv?.unreadCount ?: 0
                     )
                 }
                 _uiState.update { it.copy(conversations = items, isLoading = false) }
@@ -332,6 +336,7 @@ class ChatViewModel @Inject constructor(
     private val serverConfig: ServerConfig,
     private val backgroundConnectionManager: com.cryptika.messenger.data.remote.BackgroundConnectionManager,
     private val ephemeralSessionManager: com.cryptika.messenger.data.remote.EphemeralSessionManager,
+    private val conversationDao: com.cryptika.messenger.data.local.db.ConversationDao,
     @dagger.hilt.android.qualifiers.ApplicationContext private val appContext: android.content.Context
 ) : ViewModel(), DefaultLifecycleObserver {
 
@@ -388,6 +393,12 @@ class ChatViewModel @Inject constructor(
 
             // Establish or reuse background connection via BackgroundConnectionManager
             connectRelay(conversationId!!, identity, contact)
+
+            // Mark conversation as read + clear notification
+            withContext(Dispatchers.IO) {
+                conversationDao.markAsRead(conversationId!!)
+            }
+            backgroundConnectionManager.clearMessageNotification()
 
             // Immediately delete any messages that already expired while the app was closed.
             withContext(Dispatchers.IO) {
@@ -640,6 +651,20 @@ class ChatViewModel @Inject constructor(
                 // Step 2: persist to DB (row MUST exist before any state updates below)
                 withContext(Dispatchers.IO) {
                     messageRepository.saveMessage(message, plaintextBytes)
+                    // Update conversation lastMessageAt for home screen ordering
+                    val existing = conversationDao.getConversation(convId)
+                    if (existing != null) {
+                        conversationDao.insertOrUpdate(existing.copy(lastMessageAt = now))
+                    } else {
+                        conversationDao.insertOrUpdate(
+                            com.cryptika.messenger.data.local.db.ConversationEntity(
+                                id = convId,
+                                contactId = activeContact?.id ?: "",
+                                lastMessageAt = now,
+                                unreadCount = 0
+                            )
+                        )
+                    }
                 }
 
                 // Step 3 & 4: send via appropriate WebSocket, then update state

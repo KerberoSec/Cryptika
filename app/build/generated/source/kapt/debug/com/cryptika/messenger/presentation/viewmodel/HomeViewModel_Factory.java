@@ -1,5 +1,6 @@
 package com.cryptika.messenger.presentation.viewmodel;
 
+import com.cryptika.messenger.data.local.db.ConversationDao;
 import com.cryptika.messenger.domain.repository.ContactRepository;
 import com.cryptika.messenger.domain.repository.IdentityRepository;
 import com.cryptika.messenger.domain.repository.MessageRepository;
@@ -31,27 +32,33 @@ public final class HomeViewModel_Factory implements Factory<HomeViewModel> {
 
   private final Provider<MessageRepository> messageRepositoryProvider;
 
+  private final Provider<ConversationDao> conversationDaoProvider;
+
   public HomeViewModel_Factory(Provider<ContactRepository> contactRepositoryProvider,
       Provider<IdentityRepository> identityRepositoryProvider,
-      Provider<MessageRepository> messageRepositoryProvider) {
+      Provider<MessageRepository> messageRepositoryProvider,
+      Provider<ConversationDao> conversationDaoProvider) {
     this.contactRepositoryProvider = contactRepositoryProvider;
     this.identityRepositoryProvider = identityRepositoryProvider;
     this.messageRepositoryProvider = messageRepositoryProvider;
+    this.conversationDaoProvider = conversationDaoProvider;
   }
 
   @Override
   public HomeViewModel get() {
-    return newInstance(contactRepositoryProvider.get(), identityRepositoryProvider.get(), messageRepositoryProvider.get());
+    return newInstance(contactRepositoryProvider.get(), identityRepositoryProvider.get(), messageRepositoryProvider.get(), conversationDaoProvider.get());
   }
 
   public static HomeViewModel_Factory create(Provider<ContactRepository> contactRepositoryProvider,
       Provider<IdentityRepository> identityRepositoryProvider,
-      Provider<MessageRepository> messageRepositoryProvider) {
-    return new HomeViewModel_Factory(contactRepositoryProvider, identityRepositoryProvider, messageRepositoryProvider);
+      Provider<MessageRepository> messageRepositoryProvider,
+      Provider<ConversationDao> conversationDaoProvider) {
+    return new HomeViewModel_Factory(contactRepositoryProvider, identityRepositoryProvider, messageRepositoryProvider, conversationDaoProvider);
   }
 
   public static HomeViewModel newInstance(ContactRepository contactRepository,
-      IdentityRepository identityRepository, MessageRepository messageRepository) {
-    return new HomeViewModel(contactRepository, identityRepository, messageRepository);
+      IdentityRepository identityRepository, MessageRepository messageRepository,
+      ConversationDao conversationDao) {
+    return new HomeViewModel(contactRepository, identityRepository, messageRepository, conversationDao);
   }
 }

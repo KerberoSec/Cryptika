@@ -16,5 +16,5 @@ public final class BuildConfig {
   // Field from default config.
   public static final String RELAY_BASE_URL = "ws://13.235.150.23:8443";
   // Field from default config.
-  public static final String SERVER_PUBLIC_KEY_HEX = "a96a2946035dff2d11ac86b57f65ec2f4cc83349040237073834c6d4c08c1ec1";
+  public static final String SERVER_PUBLIC_KEY_HEX = "de5f08f858832a7ba54471c48951174861e3d37758696d82a535d1509c813c53";
 }

@@ -1,7 +1,7 @@
 -- Merging decision tree log ---
 application
-INJECTED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:31:5-89:19
-INJECTED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:31:5-89:19
+INJECTED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:34:5-92:19
+INJECTED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:34:5-92:19
 MERGED from [androidx.camera:camera-core:1.3.1] C:\Users\arung\.gradle\caches\transforms-3\00cc22824c698145849987cd23004a2b\transformed\jetified-camera-core-1.3.1\AndroidManifest.xml:23:5-34:19
 MERGED from [androidx.camera:camera-core:1.3.1] C:\Users\arung\.gradle\caches\transforms-3\00cc22824c698145849987cd23004a2b\transformed\jetified-camera-core-1.3.1\AndroidManifest.xml:23:5-34:19
 MERGED from [androidx.camera:camera-camera2:1.3.1] C:\Users\arung\.gradle\caches\transforms-3\2f8ef8efc8e431c147813f7537b60822\transformed\jetified-camera-camera2-1.3.1\AndroidManifest.xml:23:5-34:19
@@ -31,30 +31,30 @@ MERGED from [com.journeyapps:zxing-android-embedded:4.3.0] C:\Users\arung\.gradl
 	android:appComponentFactory
 		ADDED from [androidx.core:core:1.12.0] C:\Users\arung\.gradle\caches\transforms-3\a52caf614449866ab0bd7ecbdda2252f\transformed\core-1.12.0\AndroidManifest.xml:28:18-86
 	android:supportsRtl
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:39:9-35
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:42:9-35
 	android:label
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:36:9-33
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:39:9-33
 	android:hardwareAccelerated
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:41:9-43
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:44:9-43
 	android:fullBackupContent
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:35:9-42
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:38:9-42
 	android:roundIcon
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:38:9-54
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:41:9-54
 	android:icon
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:37:9-43
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:40:9-43
 	android:allowBackup
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:33:9-36
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:36:9-36
 	android:theme
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:40:9-46
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:43:9-46
 	android:dataExtractionRules
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:34:9-65
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:37:9-65
 	android:name
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:32:9-36
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:35:9-36
 	android:usesCleartextTraffic
 		INJECTED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:42:9-63
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:45:9-63
 provider#androidx.startup.InitializationProvider
-INJECTED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:64:9-73:20
+INJECTED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:67:9-76:20
 MERGED from [androidx.work:work-runtime:2.9.0] C:\Users\arung\.gradle\caches\transforms-3\b15c86ba702f485ef7996f2dece37a9f\transformed\work-runtime-2.9.0\AndroidManifest.xml:29:9-37:20
 MERGED from [androidx.work:work-runtime:2.9.0] C:\Users\arung\.gradle\caches\transforms-3\b15c86ba702f485ef7996f2dece37a9f\transformed\work-runtime-2.9.0\AndroidManifest.xml:29:9-37:20
 MERGED from [androidx.emoji2:emoji2:1.3.0] C:\Users\arung\.gradle\caches\transforms-3\3be81f5468c19df404ae2b370542d1a5\transformed\jetified-emoji2-1.3.0\AndroidManifest.xml:24:9-32:20
@@ -66,19 +66,19 @@ MERGED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\arung\.g
 MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\arung\.gradle\caches\transforms-3\3f12c261790f7a24e89cebbafc60acdb\transformed\jetified-startup-runtime-1.1.1\AndroidManifest.xml:26:9-30:34
 MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\arung\.gradle\caches\transforms-3\3f12c261790f7a24e89cebbafc60acdb\transformed\jetified-startup-runtime-1.1.1\AndroidManifest.xml:26:9-30:34
 	tools:node
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:68:13-31
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:71:13-31
 	android:authorities
 		INJECTED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:66:13-68
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:69:13-68
 	android:exported
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:67:13-37
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:70:13-37
 	android:name
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:65:13-67
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:68:13-67
 manifest
-ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:2:1-91:12
-INJECTED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:2:1-91:12
-INJECTED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:2:1-91:12
-INJECTED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:2:1-91:12
+ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:2:1-94:12
+INJECTED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:2:1-94:12
+INJECTED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:2:1-94:12
+INJECTED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:2:1-94:12
 MERGED from [androidx.hilt:hilt-navigation-compose:1.2.0] C:\Users\arung\.gradle\caches\transforms-3\8a2e0a758118cc0057ee6e4fd79caa90\transformed\jetified-hilt-navigation-compose-1.2.0\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.hilt:hilt-navigation:1.2.0] C:\Users\arung\.gradle\caches\transforms-3\a6704dc0ab07e60e285e95ca9b2af022\transformed\jetified-hilt-navigation-1.2.0\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.navigation:navigation-common:2.7.7] C:\Users\arung\.gradle\caches\transforms-3\7c9ba779391a2df0a4643333cd660c6e\transformed\navigation-common-2.7.7\AndroidManifest.xml:17:1-22:12
@@ -230,81 +230,85 @@ uses-permission#android.permission.FOREGROUND_SERVICE_MICROPHONE
 ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:25:5-87
 	android:name
 		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:25:22-85
+uses-permission#android.permission.POST_NOTIFICATIONS
+ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:28:5-76
+	android:name
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:28:22-74
 uses-permission#android.permission.RECORD_AUDIO
-ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:28:5-70
+ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:31:5-70
 	android:name
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:28:22-68
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:31:22-68
 uses-permission#android.permission.MODIFY_AUDIO_SETTINGS
-ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:29:5-79
+ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:32:5-79
 	android:name
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:29:22-77
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:32:22-77
 activity#com.cryptika.messenger.MainActivity
-ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:44:9-61:20
+ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:47:9-64:20
 	android:screenOrientation
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:48:13-49
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:51:13-49
 	android:windowSoftInputMode
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:47:13-55
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:50:13-55
 	android:exported
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:46:13-36
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:49:13-36
 	android:name
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:45:13-41
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:48:13-41
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:49:13-52:29
+ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:52:13-55:29
 action#android.intent.action.MAIN
-ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:50:17-68
+ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:53:17-68
 	android:name
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:50:25-66
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:53:25-66
 category#android.intent.category.LAUNCHER
-ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:51:17-76
+ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:54:17-76
 	android:name
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:51:27-74
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:54:27-74
 intent-filter#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+category:name:android.intent.category.DEFAULT+data:host:id+data:scheme:cryptika
-ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:55:13-60:29
+ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:58:13-63:29
 	android:autoVerify
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:55:28-53
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:58:28-53
 action#android.intent.action.VIEW
-ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:56:17-68
-	android:name
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:56:25-66
-category#android.intent.category.DEFAULT
-ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:57:17-75
-	android:name
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:57:27-73
-category#android.intent.category.BROWSABLE
-ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:58:17-77
-	android:name
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:58:27-75
-data
 ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:59:17-68
+	android:name
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:59:25-66
+category#android.intent.category.DEFAULT
+ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:60:17-75
+	android:name
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:60:27-73
+category#android.intent.category.BROWSABLE
+ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:61:17-77
+	android:name
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:61:27-75
+data
+ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:62:17-68
 	android:host
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:59:49-66
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:62:49-66
 	android:scheme
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:59:23-48
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:62:23-48
 meta-data#androidx.work.WorkManagerInitializer
-ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:69:13-72:38
+ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:72:13-75:38
 REJECTED from [androidx.work:work-runtime:2.9.0] C:\Users\arung\.gradle\caches\transforms-3\b15c86ba702f485ef7996f2dece37a9f\transformed\work-runtime-2.9.0\AndroidManifest.xml:34:13-36:52
 	tools:node
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:72:17-36
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:75:17-36
 	android:value
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:71:17-49
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:74:17-49
 	android:name
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:70:17-68
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:73:17-68
 service#com.cryptika.messenger.data.remote.ConnectionForegroundService
-ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:77:9-80:39
+ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:80:9-83:39
 	android:exported
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:80:13-37
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:83:13-37
 	android:foregroundServiceType
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:79:13-60
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:82:13-60
 	android:name
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:78:13-68
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:81:13-68
 service#com.cryptika.messenger.data.remote.CallForegroundService
-ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:84:9-87:39
+ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:87:9-90:39
 	android:exported
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:87:13-37
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:90:13-37
 	android:foregroundServiceType
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:86:13-55
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:89:13-55
 	android:name
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:85:13-62
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:88:13-62
 uses-sdk
 INJECTED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml

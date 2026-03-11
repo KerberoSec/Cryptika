@@ -24,6 +24,9 @@
     <!-- API 34: required for foreground service type "microphone" (voice calls) -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE"/>
 
+    <!-- Notifications (API 33+ requires runtime permission) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
     <!-- Voice calls — microphone capture and audio mode control -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>

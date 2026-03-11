@@ -84,7 +84,9 @@ class ConnectionForegroundService : Service() {
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setPriority(NotificationCompat.PRIORITY_MIN)
             .setSilent(true)
-            .setOngoing(true)           // cannot be dismissed by user
+            .setOngoing(true)
+            .setShowWhen(false)
+            .setVisibility(NotificationCompat.VISIBILITY_SECRET)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .build()
 }

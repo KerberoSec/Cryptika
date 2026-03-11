@@ -100,7 +100,7 @@ fun AuthScreen(
                 onValueChange = { username = it },
                 label = { Text("Username") },
                 supportingText = {
-                    if (isRegisterMode) Text("Minimum 12 characters, letters/numbers/underscores")
+                    if (isRegisterMode) Text("Minimum 2 characters, letters/numbers/underscores")
                 },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),

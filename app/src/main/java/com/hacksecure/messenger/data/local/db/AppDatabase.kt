@@ -167,6 +167,9 @@ interface ConversationDao {
 
     @Query("UPDATE conversations SET unreadCount = 0 WHERE id = :id")
     suspend fun markAsRead(id: String)
+
+    @Query("UPDATE conversations SET unreadCount = unreadCount + 1, lastMessageAt = :timestampMs WHERE id = :id")
+    suspend fun incrementUnreadCount(id: String, timestampMs: Long)
 }
 
 @Dao

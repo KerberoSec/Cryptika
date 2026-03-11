@@ -7,6 +7,8 @@ import com.cryptika.messenger.data.remote.api.*;
 import com.cryptika.messenger.domain.repository.AuthRepository;
 import com.cryptika.messenger.domain.repository.IdentityRepository;
 import kotlinx.coroutines.Dispatchers;
+import org.json.JSONObject;
+import retrofit2.HttpException;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 

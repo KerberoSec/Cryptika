@@ -1,6 +1,7 @@
 package com.cryptika.messenger.presentation.viewmodel;
 
 import android.content.Context;
+import com.cryptika.messenger.data.local.db.ConversationDao;
 import com.cryptika.messenger.data.remote.BackgroundConnectionManager;
 import com.cryptika.messenger.data.remote.EphemeralSessionManager;
 import com.cryptika.messenger.data.remote.ServerConfig;
@@ -47,6 +48,8 @@ public final class ChatViewModel_Factory implements Factory<ChatViewModel> {
 
   private final Provider<EphemeralSessionManager> ephemeralSessionManagerProvider;
 
+  private final Provider<ConversationDao> conversationDaoProvider;
+
   private final Provider<Context> appContextProvider;
 
   public ChatViewModel_Factory(Provider<MessageRepository> messageRepositoryProvider,
@@ -56,7 +59,7 @@ public final class ChatViewModel_Factory implements Factory<ChatViewModel> {
       Provider<ServerConfig> serverConfigProvider,
       Provider<BackgroundConnectionManager> backgroundConnectionManagerProvider,
       Provider<EphemeralSessionManager> ephemeralSessionManagerProvider,
-      Provider<Context> appContextProvider) {
+      Provider<ConversationDao> conversationDaoProvider, Provider<Context> appContextProvider) {
     this.messageRepositoryProvider = messageRepositoryProvider;
     this.contactRepositoryProvider = contactRepositoryProvider;
     this.identityRepositoryProvider = identityRepositoryProvider;
@@ -65,12 +68,13 @@ public final class ChatViewModel_Factory implements Factory<ChatViewModel> {
     this.serverConfigProvider = serverConfigProvider;
     this.backgroundConnectionManagerProvider = backgroundConnectionManagerProvider;
     this.ephemeralSessionManagerProvider = ephemeralSessionManagerProvider;
+    this.conversationDaoProvider = conversationDaoProvider;
     this.appContextProvider = appContextProvider;
   }
 
   @Override
   public ChatViewModel get() {
-    return newInstance(messageRepositoryProvider.get(), contactRepositoryProvider.get(), identityRepositoryProvider.get(), identityKeyManagerProvider.get(), relayApiProvider.get(), serverConfigProvider.get(), backgroundConnectionManagerProvider.get(), ephemeralSessionManagerProvider.get(), appContextProvider.get());
+    return newInstance(messageRepositoryProvider.get(), contactRepositoryProvider.get(), identityRepositoryProvider.get(), identityKeyManagerProvider.get(), relayApiProvider.get(), serverConfigProvider.get(), backgroundConnectionManagerProvider.get(), ephemeralSessionManagerProvider.get(), conversationDaoProvider.get(), appContextProvider.get());
   }
 
   public static ChatViewModel_Factory create(Provider<MessageRepository> messageRepositoryProvider,
@@ -80,15 +84,16 @@ public final class ChatViewModel_Factory implements Factory<ChatViewModel> {
       Provider<ServerConfig> serverConfigProvider,
       Provider<BackgroundConnectionManager> backgroundConnectionManagerProvider,
       Provider<EphemeralSessionManager> ephemeralSessionManagerProvider,
-      Provider<Context> appContextProvider) {
-    return new ChatViewModel_Factory(messageRepositoryProvider, contactRepositoryProvider, identityRepositoryProvider, identityKeyManagerProvider, relayApiProvider, serverConfigProvider, backgroundConnectionManagerProvider, ephemeralSessionManagerProvider, appContextProvider);
+      Provider<ConversationDao> conversationDaoProvider, Provider<Context> appContextProvider) {
+    return new ChatViewModel_Factory(messageRepositoryProvider, contactRepositoryProvider, identityRepositoryProvider, identityKeyManagerProvider, relayApiProvider, serverConfigProvider, backgroundConnectionManagerProvider, ephemeralSessionManagerProvider, conversationDaoProvider, appContextProvider);
   }
 
   public static ChatViewModel newInstance(MessageRepository messageRepository,
       ContactRepository contactRepository, IdentityRepository identityRepository,
       IdentityKeyManager identityKeyManager, RelayApi relayApi, ServerConfig serverConfig,
       BackgroundConnectionManager backgroundConnectionManager,
-      EphemeralSessionManager ephemeralSessionManager, Context appContext) {
-    return new ChatViewModel(messageRepository, contactRepository, identityRepository, identityKeyManager, relayApi, serverConfig, backgroundConnectionManager, ephemeralSessionManager, appContext);
+      EphemeralSessionManager ephemeralSessionManager, ConversationDao conversationDao,
+      Context appContext) {
+    return new ChatViewModel(messageRepository, contactRepository, identityRepository, identityKeyManager, relayApi, serverConfig, backgroundConnectionManager, ephemeralSessionManager, conversationDao, appContext);
   }
 }
