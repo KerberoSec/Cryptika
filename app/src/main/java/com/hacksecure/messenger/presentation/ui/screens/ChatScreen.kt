@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
@@ -43,6 +44,21 @@ fun ChatScreen(
     DisposableEffect(lifecycleOwner) {
         lifecycleOwner.lifecycle.addObserver(viewModel)
         onDispose { lifecycleOwner.lifecycle.removeObserver(viewModel) }
+    }
+
+    // Per-chat screenshot blocking: apply FLAG_SECURE only while inside a chat
+    val context = LocalContext.current
+    DisposableEffect(Unit) {
+        val activity = context as? android.app.Activity
+        val prefs = context.getSharedPreferences("cryptika_settings", android.content.Context.MODE_PRIVATE)
+        val blockingEnabled = prefs.getBoolean("screenshot_blocking", true)
+        if (blockingEnabled && activity != null) {
+            activity.window.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+        }
+        onDispose {
+            // Always clear FLAG_SECURE when leaving the chat screen
+            activity?.window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+        }
     }
 
     LaunchedEffect(contactId, sessionUUID) {

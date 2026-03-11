@@ -164,4 +164,22 @@ class AuthRepositoryImpl @Inject constructor(
                 Result.failure(e)
             }
         }
+
+    override suspend fun burnCredentials(): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            try {
+                authApi.burnCredentials(
+                    url = "${serverConfig.apiBaseUrl}/api/v1/auth/burn",
+                    auth = authHeader()
+                )
+                authStore.credentialsBurned = true
+                Result.success(Unit)
+            } catch (e: Exception) {
+                // Even if server call fails, mark as burned locally to prevent re-use attempts
+                authStore.credentialsBurned = true
+                Result.failure(e)
+            }
+        }
+
+    override fun isCredentialsBurned(): Boolean = authStore.credentialsBurned
 }

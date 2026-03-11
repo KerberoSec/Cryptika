@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        applyScreenshotBlockingPreference()
+        // Screenshot blocking is now per-chat — applied in ChatScreen, not globally
         MessageExpiryWorker.schedule(this)
         MessageExpiryWorker.runOnce(this)
 
@@ -61,8 +61,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Re-apply screenshot blocking each time activity resumes so settings changes take effect
-        applyScreenshotBlockingPreference()
     }
 
     private fun applyScreenshotBlockingPreference() {

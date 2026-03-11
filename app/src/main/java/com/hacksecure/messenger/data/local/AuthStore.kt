@@ -46,6 +46,10 @@ class AuthStore @Inject constructor(
         get() = prefs.getLong(KEY_EXPIRES_AT, 0)
         set(value) = prefs.edit().putLong(KEY_EXPIRES_AT, value).apply()
 
+    var credentialsBurned: Boolean
+        get() = prefs.getBoolean(KEY_CREDENTIALS_BURNED, false)
+        set(value) = prefs.edit().putBoolean(KEY_CREDENTIALS_BURNED, value).apply()
+
     val isLoggedIn: Boolean
         get() {
             val token = jwtToken ?: return false
@@ -61,5 +65,6 @@ class AuthStore @Inject constructor(
         private const val KEY_CONTACT_TOKEN = "contact_token"
         private const val KEY_USERNAME = "username"
         private const val KEY_EXPIRES_AT = "token_expires_at"
+        private const val KEY_CREDENTIALS_BURNED = "credentials_burned"
     }
 }

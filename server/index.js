@@ -25,7 +25,8 @@ const PORT = process.env.PORT || 8443;
 const TICKET_EXPIRY_SECONDS = 3600; // 1 hour
 const MAX_CONNECTIONS_PER_CONV = 10;
 const SESSION_TTL_MS = 30 * 60 * 1000; // 30 minutes
-const JWT_EXPIRY = "24h";
+const JWT_EXPIRY = "30m";
+const USER_TTL_MS = SESSION_TTL_MS; // 30 minutes — auto-delete user record
 const MIN_USERNAME_LENGTH = 2;
 const MIN_PASSWORD_LENGTH = 8;
 const ANTI_TIMING_DELAY_MS = 200; // constant delay for auth responses
@@ -78,7 +79,8 @@ const MAX_BUFFER_PER_CONV = 50;
 const BUFFER_TTL_MS = 3_600_000; // 1 hour
 
 // --- Auth state (Phase 1) ---
-const users = new Map(); // username → { passwordHash, contactToken, identityHashHex, publicKeyB64, createdAt }
+const users = new Map(); // username → { passwordHash, contactToken, identityHashHex, publicKeyB64, createdAt, loginAt }
+const burnedTokens = new Set(); // blacklisted JWT jti values (after burn)
 
 // --- Contact request state (Phase 2) ---
 const contactRequests = new Map();  // requestId → { fromToken, toToken, fromIdentityHash, fromPublicKeyB64, fromNickname, status, createdAt }
@@ -98,7 +100,7 @@ const rateLimits = new Map(); // key → { count, windowStart }
 /** Derive a contact token from a username using HMAC-SHA256 */
 function deriveContactToken(username) {
   return crypto.createHmac("sha256", HMAC_SECRET)
-    .update(username.toLowerCase())
+    .update(username)
     .digest("hex");
 }
 
@@ -160,7 +162,11 @@ function authenticateToken(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded; // { username, contactToken, iat, exp }
+    // Check if this token has been burned (blacklisted)
+    if (decoded.jti && burnedTokens.has(decoded.jti)) {
+      return res.status(401).json({ error: "Token has been revoked" });
+    }
+    req.user = decoded; // { username, contactToken, jti, iat, exp }
     next();
   } catch (e) {
     return res.status(401).json({ error: "Invalid or expired token" });
@@ -219,10 +225,8 @@ app.post("/api/v1/auth/register", async (req, res) => {
       return res.status(400).json({ status: "error", error: "Username can only contain letters, numbers, and underscores" });
     }
 
-    const usernameLower = username.toLowerCase();
-
     // If username already taken, silently return OK (anti-enumeration)
-    if (users.has(usernameLower)) {
+    if (users.has(username)) {
       await antiTimingDelay(startMs);
       return res.json({ status: "ok" });
     }
@@ -236,10 +240,10 @@ app.post("/api/v1/auth/register", async (req, res) => {
     });
 
     // Derive contact token
-    const contactToken = deriveContactToken(usernameLower);
+    const contactToken = deriveContactToken(username);
 
     // Store user
-    users.set(usernameLower, {
+    users.set(username, {
       passwordHash,
       contactToken,
       identityHashHex: identityHashHex || "",
@@ -280,8 +284,7 @@ app.post("/api/v1/auth/login", async (req, res) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    const usernameLower = username.toLowerCase();
-    const user = users.get(usernameLower);
+    const user = users.get(username);
 
     if (!user) {
       // Spend time on a dummy hash to maintain constant timing
@@ -300,8 +303,12 @@ app.post("/api/v1/auth/login", async (req, res) => {
     if (identityHashHex) user.identityHashHex = identityHashHex;
     if (publicKeyB64) user.publicKeyB64 = publicKeyB64;
 
-    // Issue JWT
-    const tokenPayload = { username: usernameLower, contactToken: user.contactToken };
+    // Track login time for user TTL sweep
+    user.loginAt = Date.now();
+
+    // Issue JWT with unique jti for revocation support
+    const jti = uuidv4();
+    const tokenPayload = { username: username, contactToken: user.contactToken, jti };
     const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: JWT_EXPIRY });
     const decoded = jwt.decode(token);
 
@@ -320,6 +327,44 @@ app.post("/api/v1/auth/login", async (req, res) => {
 });
 
 // ── CONTACT REQUEST ENDPOINTS ─────────────────────────────────────────────────
+
+/**
+ * POST /api/v1/auth/burn
+ * Burns (deletes) the authenticated user's credentials from the server.
+ * Blacklists the JWT so it cannot be reused. Cascades deletion of
+ * contact requests associated with this user's contactToken.
+ */
+app.post("/api/v1/auth/burn", authenticateToken, (req, res) => {
+  try {
+    const username = req.user.username;
+    const contactToken = req.user.contactToken;
+    const jti = req.user.jti;
+
+    // Delete user record
+    users.delete(username);
+
+    // Blacklist the JWT
+    if (jti) burnedTokens.add(jti);
+
+    // Cascade delete contact requests involving this user
+    for (const [rid, r] of contactRequests.entries()) {
+      if (r.fromToken === contactToken || r.toToken === contactToken) {
+        const pending = pendingByToken.get(r.toToken);
+        if (pending) {
+          pending.delete(rid);
+          if (pending.size === 0) pendingByToken.delete(r.toToken);
+        }
+        contactRequests.delete(rid);
+      }
+    }
+
+    console.log(`AUTH burned credentials for ${safeLog(username)}`);
+    res.json({ status: "burned" });
+  } catch (e) {
+    console.error("AUTH burn_error");
+    res.status(500).json({ error: "Internal error" });
+  }
+});
 
 /**
  * POST /api/v1/contact/request
@@ -346,15 +391,14 @@ app.post("/api/v1/contact/request", authenticateToken, async (req, res) => {
       return res.json({ status: "request_sent" }); // Anti-enumeration
     }
 
-    const targetLower = targetUsername.toLowerCase();
-    const toToken = deriveContactToken(targetLower);
+    const toToken = deriveContactToken(targetUsername);
 
     // Prevent self-request
     if (timingSafeEqual(fromToken, toToken)) {
       return res.json({ status: "request_sent" });
     }
 
-    const targetUser = users.get(targetLower);
+    const targetUser = users.get(targetUsername);
     if (!targetUser) {
       // Target doesn't exist — return identical response (anti-enumeration)
       return res.json({ status: "request_sent" });
@@ -756,6 +800,10 @@ wss.on("connection", (ws, req) => {
       ws.close(4013, "Invalid token");
       return;
     }
+    if (decoded.jti && burnedTokens.has(decoded.jti)) {
+      ws.close(4013, "Token has been revoked");
+      return;
+    }
     if (!session.participants.has(decoded.contactToken)) {
       ws.close(4014, "Not a participant of this session");
       return;
@@ -782,6 +830,11 @@ wss.on("connection", (ws, req) => {
     // When BOTH participants have joined: delete identity mapping
     if (session.joinedCount >= 2 && !session.identityMappingDeleted) {
       session.identityMappingDeleted = true;
+      // Actually clear identity info from participant entries
+      for (const [token, info] of session.participants) {
+        info.identityHash = "";
+        info.publicKeyB64 = "";
+      }
       // Server no longer knows which user is in which session
       console.log(`SESSION anonymous ${safeLog(sessionId)} (identity mapping deleted)`);
     }
@@ -988,6 +1041,32 @@ setInterval(() => {
       contactRequests.delete(rid);
     }
   }
+
+  // Phase 1.1 + 5.1: Auto-delete user records after USER_TTL_MS from login
+  for (const [username, user] of users.entries()) {
+    const ref = user.loginAt || user.createdAt;
+    if (now - ref > USER_TTL_MS) {
+      const contactToken = user.contactToken;
+      users.delete(username);
+      // Cascade: delete dangling contact requests for this user
+      for (const [rid, r] of contactRequests.entries()) {
+        if (r.fromToken === contactToken || r.toToken === contactToken) {
+          const pending = pendingByToken.get(r.toToken);
+          if (pending) {
+            pending.delete(rid);
+            if (pending.size === 0) pendingByToken.delete(r.toToken);
+          }
+          contactRequests.delete(rid);
+        }
+      }
+      console.log(`SWEEP deleted expired user ${safeLog(username)}`);
+    }
+  }
+
+  // Cleanup expired burnedTokens (keep for 35 min; JWT max 30 min + 5 min grace)
+  // burnedTokens are just jti strings; we track them in burnedTokenTimestamps
+  // Simple approach: clear all burned tokens periodically since JWTs expire after 30m anyway
+  if (burnedTokens.size > 1000) burnedTokens.clear();
 }, 60_000);
 
 server.listen(PORT, () => {

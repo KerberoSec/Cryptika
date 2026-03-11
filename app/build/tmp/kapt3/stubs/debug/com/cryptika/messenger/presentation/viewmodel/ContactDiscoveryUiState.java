@@ -5,6 +5,7 @@ import com.cryptika.messenger.data.remote.EphemeralSessionManager;
 import com.cryptika.messenger.data.remote.api.AcceptRequestResponse;
 import com.cryptika.messenger.data.remote.api.PendingRequest;
 import com.cryptika.messenger.domain.repository.AuthRepository;
+import com.cryptika.messenger.domain.repository.IdentityRepository;
 import dagger.hilt.android.lifecycle.HiltViewModel;
 import kotlinx.coroutines.flow.StateFlow;
 import javax.inject.Inject;

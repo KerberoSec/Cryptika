@@ -7,6 +7,7 @@ import com.cryptika.messenger.data.remote.EphemeralSessionManager
 import com.cryptika.messenger.data.remote.api.AcceptRequestResponse
 import com.cryptika.messenger.data.remote.api.PendingRequest
 import com.cryptika.messenger.domain.repository.AuthRepository
+import com.cryptika.messenger.domain.repository.IdentityRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,15 +25,20 @@ data class AuthUiState(
     val isLoggedIn: Boolean = false,
     val error: String? = null,
     val registerSuccess: Boolean = false,
-    val username: String? = null
+    val username: String? = null,
+    val credentialsBurned: Boolean = false
 )
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val identityRepository: IdentityRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(AuthUiState(isLoggedIn = authRepository.isLoggedIn()))
+    private val _uiState = MutableStateFlow(AuthUiState(
+        isLoggedIn = authRepository.isLoggedIn(),
+        credentialsBurned = authRepository.isCredentialsBurned()
+    ))
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
     fun register(username: String, password: String) {
@@ -91,6 +97,49 @@ class AuthViewModel @Inject constructor(
 
     fun clearRegisterSuccess() {
         _uiState.update { it.copy(registerSuccess = false) }
+    }
+
+    /**
+     * Re-registration: delete old identity, clear burned state, generate new identity,
+     * then register with new credentials for a new ephemeral session.
+     */
+    fun reRegister(username: String, password: String) {
+        if (username.length < 2) {
+            _uiState.update { it.copy(error = "Username must be at least 2 characters") }
+            return
+        }
+        if (password.length < 8) {
+            _uiState.update { it.copy(error = "Password must be at least 8 characters") }
+            return
+        }
+        if (!username.matches(Regex("^[a-zA-Z0-9_]+$"))) {
+            _uiState.update { it.copy(error = "Username can only contain letters, numbers, and underscores") }
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            try {
+                // 1. Delete old identity — new identity key pair for unlinkability
+                identityRepository.deleteIdentity()
+                // 2. Generate fresh identity
+                identityRepository.generateIdentity()
+                // 3. Clear burned state and logout old session
+                authRepository.logout()
+                _uiState.update { it.copy(credentialsBurned = false) }
+
+                // 4. Register with new identity
+                authRepository.register(username, password)
+                    .onSuccess {
+                        _uiState.update { it.copy(isLoading = false, registerSuccess = true, isLoggedIn = false) }
+                    }
+                    .onFailure { e ->
+                        _uiState.update { it.copy(isLoading = false, error = "Re-registration failed: ${e.message}") }
+                    }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = "Re-registration failed: ${e.message}") }
+            }
+        }
     }
 }
 

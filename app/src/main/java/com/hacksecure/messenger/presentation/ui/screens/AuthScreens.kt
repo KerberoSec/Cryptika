@@ -217,15 +217,19 @@ fun ContactDiscoveryScreen(
     val uiState by viewModel.uiState.collectAsState()
     var targetUsername by remember { mutableStateOf("") }
 
-    // Poll for pending requests on enter
+    // Poll for pending requests on enter and periodically every 5 seconds
     LaunchedEffect(Unit) {
         viewModel.loadPendingRequests()
+        while (true) {
+            kotlinx.coroutines.delay(5_000)
+            viewModel.loadPendingRequests()
+        }
     }
 
-    // Poll for accepted sessions (requester side) every 10 seconds
+    // Poll for accepted sessions (requester side) every 5 seconds
     LaunchedEffect(Unit) {
         while (true) {
-            kotlinx.coroutines.delay(10_000)
+            kotlinx.coroutines.delay(5_000)
             viewModel.pollAcceptedSessions()
         }
     }

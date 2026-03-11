@@ -968,7 +968,7 @@ class SettingsViewModel @Inject constructor(
                     val code = conn.responseCode
                     val ms = System.currentTimeMillis() - start
                     conn.disconnect()
-                    if (code == 200) "Connected � ${ms}ms" else "Server returned HTTP $code"
+                    if (code == 200) "Connected ${ms}ms" else "Server returned HTTP $code"
                 }
                 _uiState.update { it.copy(pingStatus = result, isPinging = false) }
             } catch (e: Exception) {
