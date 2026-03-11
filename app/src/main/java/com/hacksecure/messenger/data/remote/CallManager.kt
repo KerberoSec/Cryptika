@@ -17,6 +17,7 @@ import com.cryptika.messenger.domain.crypto.SessionKeyManager
 import com.cryptika.messenger.domain.model.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.nio.ByteBuffer
@@ -132,6 +133,7 @@ class CallManager @Inject constructor(
     @Volatile private var audioRecord: AudioRecord? = null
     @Volatile private var audioTrack: AudioTrack? = null
     @Volatile private var captureJob: Job? = null
+    @Volatile private var playbackJob: Job? = null
     @Volatile private var ringTimeoutJob: Job? = null
     @Volatile private var watchdogJob: Job? = null
     // AtomicInteger makes the sequence counter thread-safe without synchronization overhead
@@ -139,6 +141,8 @@ class CallManager @Inject constructor(
     @Volatile private var lastAudioRxMs: Long = 0L
     @Volatile private var isMuted: Boolean = false
     private val cleanupLock = Any()
+    // Channel for ordered audio playback — single consumer ensures AudioTrack thread safety
+    private var audioPlaybackChannel = Channel<ByteArray>(capacity = 64)
 
     // ── Speaker state (AudioManager) ──────────────────────────────────────────
     private val audioManager: AudioManager =
@@ -400,7 +404,12 @@ class CallManager @Inject constructor(
 
         // Start foreground service so Android keeps AudioRecord/AudioTrack alive in background.
         // Without this the OS kills audio capture within seconds of the app being minimized.
-        CallForegroundService.start(context, activeContact?.displayName ?: "")
+        try {
+            CallForegroundService.start(context, activeContact?.displayName ?: "")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to start call foreground service", e)
+            // Continue — audio will still work while app is in foreground
+        }
 
         // Set audio mode for voice communication (enables hardware echo cancellation)
         audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
@@ -435,6 +444,23 @@ class CallManager @Inject constructor(
             Log.e(TAG, "Failed to create AudioTrack", e)
             cleanup()
             return
+        }
+
+        // ── Playback coroutine — single consumer for ordered AudioTrack writes ──
+        audioPlaybackChannel = Channel(capacity = 64)
+        playbackJob = scope.launch(Dispatchers.IO) {
+            val track = audioTrack ?: return@launch
+            try {
+                for (pcm in audioPlaybackChannel) {
+                    if (_callState.value != CallState.ACTIVE) break
+                    try {
+                        track.write(pcm, 0, pcm.size)
+                    } catch (e: Exception) {
+                        Log.w(TAG, "AudioTrack write failed", e)
+                        break
+                    }
+                }
+            } catch (_: Exception) { /* channel closed */ }
         }
 
         // ── AudioRecord (capture) ─────────────────────────────────────────────
@@ -510,23 +536,24 @@ class CallManager @Inject constructor(
         // Minimum: magic(1) + seq(4) + nonce(12) + aead_tag(16) = 33 bytes
         if (packet.size < 33) return
         val key = decryptKey ?: return
-        val track = audioTrack ?: return
 
-        scope.launch(Dispatchers.IO) {
-            try {
-                lastAudioRxMs = System.currentTimeMillis()   // heartbeat: reset watchdog timer
-                // Offset 1..4 = sequence number (not validated here — used for ordering)
-                val nonce = packet.copyOfRange(5, 17)
-                val ciphertext = packet.copyOfRange(17, packet.size)
+        // Update watchdog timer immediately (not inside a deferred coroutine)
+        lastAudioRxMs = System.currentTimeMillis()
 
-                val pcm = AEADCipher.decrypt(
-                    ciphertext = ciphertext,
-                    key = key,
-                    nonce = nonce,
-                    additionalData = byteArrayOf()
-                )
-                track.write(pcm, 0, pcm.size)
-            } catch (_: Exception) { /* corrupted or replayed frame — drop silently */ }
+        try {
+            val nonce = packet.copyOfRange(5, 17)
+            val ciphertext = packet.copyOfRange(17, packet.size)
+
+            val pcm = AEADCipher.decrypt(
+                ciphertext = ciphertext,
+                key = key,
+                nonce = nonce,
+                additionalData = byteArrayOf()
+            )
+            // Send to single playback coroutine — ordered writes, no thread contention
+            audioPlaybackChannel.trySend(pcm)
+        } catch (e: Exception) {
+            Log.w(TAG, "Audio frame decrypt/playback failed", e)
         }
     }
 
@@ -627,6 +654,8 @@ class CallManager @Inject constructor(
 
             ringTimeoutJob?.cancel(); ringTimeoutJob = null
             captureJob?.cancel(); captureJob = null
+            playbackJob?.cancel(); playbackJob = null
+            audioPlaybackChannel.close()
             watchdogJob?.cancel(); watchdogJob = null
 
             try { audioRecord?.stop() } catch (_: Exception) {}

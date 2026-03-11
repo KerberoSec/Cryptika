@@ -38,6 +38,7 @@
 
     <!-- Voice calls — microphone capture and audio mode control -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
     <permission
