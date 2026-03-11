@@ -55,7 +55,7 @@ try {
     serverKeyPair = nacl.sign.keyPair();
     console.log("   NEW SERVER KEYPAIR GENERATED");
     console.log("   Hardcode this public key in BuildConfig.SERVER_PUBLIC_KEY_HEX:");
-    /* blind: no logging */.toString("hex"));
+    console.log("   " + Buffer.from(serverKeyPair.publicKey).toString("hex"));
     console.log("   Set SERVER_PRIVATE_KEY_HEX env var to persist across restarts");
   }
 } catch (e) {
@@ -268,7 +268,6 @@ app.post("/api/v1/auth/burn", authenticateToken, (req, res) => {
       }
     }
 
-    /* blind: no logging */}`);
     res.json({ status: "burned" });
   } catch (e) {
     /* blind: no logging */
@@ -463,8 +462,6 @@ app.post("/api/v1/contact/accept", authenticateToken, async (req, res) => {
     tokenToSession.get(r.fromToken).add(sessionUUID);
     if (!tokenToSession.has(myToken)) tokenToSession.set(myToken, new Set());
     tokenToSession.get(myToken).add(sessionUUID);
-
-    /* blind: no logging */} (TTL=30m)`);
 
     res.json({
       sessionUUID,
@@ -666,8 +663,6 @@ function destroySession(sessionUUID) {
 
   // Delete the session itself
   ephemeralSessions.delete(sessionUUID);
-
-  /* blind: no logging */}`);
 }
 
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
@@ -751,10 +746,7 @@ wss.on("connection", (ws, req) => {
         info.publicKeyB64 = "";
       }
       // Server no longer knows which user is in which session
-      /* blind: no logging */} (identity mapping deleted)`);
     }
-
-    /* blind: no logging */} (${room.size}/2)`);
 
     // Deliver buffered messages
     const backlog = messageBuffer.get(sessionId);
@@ -793,7 +785,6 @@ wss.on("connection", (ws, req) => {
 
     ws.on("close", () => {
       room.delete(ws);
-      /* blind: no logging */} (${room.size}/2)`);
       if (room.size === 0) {
         conversationSockets.delete(sessionId);
       }
@@ -832,8 +823,6 @@ wss.on("connection", (ws, req) => {
     presenceMap.set(identityHash, { ...existing, lastSeen: Date.now(), online: true });
   }
 
-  /* blind: no logging */} (${room.size} members)`);
-
   // Deliver buffered messages
   const backlog = messageBuffer.get(conversationId);
   if (backlog && backlog.length > 0) {
@@ -871,7 +860,6 @@ wss.on("connection", (ws, req) => {
   ws.on("close", () => {
     room.delete(ws);
     if (room.size === 0) conversationSockets.delete(conversationId);
-    /* blind: no logging */} (${room.size} remaining)`);
 
     const hash = wsIdentityMap.get(ws);
     wsIdentityMap.delete(ws);
@@ -887,7 +875,6 @@ wss.on("connection", (ws, req) => {
   });
 
   ws.on("error", (err) => {
-    /* blind: no logging */}`);
     room.delete(ws);
   });
 });
@@ -974,7 +961,6 @@ setInterval(() => {
           contactRequests.delete(rid);
         }
       }
-      /* blind: no logging */}`);
     }
   }
 
