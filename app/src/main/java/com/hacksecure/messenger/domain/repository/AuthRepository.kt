@@ -7,8 +7,8 @@ import com.cryptika.messenger.data.remote.api.PendingRequest
 
 /** Repository for authentication and contact discovery operations. */
 interface AuthRepository {
-    suspend fun register(username: String, password: String): Result<Unit>
-    suspend fun login(username: String, password: String): Result<Unit>
+    /** Passwordless entry — username only. */
+    suspend fun enter(username: String): Result<Unit>
     fun isLoggedIn(): Boolean
     fun getUsername(): String?
     fun getContactToken(): String?

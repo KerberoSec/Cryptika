@@ -17,11 +17,23 @@ import kotlinx.coroutines.flow.*;
 import java.util.UUID;
 import javax.inject.Inject;
 
-@kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000\"\n\u0002\u0018\u0002\n\u0002\u0010\u0000\n\u0002\b\u0006\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0000\b6\u0018\u00002\u00020\u0001:\u0005\u0003\u0004\u0005\u0006\u0007B\u0007\b\u0004\u00a2\u0006\u0002\u0010\u0002\u0082\u0001\u0005\b\t\n\u000b\f\u00a8\u0006\r"}, d2 = {"Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent;", "", "()V", "MessageRejected", "RetrySucceeded", "SessionSecured", "ShowError", "Snackbar", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$MessageRejected;", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$RetrySucceeded;", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$SessionSecured;", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$ShowError;", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$Snackbar;", "Cryptika_debug"})
+@kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000&\n\u0002\u0018\u0002\n\u0002\u0010\u0000\n\u0002\b\u0007\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0000\b6\u0018\u00002\u00020\u0001:\u0006\u0003\u0004\u0005\u0006\u0007\bB\u0007\b\u0004\u00a2\u0006\u0002\u0010\u0002\u0082\u0001\u0006\t\n\u000b\f\r\u000e\u00a8\u0006\u000f"}, d2 = {"Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent;", "", "()V", "ForceLogout", "MessageRejected", "RetrySucceeded", "SessionSecured", "ShowError", "Snackbar", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$ForceLogout;", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$MessageRejected;", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$RetrySucceeded;", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$SessionSecured;", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$ShowError;", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$Snackbar;", "Cryptika_debug"})
 public abstract class ChatEvent {
     
     private ChatEvent() {
         super();
+    }
+    
+    /**
+     * Emitted when the ephemeral session expires or disconnects — triggers full logout.
+     */
+    @kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000\f\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\b\u0002\b\u00c6\u0002\u0018\u00002\u00020\u0001B\u0007\b\u0002\u00a2\u0006\u0002\u0010\u0002\u00a8\u0006\u0003"}, d2 = {"Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$ForceLogout;", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent;", "()V", "Cryptika_debug"})
+    public static final class ForceLogout extends com.cryptika.messenger.presentation.viewmodel.ChatEvent {
+        @org.jetbrains.annotations.NotNull()
+        public static final com.cryptika.messenger.presentation.viewmodel.ChatEvent.ForceLogout INSTANCE = null;
+        
+        private ForceLogout() {
+        }
     }
     
     @kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000&\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0000\n\u0002\u0010\u000e\n\u0002\b\u0006\n\u0002\u0010\u000b\n\u0000\n\u0002\u0010\u0000\n\u0000\n\u0002\u0010\b\n\u0002\b\u0002\b\u0086\b\u0018\u00002\u00020\u0001B\r\u0012\u0006\u0010\u0002\u001a\u00020\u0003\u00a2\u0006\u0002\u0010\u0004J\t\u0010\u0007\u001a\u00020\u0003H\u00c6\u0003J\u0013\u0010\b\u001a\u00020\u00002\b\b\u0002\u0010\u0002\u001a\u00020\u0003H\u00c6\u0001J\u0013\u0010\t\u001a\u00020\n2\b\u0010\u000b\u001a\u0004\u0018\u00010\fH\u00d6\u0003J\t\u0010\r\u001a\u00020\u000eH\u00d6\u0001J\t\u0010\u000f\u001a\u00020\u0003H\u00d6\u0001R\u0011\u0010\u0002\u001a\u00020\u0003\u00a2\u0006\b\n\u0000\u001a\u0004\b\u0005\u0010\u0006\u00a8\u0006\u0010"}, d2 = {"Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent$MessageRejected;", "Lcom/cryptika/messenger/presentation/viewmodel/ChatEvent;", "reason", "", "(Ljava/lang/String;)V", "getReason", "()Ljava/lang/String;", "component1", "copy", "equals", "", "other", "", "hashCode", "", "toString", "Cryptika_debug"})

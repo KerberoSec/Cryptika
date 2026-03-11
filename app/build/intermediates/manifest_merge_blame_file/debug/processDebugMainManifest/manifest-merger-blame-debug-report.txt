@@ -148,8 +148,8 @@
 84-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:50:13-36
 85            android:screenOrientation="portrait"
 85-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:52:13-49
-86            android:windowSoftInputMode="adjustResize" >
-86-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:51:13-55
+86            android:windowSoftInputMode="stateAlwaysHidden|adjustResize" >
+86-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:51:13-73
 87            <intent-filter>
 87-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:53:13-56:29
 88                <action android:name="android.intent.action.MAIN" />

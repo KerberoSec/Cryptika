@@ -1,28 +1,28 @@
 // presentation/ui/screens/AuthScreens.kt
 package com.cryptika.messenger.presentation.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.cryptika.messenger.presentation.ui.components.SecureKeyboard
 import com.cryptika.messenger.presentation.viewmodel.AuthViewModel
 import com.cryptika.messenger.presentation.viewmodel.ContactDiscoveryViewModel
 
 // ══════════════════════════════════════════════════════════════════════════════
-// LOGIN / REGISTER SCREEN
+// USERNAME ENTRY SCREEN (passwordless)
 // ══════════════════════════════════════════════════════════════════════════════
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,21 +31,11 @@ fun AuthScreen(
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var isRegisterMode by remember { mutableStateOf(false) }
     var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
+    var keyboardVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.isLoggedIn) {
         if (uiState.isLoggedIn) onAuthenticated()
-    }
-
-    LaunchedEffect(uiState.registerSuccess) {
-        if (uiState.registerSuccess) {
-            isRegisterMode = false
-            viewModel.clearRegisterSuccess()
-        }
     }
 
     Scaffold(
@@ -61,6 +51,21 @@ fun AuthScreen(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.primary
                 )
+            )
+        },
+        bottomBar = {
+            SecureKeyboard(
+                visible = keyboardVisible,
+                onKeyPress = { key -> username += key },
+                onBackspace = { if (username.isNotEmpty()) username = username.dropLast(1) },
+                onDone = {
+                    keyboardVisible = false
+                    if (username.isNotBlank()) {
+                        viewModel.clearError()
+                        viewModel.enter(username.trim())
+                    }
+                },
+                onToggle = { keyboardVisible = !keyboardVisible }
             )
         }
     ) { padding ->
@@ -82,68 +87,38 @@ fun AuthScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = if (isRegisterMode) "Create Account" else "Sign In",
+                text = "Enter Username",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold
             )
 
             Text(
-                text = "End-to-end encrypted messaging",
+                text = "Ephemeral encrypted messaging",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "No passwords. No accounts. Just a public username.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
             OutlinedTextField(
                 value = username,
-                onValueChange = { username = it },
+                onValueChange = { /* handled by secure keyboard */ },
                 label = { Text("Username") },
-                supportingText = {
-                    if (isRegisterMode) Text("Minimum 2 characters, letters/numbers/underscores")
-                },
                 singleLine = true,
+                readOnly = true,
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !uiState.isLoading
+                enabled = !uiState.isLoading,
+                supportingText = { Text("Case-sensitive • Tap keyboard below to type") }
             )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Password") },
-                supportingText = {
-                    if (isRegisterMode) Text("Minimum 8 characters")
-                },
-                singleLine = true,
-                visualTransformation = if (passwordVisible) VisualTransformation.None
-                    else PasswordVisualTransformation(),
-                trailingIcon = {
-                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(
-                            if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                            contentDescription = "Toggle password visibility"
-                        )
-                    }
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                modifier = Modifier.fillMaxWidth(),
-                enabled = !uiState.isLoading
-            )
-
-            if (isRegisterMode) {
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = confirmPassword,
-                    onValueChange = { confirmPassword = it },
-                    label = { Text("Confirm Password") },
-                    singleLine = true,
-                    visualTransformation = PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = !uiState.isLoading
-                )
-            }
 
             uiState.error?.let { error ->
                 Spacer(modifier = Modifier.height(8.dp))
@@ -161,20 +136,12 @@ fun AuthScreen(
             Button(
                 onClick = {
                     viewModel.clearError()
-                    if (isRegisterMode) {
-                        if (password != confirmPassword) {
-                            // handled locally
-                            return@Button
-                        }
-                        viewModel.register(username.trim(), password)
-                    } else {
-                        viewModel.login(username.trim(), password)
-                    }
+                    viewModel.enter(username.trim())
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
-                enabled = !uiState.isLoading && username.isNotBlank() && password.isNotBlank()
+                enabled = !uiState.isLoading && username.isNotBlank()
             ) {
                 if (uiState.isLoading) {
                     CircularProgressIndicator(
@@ -183,22 +150,8 @@ fun AuthScreen(
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Text(if (isRegisterMode) "Register" else "Sign In")
+                    Text("Enter")
                 }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            TextButton(
-                onClick = {
-                    isRegisterMode = !isRegisterMode
-                    viewModel.clearError()
-                }
-            ) {
-                Text(
-                    if (isRegisterMode) "Already have an account? Sign In"
-                    else "Don't have an account? Register"
-                )
             }
         }
     }
@@ -211,11 +164,107 @@ fun AuthScreen(
 @Composable
 fun ContactDiscoveryScreen(
     onBack: () -> Unit,
+    onLogout: () -> Unit,
     onSessionCreated: (sessionUUID: String, peerIdentityHash: String, peerPublicKeyB64: String, peerNickname: String) -> Unit,
     viewModel: ContactDiscoveryViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var targetUsername by remember { mutableStateOf("") }
+    var setupDisplayName by remember { mutableStateOf("") }
+    var keyboardVisible by remember { mutableStateOf(false) }
+    // Which field is active: "target" for contact search, "displayName" for setup dialog
+    var activeField by remember { mutableStateOf("target") }
+
+    // ── Contact Setup Dialog ── shows after accepting / when poll finds accepted session
+    uiState.pendingSetup?.let { setup ->
+        val fingerprint = remember(setup.peerPublicKeyB64) {
+            try {
+                val pubKeyBytes = android.util.Base64.decode(
+                    setup.peerPublicKeyB64,
+                    android.util.Base64.NO_WRAP
+                )
+                val hash = com.cryptika.messenger.domain.crypto.IdentityHash.compute(pubKeyBytes)
+                hash.joinToString("") { "%02x".format(it) }.chunked(8).joinToString(" ")
+            } catch (_: Exception) {
+                setup.peerIdentityHash.chunked(8).joinToString(" ")
+            }
+        }
+
+        AlertDialog(
+            onDismissRequest = { viewModel.cancelSetup() },
+            icon = { Icon(Icons.Default.PersonAdd, null, tint = MaterialTheme.colorScheme.primary) },
+            title = { Text("New Contact") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        if (setup.isRequester) "Contact accepted:" else "Contact request from:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        setup.peerNickname,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    HorizontalDivider()
+
+                    Text(
+                        "Identity Fingerprint",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        fingerprint,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            fontFamily = FontFamily.Monospace
+                        ),
+                        fontSize = 11.sp,
+                        lineHeight = 16.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        "Verify this fingerprint with your contact out-of-band to ensure authenticity.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    HorizontalDivider()
+
+                    OutlinedTextField(
+                        value = setupDisplayName,
+                        onValueChange = { /* handled by secure keyboard */ },
+                        label = { Text("Contact Name") },
+                        placeholder = { Text(setup.peerNickname) },
+                        singleLine = true,
+                        readOnly = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        leadingIcon = { Icon(Icons.Default.Person, null) }
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.confirmSetup(setupDisplayName.trim().ifBlank { setup.peerNickname })
+                        setupDisplayName = ""
+                    }
+                ) {
+                    Icon(Icons.Default.Check, null, Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("Confirm & Chat")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    viewModel.cancelSetup()
+                    setupDisplayName = ""
+                }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 
     // Poll for pending requests on enter and periodically every 5 seconds
     LaunchedEffect(Unit) {
@@ -259,7 +308,32 @@ fun ContactDiscoveryScreen(
                     IconButton(onClick = { viewModel.loadPendingRequests() }) {
                         Icon(Icons.Default.Refresh, "Refresh")
                     }
+                    IconButton(onClick = {
+                        viewModel.logout()
+                        onLogout()
+                    }) {
+                        Icon(Icons.Default.Logout, "Logout")
+                    }
                 }
+            )
+        },
+        bottomBar = {
+            SecureKeyboard(
+                visible = keyboardVisible,
+                onKeyPress = { key ->
+                    when (activeField) {
+                        "target" -> targetUsername += key
+                        "displayName" -> setupDisplayName += key
+                    }
+                },
+                onBackspace = {
+                    when (activeField) {
+                        "target" -> if (targetUsername.isNotEmpty()) targetUsername = targetUsername.dropLast(1)
+                        "displayName" -> if (setupDisplayName.isNotEmpty()) setupDisplayName = setupDisplayName.dropLast(1)
+                    }
+                },
+                onDone = { keyboardVisible = false },
+                onToggle = { keyboardVisible = !keyboardVisible }
             )
         }
     ) { padding ->
@@ -285,10 +359,16 @@ fun ContactDiscoveryScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = targetUsername,
-                        onValueChange = { targetUsername = it },
+                        onValueChange = { /* handled by secure keyboard */ },
                         label = { Text("Username") },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
+                        readOnly = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                activeField = "target"
+                                keyboardVisible = true
+                            },
                         enabled = !uiState.isLoading
                     )
                     Spacer(modifier = Modifier.height(8.dp))

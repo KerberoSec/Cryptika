@@ -425,6 +425,7 @@ public final class DaggerCryptikaApp_HiltComponents_SingletonC {
 
     @Override
     public void injectMainActivity(MainActivity mainActivity) {
+      injectMainActivity2(mainActivity);
     }
 
     @Override
@@ -452,36 +453,55 @@ public final class DaggerCryptikaApp_HiltComponents_SingletonC {
       return new ViewCBuilder(singletonCImpl, activityRetainedCImpl, activityCImpl);
     }
 
+    private MainActivity injectMainActivity2(MainActivity instance) {
+      MainActivity_MembersInjector.injectEphemeralSessionManager(instance, singletonCImpl.ephemeralSessionManagerProvider.get());
+      MainActivity_MembersInjector.injectBackgroundConnectionManager(instance, singletonCImpl.backgroundConnectionManagerProvider.get());
+      MainActivity_MembersInjector.injectAuthRepository(instance, singletonCImpl.provideAuthRepositoryProvider.get());
+      return instance;
+    }
+
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
       static String com_cryptika_messenger_presentation_viewmodel_ContactConfirmViewModel = "com.cryptika.messenger.presentation.viewmodel.ContactConfirmViewModel";
 
+      static String com_cryptika_messenger_presentation_viewmodel_SplashViewModel = "com.cryptika.messenger.presentation.viewmodel.SplashViewModel";
+
+      static String com_cryptika_messenger_presentation_viewmodel_QrScanViewModel = "com.cryptika.messenger.presentation.viewmodel.QrScanViewModel";
+
       static String com_cryptika_messenger_presentation_viewmodel_ContactDiscoveryViewModel = "com.cryptika.messenger.presentation.viewmodel.ContactDiscoveryViewModel";
 
-      static String com_cryptika_messenger_presentation_viewmodel_SplashViewModel = "com.cryptika.messenger.presentation.viewmodel.SplashViewModel";
+      static String com_cryptika_messenger_presentation_viewmodel_HomeViewModel = "com.cryptika.messenger.presentation.viewmodel.HomeViewModel";
+
+      static String com_cryptika_messenger_presentation_viewmodel_ChatViewModel = "com.cryptika.messenger.presentation.viewmodel.ChatViewModel";
+
+      static String com_cryptika_messenger_presentation_viewmodel_AuthViewModel = "com.cryptika.messenger.presentation.viewmodel.AuthViewModel";
 
       static String com_cryptika_messenger_presentation_viewmodel_QrDisplayViewModel = "com.cryptika.messenger.presentation.viewmodel.QrDisplayViewModel";
 
       static String com_cryptika_messenger_presentation_viewmodel_SettingsViewModel = "com.cryptika.messenger.presentation.viewmodel.SettingsViewModel";
 
-      static String com_cryptika_messenger_presentation_viewmodel_AuthViewModel = "com.cryptika.messenger.presentation.viewmodel.AuthViewModel";
-
       static String com_cryptika_messenger_presentation_viewmodel_CallViewModel = "com.cryptika.messenger.presentation.viewmodel.CallViewModel";
-
-      static String com_cryptika_messenger_presentation_viewmodel_QrScanViewModel = "com.cryptika.messenger.presentation.viewmodel.QrScanViewModel";
-
-      static String com_cryptika_messenger_presentation_viewmodel_ChatViewModel = "com.cryptika.messenger.presentation.viewmodel.ChatViewModel";
-
-      static String com_cryptika_messenger_presentation_viewmodel_HomeViewModel = "com.cryptika.messenger.presentation.viewmodel.HomeViewModel";
 
       @KeepFieldType
       ContactConfirmViewModel com_cryptika_messenger_presentation_viewmodel_ContactConfirmViewModel2;
 
       @KeepFieldType
+      SplashViewModel com_cryptika_messenger_presentation_viewmodel_SplashViewModel2;
+
+      @KeepFieldType
+      QrScanViewModel com_cryptika_messenger_presentation_viewmodel_QrScanViewModel2;
+
+      @KeepFieldType
       ContactDiscoveryViewModel com_cryptika_messenger_presentation_viewmodel_ContactDiscoveryViewModel2;
 
       @KeepFieldType
-      SplashViewModel com_cryptika_messenger_presentation_viewmodel_SplashViewModel2;
+      HomeViewModel com_cryptika_messenger_presentation_viewmodel_HomeViewModel2;
+
+      @KeepFieldType
+      ChatViewModel com_cryptika_messenger_presentation_viewmodel_ChatViewModel2;
+
+      @KeepFieldType
+      AuthViewModel com_cryptika_messenger_presentation_viewmodel_AuthViewModel2;
 
       @KeepFieldType
       QrDisplayViewModel com_cryptika_messenger_presentation_viewmodel_QrDisplayViewModel2;
@@ -490,19 +510,7 @@ public final class DaggerCryptikaApp_HiltComponents_SingletonC {
       SettingsViewModel com_cryptika_messenger_presentation_viewmodel_SettingsViewModel2;
 
       @KeepFieldType
-      AuthViewModel com_cryptika_messenger_presentation_viewmodel_AuthViewModel2;
-
-      @KeepFieldType
       CallViewModel com_cryptika_messenger_presentation_viewmodel_CallViewModel2;
-
-      @KeepFieldType
-      QrScanViewModel com_cryptika_messenger_presentation_viewmodel_QrScanViewModel2;
-
-      @KeepFieldType
-      ChatViewModel com_cryptika_messenger_presentation_viewmodel_ChatViewModel2;
-
-      @KeepFieldType
-      HomeViewModel com_cryptika_messenger_presentation_viewmodel_HomeViewModel2;
     }
   }
 
@@ -570,40 +578,37 @@ public final class DaggerCryptikaApp_HiltComponents_SingletonC {
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
-      static String com_cryptika_messenger_presentation_viewmodel_CallViewModel = "com.cryptika.messenger.presentation.viewmodel.CallViewModel";
+      static String com_cryptika_messenger_presentation_viewmodel_AuthViewModel = "com.cryptika.messenger.presentation.viewmodel.AuthViewModel";
 
-      static String com_cryptika_messenger_presentation_viewmodel_QrScanViewModel = "com.cryptika.messenger.presentation.viewmodel.QrScanViewModel";
+      static String com_cryptika_messenger_presentation_viewmodel_HomeViewModel = "com.cryptika.messenger.presentation.viewmodel.HomeViewModel";
 
       static String com_cryptika_messenger_presentation_viewmodel_SettingsViewModel = "com.cryptika.messenger.presentation.viewmodel.SettingsViewModel";
 
-      static String com_cryptika_messenger_presentation_viewmodel_AuthViewModel = "com.cryptika.messenger.presentation.viewmodel.AuthViewModel";
-
-      static String com_cryptika_messenger_presentation_viewmodel_ChatViewModel = "com.cryptika.messenger.presentation.viewmodel.ChatViewModel";
+      static String com_cryptika_messenger_presentation_viewmodel_SplashViewModel = "com.cryptika.messenger.presentation.viewmodel.SplashViewModel";
 
       static String com_cryptika_messenger_presentation_viewmodel_ContactDiscoveryViewModel = "com.cryptika.messenger.presentation.viewmodel.ContactDiscoveryViewModel";
 
       static String com_cryptika_messenger_presentation_viewmodel_QrDisplayViewModel = "com.cryptika.messenger.presentation.viewmodel.QrDisplayViewModel";
 
+      static String com_cryptika_messenger_presentation_viewmodel_CallViewModel = "com.cryptika.messenger.presentation.viewmodel.CallViewModel";
+
+      static String com_cryptika_messenger_presentation_viewmodel_ChatViewModel = "com.cryptika.messenger.presentation.viewmodel.ChatViewModel";
+
+      static String com_cryptika_messenger_presentation_viewmodel_QrScanViewModel = "com.cryptika.messenger.presentation.viewmodel.QrScanViewModel";
+
       static String com_cryptika_messenger_presentation_viewmodel_ContactConfirmViewModel = "com.cryptika.messenger.presentation.viewmodel.ContactConfirmViewModel";
-
-      static String com_cryptika_messenger_presentation_viewmodel_SplashViewModel = "com.cryptika.messenger.presentation.viewmodel.SplashViewModel";
-
-      static String com_cryptika_messenger_presentation_viewmodel_HomeViewModel = "com.cryptika.messenger.presentation.viewmodel.HomeViewModel";
-
-      @KeepFieldType
-      CallViewModel com_cryptika_messenger_presentation_viewmodel_CallViewModel2;
-
-      @KeepFieldType
-      QrScanViewModel com_cryptika_messenger_presentation_viewmodel_QrScanViewModel2;
-
-      @KeepFieldType
-      SettingsViewModel com_cryptika_messenger_presentation_viewmodel_SettingsViewModel2;
 
       @KeepFieldType
       AuthViewModel com_cryptika_messenger_presentation_viewmodel_AuthViewModel2;
 
       @KeepFieldType
-      ChatViewModel com_cryptika_messenger_presentation_viewmodel_ChatViewModel2;
+      HomeViewModel com_cryptika_messenger_presentation_viewmodel_HomeViewModel2;
+
+      @KeepFieldType
+      SettingsViewModel com_cryptika_messenger_presentation_viewmodel_SettingsViewModel2;
+
+      @KeepFieldType
+      SplashViewModel com_cryptika_messenger_presentation_viewmodel_SplashViewModel2;
 
       @KeepFieldType
       ContactDiscoveryViewModel com_cryptika_messenger_presentation_viewmodel_ContactDiscoveryViewModel2;
@@ -612,13 +617,16 @@ public final class DaggerCryptikaApp_HiltComponents_SingletonC {
       QrDisplayViewModel com_cryptika_messenger_presentation_viewmodel_QrDisplayViewModel2;
 
       @KeepFieldType
+      CallViewModel com_cryptika_messenger_presentation_viewmodel_CallViewModel2;
+
+      @KeepFieldType
+      ChatViewModel com_cryptika_messenger_presentation_viewmodel_ChatViewModel2;
+
+      @KeepFieldType
+      QrScanViewModel com_cryptika_messenger_presentation_viewmodel_QrScanViewModel2;
+
+      @KeepFieldType
       ContactConfirmViewModel com_cryptika_messenger_presentation_viewmodel_ContactConfirmViewModel2;
-
-      @KeepFieldType
-      SplashViewModel com_cryptika_messenger_presentation_viewmodel_SplashViewModel2;
-
-      @KeepFieldType
-      HomeViewModel com_cryptika_messenger_presentation_viewmodel_HomeViewModel2;
     }
 
     private static final class SwitchingProvider<T> implements Provider<T> {
@@ -667,7 +675,7 @@ public final class DaggerCryptikaApp_HiltComponents_SingletonC {
           return (T) new QrScanViewModel();
 
           case 8: // com.cryptika.messenger.presentation.viewmodel.SettingsViewModel 
-          return (T) new SettingsViewModel(singletonCImpl.provideIdentityRepositoryProvider.get(), ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.serverConfigProvider.get());
+          return (T) new SettingsViewModel(singletonCImpl.provideIdentityRepositoryProvider.get(), singletonCImpl.ephemeralSessionManagerProvider.get(), singletonCImpl.provideAuthRepositoryProvider.get(), ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.serverConfigProvider.get());
 
           case 9: // com.cryptika.messenger.presentation.viewmodel.SplashViewModel 
           return (T) new SplashViewModel(singletonCImpl.provideIdentityRepositoryProvider.get());
@@ -782,9 +790,9 @@ public final class DaggerCryptikaApp_HiltComponents_SingletonC {
 
     private Provider<CallManager> callManagerProvider;
 
-    private Provider<AuthApi> provideAuthApiProvider;
-
     private Provider<AuthStore> authStoreProvider;
+
+    private Provider<AuthApi> provideAuthApiProvider;
 
     private Provider<AuthRepository> provideAuthRepositoryProvider;
 
@@ -839,10 +847,10 @@ public final class DaggerCryptikaApp_HiltComponents_SingletonC {
       this.backgroundConnectionManagerProvider = new DelegateFactory<>();
       this.callManagerProvider = DoubleCheck.provider(new SwitchingProvider<CallManager>(singletonCImpl, 14));
       DelegateFactory.setDelegate(backgroundConnectionManagerProvider, DoubleCheck.provider(new SwitchingProvider<BackgroundConnectionManager>(singletonCImpl, 4)));
-      this.provideAuthApiProvider = DoubleCheck.provider(new SwitchingProvider<AuthApi>(singletonCImpl, 16));
-      this.authStoreProvider = DoubleCheck.provider(new SwitchingProvider<AuthStore>(singletonCImpl, 17));
-      this.provideAuthRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<AuthRepository>(singletonCImpl, 15));
-      this.ephemeralSessionManagerProvider = DoubleCheck.provider(new SwitchingProvider<EphemeralSessionManager>(singletonCImpl, 18));
+      this.authStoreProvider = DoubleCheck.provider(new SwitchingProvider<AuthStore>(singletonCImpl, 16));
+      this.provideAuthApiProvider = DoubleCheck.provider(new SwitchingProvider<AuthApi>(singletonCImpl, 18));
+      this.provideAuthRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<AuthRepository>(singletonCImpl, 17));
+      this.ephemeralSessionManagerProvider = DoubleCheck.provider(new SwitchingProvider<EphemeralSessionManager>(singletonCImpl, 15));
     }
 
     @Override
@@ -935,17 +943,17 @@ public final class DaggerCryptikaApp_HiltComponents_SingletonC {
           case 14: // com.cryptika.messenger.data.remote.CallManager 
           return (T) new CallManager(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.backgroundConnectionManagerProvider.get(), singletonCImpl.provideIdentityKeyManagerProvider.get(), singletonCImpl.provideSessionKeyManagerProvider.get());
 
-          case 15: // com.cryptika.messenger.domain.repository.AuthRepository 
-          return (T) AppModule_ProvideAuthRepositoryFactory.provideAuthRepository(singletonCImpl.provideAuthApiProvider.get(), singletonCImpl.authStoreProvider.get(), singletonCImpl.serverConfigProvider.get(), singletonCImpl.provideIdentityRepositoryProvider.get());
+          case 15: // com.cryptika.messenger.data.remote.EphemeralSessionManager 
+          return (T) new EphemeralSessionManager(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.authStoreProvider.get(), singletonCImpl.provideOkHttpClientProvider.get(), singletonCImpl.serverConfigProvider.get(), singletonCImpl.provideContactRepositoryProvider.get(), singletonCImpl.provideIdentityRepositoryProvider.get(), singletonCImpl.provideMessageRepositoryProvider.get(), singletonCImpl.handshakeManagerProvider.get(), singletonCImpl.provideIdentityKeyManagerProvider.get(), singletonCImpl.provideAuthRepositoryProvider.get());
 
-          case 16: // com.cryptika.messenger.data.remote.api.AuthApi 
-          return (T) AppModule_ProvideAuthApiFactory.provideAuthApi(singletonCImpl.provideOkHttpClientProvider.get());
-
-          case 17: // com.cryptika.messenger.data.local.AuthStore 
+          case 16: // com.cryptika.messenger.data.local.AuthStore 
           return (T) new AuthStore(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
-          case 18: // com.cryptika.messenger.data.remote.EphemeralSessionManager 
-          return (T) new EphemeralSessionManager(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.authStoreProvider.get(), singletonCImpl.provideOkHttpClientProvider.get(), singletonCImpl.serverConfigProvider.get(), singletonCImpl.provideContactRepositoryProvider.get(), singletonCImpl.provideIdentityRepositoryProvider.get(), singletonCImpl.provideMessageRepositoryProvider.get(), singletonCImpl.handshakeManagerProvider.get(), singletonCImpl.provideIdentityKeyManagerProvider.get(), singletonCImpl.provideAuthRepositoryProvider.get());
+          case 17: // com.cryptika.messenger.domain.repository.AuthRepository 
+          return (T) AppModule_ProvideAuthRepositoryFactory.provideAuthRepository(singletonCImpl.provideAuthApiProvider.get(), singletonCImpl.authStoreProvider.get(), singletonCImpl.serverConfigProvider.get(), singletonCImpl.provideIdentityRepositoryProvider.get());
+
+          case 18: // com.cryptika.messenger.data.remote.api.AuthApi 
+          return (T) AppModule_ProvideAuthApiFactory.provideAuthApi(singletonCImpl.provideOkHttpClientProvider.get());
 
           default: throw new AssertionError(id);
         }

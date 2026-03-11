@@ -251,7 +251,7 @@ ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\Hack
 	android:screenOrientation
 		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:52:13-49
 	android:windowSoftInputMode
-		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:51:13-55
+		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:51:13-73
 	android:exported
 		ADDED from C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:50:13-36
 	android:name

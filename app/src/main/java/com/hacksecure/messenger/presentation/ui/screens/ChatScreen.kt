@@ -31,6 +31,7 @@ fun ChatScreen(
     contactId: String,
     onBack: () -> Unit,
     onStartCall: () -> Unit = {},
+    onForceLogout: () -> Unit = {},
     sessionUUID: String? = null,
     viewModel: ChatViewModel = hiltViewModel()
 ) {
@@ -38,6 +39,7 @@ fun ChatScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val listState = rememberLazyListState()
     var showExpiryPicker by remember { mutableStateOf(false) }
+    var keyboardVisible by remember { mutableStateOf(false) }
     val lifecycleOwner = LocalLifecycleOwner.current
 
     // Register ViewModel as lifecycle observer for background/foreground reconnect
@@ -78,6 +80,7 @@ fun ChatScreen(
                 )
                 is ChatEvent.SessionSecured -> snackbarHostState.showSnackbar("Session secured")
                 is ChatEvent.RetrySucceeded -> snackbarHostState.showSnackbar("Messages re-queued")
+                is ChatEvent.ForceLogout -> onForceLogout()
                 else -> {}
             }
         }
@@ -125,14 +128,35 @@ fun ChatScreen(
         },
         bottomBar = {
             if (!isEphemeralExpired) {
-                ChatInputBar(
-                    text = state.inputText,
-                    onTextChange = viewModel::updateInputText,
-                    onSend = viewModel::sendMessage,
-                    sessionEstablished = state.sessionEstablished,
-                    expirySeconds = state.selectedExpirySeconds,
-                    onTimerClick = { showExpiryPicker = true }
-                )
+                Column {
+                    ChatInputBar(
+                        text = state.inputText,
+                        onTextChange = { /* handled by secure keyboard */ },
+                        onSend = {
+                            viewModel.sendMessage()
+                            keyboardVisible = false
+                        },
+                        sessionEstablished = state.sessionEstablished,
+                        expirySeconds = state.selectedExpirySeconds,
+                        onTimerClick = { showExpiryPicker = true },
+                        onFieldClick = { keyboardVisible = true }
+                    )
+                    com.cryptika.messenger.presentation.ui.components.SecureKeyboard(
+                        visible = keyboardVisible,
+                        onKeyPress = { key -> viewModel.updateInputText(state.inputText + key) },
+                        onBackspace = {
+                            if (state.inputText.isNotEmpty())
+                                viewModel.updateInputText(state.inputText.dropLast(1))
+                        },
+                        onDone = {
+                            if (state.inputText.isNotBlank() && state.sessionEstablished) {
+                                viewModel.sendMessage()
+                            }
+                            keyboardVisible = false
+                        },
+                        onToggle = { keyboardVisible = !keyboardVisible }
+                    )
+                }
             }
         }
     ) { padding ->
@@ -204,13 +228,13 @@ fun ChatScreen(
                             color = MaterialTheme.colorScheme.onErrorContainer
                         )
                         Text(
-                            "This ephemeral session has ended.\nAll messages have been destroyed.",
+                            "This ephemeral session has ended.\nAll messages have been destroyed.\nYou will be logged out.",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onErrorContainer,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
-                        Button(onClick = onBack) {
-                            Text("Return")
+                        Button(onClick = onForceLogout) {
+                            Text("Return to Login")
                         }
                     }
                 }
@@ -539,7 +563,8 @@ private fun ChatInputBar(
     onSend: () -> Unit,
     sessionEstablished: Boolean,
     expirySeconds: Int,
-    onTimerClick: () -> Unit
+    onTimerClick: () -> Unit,
+    onFieldClick: () -> Unit = {}
 ) {
     Surface(
         tonalElevation = 3.dp,
@@ -549,8 +574,7 @@ private fun ChatInputBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp, vertical = 8.dp)
-                .navigationBarsPadding()
-                .imePadding(),
+                .navigationBarsPadding(),
             verticalAlignment = Alignment.Bottom,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -564,13 +588,16 @@ private fun ChatInputBar(
                 )
             }
 
-            // Text input
+            // Text input — read-only, taps open secure keyboard
             OutlinedTextField(
                 value = text,
-                onValueChange = onTextChange,
-                modifier = Modifier.weight(1f),
+                onValueChange = { /* blocked — secure keyboard only */ },
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable { onFieldClick() },
                 placeholder = { Text("Message...") },
                 maxLines = 5,
+                readOnly = true,
                 shape = RoundedCornerShape(24.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
