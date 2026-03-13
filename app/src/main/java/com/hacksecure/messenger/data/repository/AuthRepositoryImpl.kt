@@ -63,6 +63,10 @@ class AuthRepositoryImpl @Inject constructor(
 
     override fun logout() {
         authStore.clear()
+        // Do NOT delete the identity on logout — callers with saved contacts would
+        // fail Ed25519 signature checks after re-login, silently breaking calls and
+        // messages. Identity rotation is an explicit, user-initiated operation via
+        // Settings → Regenerate Identity.
     }
 
     override suspend fun sendContactRequest(targetUsername: String, nickname: String): Result<Unit> =
@@ -72,6 +76,20 @@ class AuthRepositoryImpl @Inject constructor(
                     url = "${serverConfig.apiBaseUrl}/api/v1/contact/request",
                     auth = authHeader(),
                     request = ContactRequestBody(targetUsername, nickname)
+                )
+                Result.success(Unit)
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
+
+    override suspend fun sendContactRequestByFingerprint(targetIdentityHash: String, nickname: String): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            try {
+                authApi.sendContactRequestByFingerprint(
+                    url = "${serverConfig.apiBaseUrl}/api/v1/contact/request-by-fingerprint",
+                    auth = authHeader(),
+                    request = ContactRequestByFingerprintBody(targetIdentityHash, nickname)
                 )
                 Result.success(Unit)
             } catch (e: Exception) {

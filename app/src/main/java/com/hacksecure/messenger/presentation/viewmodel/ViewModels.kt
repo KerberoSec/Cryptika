@@ -314,7 +314,9 @@ data class ChatUiState(
     val selectedExpirySeconds: Int = 1800,
     val serverRelayUrl: String = "",
     val isEphemeral: Boolean = false,
-    val ephemeralState: EphemeralSessionState = EphemeralSessionState.None
+    val ephemeralState: EphemeralSessionState = EphemeralSessionState.None,
+    val allowPeerScreenshots: Boolean = false,
+    val screenshotsAllowedOnThisDevice: Boolean = true
 )
 
 sealed class ChatEvent {
@@ -343,6 +345,12 @@ class ChatViewModel @Inject constructor(
     private val conversationDao: com.cryptika.messenger.data.local.db.ConversationDao,
     @dagger.hilt.android.qualifiers.ApplicationContext private val appContext: android.content.Context
 ) : ViewModel(), DefaultLifecycleObserver {
+
+    companion object {
+        private const val SCREENSHOT_CONTROL_PREFIX = "__SSCTRL__:"
+        private const val SCREENSHOT_ALLOW = "ALLOW"
+        private const val SCREENSHOT_DISALLOW = "DISALLOW"
+    }
 
     private val _uiState = MutableStateFlow(ChatUiState())
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
@@ -469,6 +477,7 @@ class ChatViewModel @Inject constructor(
                             connectionState = ConnectionState.CONNECTED_RELAY
                         )
                     }
+                    viewModelScope.launch { sendScreenshotPolicyControl(_uiState.value.allowPeerScreenshots) }
                     viewModelScope.launch { _events.emit(ChatEvent.SessionSecured) }
                 },
                 onPeerDisconnected = {
@@ -560,6 +569,7 @@ class ChatViewModel @Inject constructor(
             onSessionReady = { processor ->
                 messageProcessor = processor
                 _uiState.update { it.copy(sessionEstablished = true, connectionState = ConnectionState.CONNECTED_RELAY) }
+                viewModelScope.launch { sendScreenshotPolicyControl(_uiState.value.allowPeerScreenshots) }
                 viewModelScope.launch { _events.emit(ChatEvent.SessionSecured) }
             },
             onConnectionStateChange = { newState ->
@@ -729,7 +739,18 @@ class ChatViewModel @Inject constructor(
         val convId = conversationId ?: return
         try {
             val (plaintextBytes, header) = withContext(Dispatchers.Default) { processor.receive(packetBytes) }
-            val text = plaintextBytes.toString(Charsets.UTF_8)            // Handle delete-for-both requests sent by the other party
+            val text = plaintextBytes.toString(Charsets.UTF_8)
+
+            // Handle screenshot control commands sent by the peer device.
+            if (text.startsWith(SCREENSHOT_CONTROL_PREFIX)) {
+                val command = text.removePrefix(SCREENSHOT_CONTROL_PREFIX)
+                _uiState.update {
+                    it.copy(screenshotsAllowedOnThisDevice = command == SCREENSHOT_ALLOW)
+                }
+                return
+            }
+
+            // Handle delete-for-both requests sent by the other party
             if (text.startsWith("__DEL__:")) {
                 val targetCounter = text.removePrefix("__DEL__:").toLongOrNull()
                 if (targetCounter != null) {
@@ -741,7 +762,6 @@ class ChatViewModel @Inject constructor(
                 }
                 return
             }
-            val now = System.currentTimeMillis()
             val message = Message(
                 id = UUID.randomUUID().toString(),
                 conversationId = convId,
@@ -750,7 +770,7 @@ class ChatViewModel @Inject constructor(
                 timestampMs = header.timestampMs,
                 counter = header.counter,
                 expirySeconds = header.expirySeconds,
-                expiryDeadlineMs = if (header.expirySeconds > 0) now + (header.expirySeconds * 1000L) else null,
+                expiryDeadlineMs = if (header.expirySeconds > 0) header.timestampMs + (header.expirySeconds * 1000L) else null,
                 isOutgoing = false,
                 state = MessageState.DELIVERED,
                 messageType = header.messageType
@@ -769,6 +789,56 @@ class ChatViewModel @Inject constructor(
     fun triggerLocalExpiry() {
         viewModelScope.launch(Dispatchers.IO) {
             try { messageRepository.deleteExpiredMessages() } catch (_: Exception) {}
+        }
+    }
+
+    fun setAllowPeerScreenshots(allow: Boolean) {
+        _uiState.update { it.copy(allowPeerScreenshots = allow) }
+        viewModelScope.launch {
+            if (_uiState.value.sessionEstablished) {
+                sendScreenshotPolicyControl(allow)
+            }
+        }
+    }
+
+    private suspend fun sendScreenshotPolicyControl(allow: Boolean) {
+        val convId = conversationId ?: return
+        val processor = messageProcessor ?: return
+        val payload = (SCREENSHOT_CONTROL_PREFIX + if (allow) SCREENSHOT_ALLOW else SCREENSHOT_DISALLOW)
+            .toByteArray(Charsets.UTF_8)
+
+        try {
+            val result = withContext(Dispatchers.Default) {
+                processor.send(plaintext = payload, expirySeconds = 0)
+            }
+            val controlMessageId = UUID.randomUUID().toString()
+            withContext(Dispatchers.IO) {
+                if (isEphemeralMode && ephemeralSessionUUID != null) {
+                    ephemeralSessionManager.sendPacket(
+                        sessionUUID = ephemeralSessionUUID!!,
+                        messageId = controlMessageId,
+                        packet = result.first
+                    )
+                } else {
+                    backgroundConnectionManager.sendPacket(
+                        convId = convId,
+                        messageId = controlMessageId,
+                        packet = result.first
+                    )
+                }
+            }
+        } catch (_: Exception) {
+            _events.emit(ChatEvent.ShowError("Failed to sync screenshot policy"))
+        }
+    }
+
+    fun exitCurrentChat() {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (isEphemeralMode) {
+                ephemeralSessionUUID?.let { ephemeralSessionManager.destroySession(it) }
+            } else {
+                conversationId?.let { backgroundConnectionManager.unregisterChatHandler(it) }
+            }
         }
     }
 
@@ -998,6 +1068,14 @@ class SettingsViewModel @Inject constructor(
                     )
                 }
             }
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch(Dispatchers.IO) {
+            ephemeralSessionManager.destroyAllSessions()
+            authRepository.logout()
+            _uiState.update { it.copy(forceLogout = true) }
         }
     }
 }

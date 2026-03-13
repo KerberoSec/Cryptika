@@ -110,6 +110,8 @@ class HandshakeManager @Inject constructor(
      *   SHA-256(secret ∥ a_id ∥ b_id ∥ ticketHash ∥ ts)
      *   where a_id/b_id come from the server-signed ticket (canonical order).
      *   When null, falls back to SHA-256(secret ∥ id_min ∥ id_max).
+     *
+     * @return Triple of (sessionKey, sendRoot, recvRoot)
      */
     fun deriveSessionKey(
         offerBytes: ByteArray,
@@ -118,7 +120,7 @@ class HandshakeManager @Inject constructor(
         myIdentityHash: ByteArray,
         peerIdentityHash: ByteArray,
         verifiedTicket: VerifiedTicket? = null
-    ): ByteArray {
+    ): Triple<ByteArray, ByteArray, ByteArray> {
         require(offerBytes.size == OFFER_SIZE) { "Offer must be $OFFER_SIZE bytes, got ${offerBytes.size}" }
         require(offerBytes[0] == PACKET_TYPE) { "First byte is not HANDSHAKE magic" }
 
@@ -135,11 +137,13 @@ class HandshakeManager @Inject constructor(
         // X25519 shared secret — ephemeral private key is zeroized inside this call
         val sharedSecret = sessionKeyManager.computeSharedSecret(ourEphemeralPair, peerEphemeralPubKey)
 
-        return if (verifiedTicket != null) {
-            // Full K₀: SHA-256(secret ∥ a_id ∥ b_id ∥ ticketHash ∥ ts)
-            // a_id/b_id are taken from the server-signed ticket — already in canonical order.
-            // Both devices request the same sorted (a_id, b_id) pair from the relay,
-            // so both arrive at identical K₀ inputs independently.
+        // Reject all-zero shared secret (low-order public key attack)
+        if (sharedSecret.all { it == 0.toByte() }) {
+            sharedSecret.fill(0)
+            throw CryptoError.DhExchangeFailed
+        }
+
+        val sessionKey = if (verifiedTicket != null) {
             sessionKeyManager.deriveSessionKey(
                 sharedSecret  = sharedSecret,
                 aIdentityHash = verifiedTicket.aId,
@@ -148,7 +152,6 @@ class HandshakeManager @Inject constructor(
                 timestampMs   = verifiedTicket.timestamp
             ).also { sharedSecret.fill(0) }
         } else {
-            // Fallback K₀: SHA-256(secret ∥ id_min ∥ id_max) — ticket not available
             val myHex = myIdentityHash.toHexString()
             val peerHex = peerIdentityHash.toHexString()
             val (firstHash, secondHash) = if (myHex < peerHex)
@@ -163,5 +166,13 @@ class HandshakeManager @Inject constructor(
                 digest()
             }.also { sharedSecret.fill(0) }
         }
+
+        // Derive direction-separated ratchet roots
+        val (sendRoot, recvRoot) = sessionKeyManager.deriveDirectionalRoots(
+            sessionKey, myIdentityHash, peerIdentityHash
+        )
+        sessionKey.fill(0) // zeroize undifferentiated root
+
+        return Triple(sessionKey, sendRoot, recvRoot)
     }
 }

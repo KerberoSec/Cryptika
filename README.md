@@ -560,9 +560,10 @@ The server supports two WebSocket connection modes:
 
 **1. Ephemeral session mode** (for contact-discovery-based chats):
 ```
-ws://host:8443/ws?session=<sessionUUID>&token=<JWT>
+GET ws://host:8443/ws?session=<sessionUUID>
+Authorization: Bearer <JWT>
 ```
-- JWT verified on connect
+- JWT verified from the Authorization header on connect
 - Participant membership checked
 - 2-participant rooms only
 - On disconnect: sends PEER_DISCONNECTED control frame to remaining peer, destroys session
@@ -1439,7 +1440,7 @@ ALICE'S DEVICE
 5. Contact Setup Dialog: "Anonymous" + fingerprint. Alice taps "Confirm & Chat"
 6. EphemeralSessionManager.joinSession():
    - Save ephemeral contact with random display name
-   - Open WebSocket: ws://host:8443/ws?session=<UUID>&token=<JWT>
+   - Open WebSocket: `ws://host:8443/ws?session=<UUID>` with `Authorization: Bearer <JWT>`
    - X25519 DH handshake → session key K0
    - Create send/recv HashRatchets
 7. Alice types "Hello" via SecureKeyboard, taps Send

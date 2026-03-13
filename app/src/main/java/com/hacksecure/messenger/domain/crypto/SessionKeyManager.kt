@@ -109,6 +109,54 @@ class SessionKeyManager {
     }
 
     /**
+     * Derives direction-separated ratchet roots from a session key.
+     *
+     * Both peers MUST agree on who is "A" and who is "B" (smaller identity hash = A).
+     * A's send root = B's receive root and vice versa, preventing key/nonce reuse.
+     *
+     * sendRoot = SHA-256(sessionKey ∥ "SEND" ∥ myIdentityHash)
+     * recvRoot = SHA-256(sessionKey ∥ "RECV" ∥ myIdentityHash)
+     *
+     * Since both peers use their own identity hash with complementary labels,
+     * A_send = SHA-256(K ∥ "SEND" ∥ A_id) == B_recv because B computes
+     * SHA-256(K ∥ "RECV" ∥ B_id)... — NO. Instead, use canonical roles:
+     *
+     * roleA_root = SHA-256(sessionKey ∥ "A_TO_B")
+     * roleB_root = SHA-256(sessionKey ∥ "B_TO_A")
+     *
+     * The peer with the lexicographically smaller identity hash is "A".
+     *
+     * @return Pair of (sendRoot, recvRoot) — each 32 bytes
+     */
+    fun deriveDirectionalRoots(
+        sessionKey: ByteArray,
+        myIdentityHash: ByteArray,
+        peerIdentityHash: ByteArray
+    ): Pair<ByteArray, ByteArray> {
+        require(sessionKey.size == 32) { "Session key must be 32 bytes" }
+        val myHex = myIdentityHash.joinToString("") { "%02x".format(it) }
+        val peerHex = peerIdentityHash.joinToString("") { "%02x".format(it) }
+        val iAmA = myHex < peerHex // lexicographic ordering determines role
+
+        val aToBRoot = MessageDigest.getInstance("SHA-256").run {
+            update(sessionKey)
+            update("A_TO_B".toByteArray(Charsets.UTF_8))
+            digest()
+        }
+        val bToARoot = MessageDigest.getInstance("SHA-256").run {
+            update(sessionKey)
+            update("B_TO_A".toByteArray(Charsets.UTF_8))
+            digest()
+        }
+
+        return if (iAmA) {
+            aToBRoot to bToARoot   // A sends on A_TO_B, receives on B_TO_A
+        } else {
+            bToARoot to aToBRoot   // B sends on B_TO_A, receives on A_TO_B
+        }
+    }
+
+    /**
      * Securely zeroizes a byte array.
      * Use immediately after any sensitive material is no longer needed.
      */

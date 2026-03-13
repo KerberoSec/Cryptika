@@ -111,6 +111,32 @@ class SessionKeyTest {
 
         assertFalse("Swapping A/B should produce different session key", k1.contentEquals(k2))
     }
+
+    @Test
+    fun `Directional roots are different from each other`() {
+        val sessionKey = ByteArray(32) { 0x42 }
+        val myId = ByteArray(32) { 0x01 }
+        val peerId = ByteArray(32) { 0x02 }
+
+        val (sendRoot, recvRoot) = sessionKeyManager.deriveDirectionalRoots(sessionKey, myId, peerId)
+
+        assertFalse("Send and recv roots must differ", sendRoot.contentEquals(recvRoot))
+        assertEquals(32, sendRoot.size)
+        assertEquals(32, recvRoot.size)
+    }
+
+    @Test
+    fun `Directional roots are complementary between peers`() {
+        val sessionKey = ByteArray(32) { 0x42 }
+        val aliceId = ByteArray(32) { 0x01 }
+        val bobId = ByteArray(32) { 0x02 }
+
+        val (aliceSend, aliceRecv) = sessionKeyManager.deriveDirectionalRoots(sessionKey, aliceId, bobId)
+        val (bobSend, bobRecv) = sessionKeyManager.deriveDirectionalRoots(sessionKey, bobId, aliceId)
+
+        assertArrayEquals("Alice send must equal Bob recv", aliceSend, bobRecv)
+        assertArrayEquals("Bob send must equal Alice recv", bobSend, aliceRecv)
+    }
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -205,7 +231,7 @@ class AEADCipherTest {
         val ad = makeAdditionalData()
 
         val ciphertext = AEADCipher.encrypt(plaintext, key, nonce, ad).also {
-            it[0] = it[0].xor(0xFF.toByte())  // flip first byte
+            it[0] = (it[0].toInt() xor 0xFF).toByte()  // flip first byte
         }
 
         try {
@@ -225,7 +251,7 @@ class AEADCipherTest {
 
         val ciphertext = AEADCipher.encrypt(plaintext, key, nonce, ad)
 
-        val tamperedAd = ad.copyOf().also { it[0] = it[0].xor(0x01) }
+        val tamperedAd = ad.copyOf().also { it[0] = (it[0].toInt() xor 0x01).toByte() }
         try {
             AEADCipher.decrypt(ciphertext, key, nonce, tamperedAd)
             fail("Should have thrown AEADAuthFailed")
@@ -262,15 +288,12 @@ class ReplayDetectionTest {
     fun `Counter replay is detected`() {
         val ratchet = HashRatchet(ByteArray(32))
 
-        // Simulate receiving message at counter 5 then counter 5 again
-        val lastSeen = 4L
+        // First receipt at counter 5 — ok
+        ratchet.keyForCounter(5)
 
-        // First receipt — ok
-        ratchet.keyForCounter(5, lastSeen)
-
-        // Second receipt of same counter — should fail
+        // Second receipt of same counter — should fail (already consumed, not in lookahead)
         try {
-            ratchet.keyForCounter(5, 5L)  // lastSeen is now 5
+            ratchet.keyForCounter(5)
             fail("Should have thrown ReplayDetected")
         } catch (e: CryptoError.ReplayDetected) {
             // Expected
@@ -278,11 +301,18 @@ class ReplayDetectionTest {
     }
 
     @Test
-    fun `Counter at or below last seen is rejected`() {
+    fun `Out-of-order counter succeeds via lookahead, then replay is rejected`() {
         val ratchet = HashRatchet(ByteArray(32))
 
+        // Advance ratchet to counter 5 — keys 1,2,3,4 cached in lookahead
+        ratchet.keyForCounter(5)
+
+        // Counter 3 is in lookahead — should succeed (out-of-order delivery)
+        ratchet.keyForCounter(3)
+
+        // Counter 3 again — now consumed from lookahead — replay
         try {
-            ratchet.keyForCounter(3, 5L)  // counter 3 <= lastSeen 5
+            ratchet.keyForCounter(3)
             fail("Should have thrown ReplayDetected")
         } catch (e: CryptoError.ReplayDetected) {
             // Expected
@@ -296,18 +326,27 @@ class ReplayDetectionTest {
 class TicketManagerTest {
 
     @Test
-    fun `Valid ticket passes verification (mock mode)`() {
-        // With mock ticket, we skip signature check
+    fun `Ticket with correct size but zeroed signature is rejected`() {
         val serverKey = ByteArray(32).also { SecureRandom().nextBytes(it) }
         val ticketManager = TicketManager(serverKey)
 
+        // Build a 140-byte ticket with valid structure but zeroed signature
         val aId = ByteArray(32) { 0x01 }
         val bId = ByteArray(32) { 0x02 }
+        val buf = java.nio.ByteBuffer.allocate(TicketManager.TICKET_TOTAL_SIZE)
+        buf.put(aId)
+        buf.put(bId)
+        buf.putLong(System.currentTimeMillis())
+        buf.putInt(3600)
+        buf.put(ByteArray(64)) // zeroed signature
+        val fakeTicket = buf.array()
 
-        val mockTicket = ticketManager.createMockTicket(aId, bId)
-        assertNotNull(mockTicket)
-        assertEquals(3600, mockTicket.expirySeconds)
-        assertEquals(32, mockTicket.ticketHash.size)
+        try {
+            ticketManager.verifyTicket(fakeTicket)
+            fail("Zeroed signature should throw TicketSignatureInvalid")
+        } catch (e: CryptoError.TicketSignatureInvalid) {
+            // Expected — no valid mock bypass exists in production
+        }
     }
 
     @Test
@@ -453,7 +492,7 @@ class StorageHashTest {
 
         // Simulate DB row corruption: flip one bit
         val tampered = blob.copyOf()
-        tampered[0] = tampered[0].xor(0x01)
+        tampered[0] = (tampered[0].toInt() xor 0x01).toByte()
 
         val recomputed = sha256Hex(tampered)
         assertNotEquals(
@@ -520,16 +559,20 @@ class TicketTamperingTest {
 
     @Test
     fun `Flipping one byte in ticket payload invalidates signature`() {
-        // Build a structurally-valid ticket (mock), then corrupt payload byte 0
+        // Build a structurally-valid 140-byte ticket, then corrupt payload byte 0
         val serverKey = ByteArray(32).also { SecureRandom().nextBytes(it) }
         val ticketManager = TicketManager(serverKey)
 
-        val mock = ticketManager.createMockTicket(
-            ByteArray(32) { 0x01 },
-            ByteArray(32) { 0x02 }
-        )
-        val tampered = mock.rawBytes.copyOf()
-        tampered[0] = tampered[0].xor(0xFF.toByte())   // flip first byte of a_id
+        val buf = java.nio.ByteBuffer.allocate(TicketManager.TICKET_TOTAL_SIZE)
+        buf.put(ByteArray(32) { 0x01 }) // aId
+        buf.put(ByteArray(32) { 0x02 }) // bId
+        buf.putLong(System.currentTimeMillis())
+        buf.putInt(3600)
+        buf.put(ByteArray(64)) // zeroed signature
+        val original = buf.array()
+
+        val tampered = original.copyOf()
+        tampered[0] = (tampered[0].toInt() xor 0xFF).toByte()
 
         try {
             ticketManager.verifyTicket(tampered)

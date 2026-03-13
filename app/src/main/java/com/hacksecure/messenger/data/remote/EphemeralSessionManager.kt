@@ -126,6 +126,12 @@ class EphemeralSessionManager @Inject constructor(
         val identity = identityRepository.getLocalIdentity() ?: return
         val peerPubKeyBytes = android.util.Base64.decode(peerPublicKeyB64, android.util.Base64.NO_WRAP)
 
+        // JWT required for WS auth — check before creating any session state to avoid orphaned contact entries
+        val jwtToken = authStore.jwtToken ?: run {
+            Log.w(TAG, "Cannot join session $sessionUUID: no JWT available")
+            return
+        }
+
         // Save peer as a contact (ephemeral — will be deleted on session destroy)
         val contactId = UUID.randomUUID().toString()
         val contact = Contact(
@@ -159,19 +165,14 @@ class EphemeralSessionManager @Inject constructor(
             destroySession(sessionUUID)
         }
 
-        // Connect WebSocket with JWT auth — route via ?session=<UUID>&token=<JWT>
-        val jwtToken = authStore.jwtToken ?: return
+        // Connect WebSocket with JWT auth in the Authorization header.
         connectSession(session, jwtToken, identity)
 
         Log.d(TAG, "Joined session ${sessionUUID.take(8)}... (TTL=${ttlMs / 1000}s)")
     }
 
     private fun connectSession(session: EphemeralSession, jwtToken: String, identity: LocalIdentity) {
-        // Build custom WebSocket URL with session param
-        val wsUrl = "${serverConfig.relayBaseUrl}/ws?session=${session.sessionUUID}&token=$jwtToken"
-
-        // Use the WSClient's connect with session as conversationId
-        // The server will route based on ?session= param
+        // Use the WS client with session-based routing; the JWT stays in the Authorization header.
         session.wsClient.connect(session.sessionUUID, jwtToken, identity.identityHex)
 
         // Collect events
@@ -210,14 +211,22 @@ class EphemeralSessionManager @Inject constructor(
 
                     is com.cryptika.messenger.data.remote.websocket.RelayEvent.Disconnected -> {
                         Log.d(TAG, "Session ${session.sessionUUID.take(8)}... disconnected")
-                        peerDisconnectedCallbacks[session.sessionUUID]?.invoke()
-                        destroySession(session.sessionUUID)
+                        // Only notify and destroy if session was already established
+                        // (to preserve sessions from temporary network hiccups during handshake)
+                        if (session.messageProcessor != null) {
+                            peerDisconnectedCallbacks[session.sessionUUID]?.invoke()
+                            destroySession(session.sessionUUID)
+                        }
                     }
 
                     is com.cryptika.messenger.data.remote.websocket.RelayEvent.Error -> {
                         Log.e(TAG, "Session ${session.sessionUUID.take(8)}... error", event.throwable)
-                        peerDisconnectedCallbacks[session.sessionUUID]?.invoke()
-                        destroySession(session.sessionUUID)
+                        // Only notify and destroy if session was already established
+                        // (to preserve sessions from temporary errors during handshake)
+                        if (session.messageProcessor != null) {
+                            peerDisconnectedCallbacks[session.sessionUUID]?.invoke()
+                            destroySession(session.sessionUUID)
+                        }
                     }
                 }
             }
@@ -233,7 +242,7 @@ class EphemeralSessionManager @Inject constructor(
         if (ephemeralPair != null) {
             // We already sent an offer — derive session key
             try {
-                val sessionKey = withContext(Dispatchers.Default) {
+                val (_, sendRoot, recvRoot) = withContext(Dispatchers.Default) {
                     handshakeManager.deriveSessionKey(
                         offerBytes = offerPacket,
                         peerIdentityPublicKey = contact.publicKeyBytes,
@@ -244,9 +253,8 @@ class EphemeralSessionManager @Inject constructor(
                 }
                 session.ephemeralKeyPair = null
 
-                val sendRatchet = HashRatchet(sessionKey.copyOf())
-                val recvRatchet = HashRatchet(sessionKey.copyOf())
-                sessionKey.fill(0)
+                val sendRatchet = HashRatchet(sendRoot)
+                val recvRatchet = HashRatchet(recvRoot)
 
                 val processor = MessageProcessor(
                     sendRatchet = sendRatchet,
@@ -270,7 +278,7 @@ class EphemeralSessionManager @Inject constructor(
             session.wsClient.send(session.sessionUUID, "hs_${UUID.randomUUID()}", responsePacket)
 
             try {
-                val sessionKey = withContext(Dispatchers.Default) {
+                val (_, sendRoot2, recvRoot2) = withContext(Dispatchers.Default) {
                     handshakeManager.deriveSessionKey(
                         offerBytes = offerPacket,
                         peerIdentityPublicKey = contact.publicKeyBytes,
@@ -281,9 +289,8 @@ class EphemeralSessionManager @Inject constructor(
                 }
                 session.ephemeralKeyPair = null
 
-                val sendRatchet = HashRatchet(sessionKey.copyOf())
-                val recvRatchet = HashRatchet(sessionKey.copyOf())
-                sessionKey.fill(0)
+                val sendRatchet = HashRatchet(sendRoot2)
+                val recvRatchet = HashRatchet(recvRoot2)
 
                 val processor = MessageProcessor(
                     sendRatchet = sendRatchet,

@@ -52,21 +52,21 @@ class HashRatchet(initialKey: ByteArray) {
      * Returns the ratchet key for a specific counter position.
      * Used for out-of-order message reception.
      *
+     * Checks lookahead buffer first for out-of-order keys.
      * If targetCounter > currentCounter: advances ratchet, caches intermediate keys.
-     * If targetCounter == currentCounter: returns current key.
-     * If targetCounter < currentCounter: replay attack — throws ReplayDetected.
-     * If targetCounter is in lookahead buffer: returns cached key and removes from buffer.
+     * If targetCounter <= currentCounter and not in lookahead: replay — throws ReplayDetected.
      */
-    fun keyForCounter(targetCounter: Long, lastSeenCounter: Long): ByteArray {
-        if (targetCounter <= lastSeenCounter) {
-            throw CryptoError.ReplayDetected
-        }
-
+    fun keyForCounter(targetCounter: Long): ByteArray {
         // Check lookahead buffer first — handles out-of-order arrivals
         lookaheadBuffer[targetCounter]?.let { (key, _) ->
             lookaheadBuffer.remove(targetCounter)
             evictExpiredLookahead()
             return key
+        }
+
+        // Not in lookahead and behind the ratchet — replay or already consumed
+        if (targetCounter <= counter) {
+            throw CryptoError.ReplayDetected
         }
 
         // Advance ratchet to target position, caching all intermediate keys

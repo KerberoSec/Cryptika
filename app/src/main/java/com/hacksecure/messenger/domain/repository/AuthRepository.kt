@@ -16,6 +16,7 @@ interface AuthRepository {
     fun logout()
 
     suspend fun sendContactRequest(targetUsername: String, nickname: String): Result<Unit>
+    suspend fun sendContactRequestByFingerprint(targetIdentityHash: String, nickname: String): Result<Unit>
     suspend fun getPendingRequests(): Result<List<PendingRequest>>
     suspend fun acceptRequest(requestId: String): Result<AcceptRequestResponse>
     suspend fun rejectRequest(requestId: String): Result<Unit>

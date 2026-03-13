@@ -78,7 +78,7 @@ const BUFFER_TTL_MS = 3_600_000; // 1 hour
 
 // --- Auth state (Phase 1) ---
 const users = new Map(); // username â†’ { contactToken, identityHashHex, publicKeyB64, createdAt }
-const burnedTokens = new Set(); // blacklisted JWT jti values (after burn)
+const burnedTokens = new Map(); // jti → burnedAtMs — tracks revoked JWTs until their natural expiry
 
 // --- Contact request state (Phase 2) ---
 const contactRequests = new Map();  // requestId â†’ { fromToken, toToken, fromIdentityHash, fromPublicKeyB64, fromNickname, status, createdAt }
@@ -164,6 +164,20 @@ function authenticateToken(req, res, next) {
   } catch (e) {
     return res.status(401).json({ error: "Invalid or expired token" });
   }
+}
+
+function extractBearerToken(headers) {
+  const authHeader = headers?.authorization;
+  return authHeader && authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+}
+
+function findUserByIdentityHash(identityHashHex) {
+  for (const [username, user] of users.entries()) {
+    if (user?.identityHashHex === identityHashHex) {
+      return { username, user };
+    }
+  }
+  return null;
 }
 
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
@@ -254,7 +268,7 @@ app.post("/api/v1/auth/burn", authenticateToken, (req, res) => {
     users.delete(username);
 
     // Blacklist the JWT
-    if (jti) burnedTokens.add(jti);
+    if (jti) burnedTokens.set(jti, Date.now());
 
     // Cascade delete contact requests involving this user
     for (const [rid, r] of contactRequests.entries()) {
@@ -347,6 +361,76 @@ app.post("/api/v1/contact/request", authenticateToken, async (req, res) => {
   } catch (e) {
     /* blind: no logging */
     res.json({ status: "request_sent" }); // Never leak errors
+  }
+});
+
+/**
+ * POST /api/v1/contact/request-by-fingerprint
+ * Send a contact request by peer identity fingerprint (identity hash hex).
+ * Returns anti-enumeration response semantics identical to /contact/request.
+ */
+app.post("/api/v1/contact/request-by-fingerprint", authenticateToken, async (req, res) => {
+  const clientIp = req.ip || req.socket.remoteAddress;
+
+  // Same limits as username-based contact requests
+  if (isRateLimited(`creq_${clientIp}`, 10, 60_000)) {
+    return res.status(429).json({ error: "Too many requests" });
+  }
+
+  const fromToken = req.user.contactToken;
+  if (isRateLimited(`creq_daily_${fromToken}`, 20, 86_400_000)) {
+    return res.json({ status: "request_sent" });
+  }
+
+  try {
+    const { targetIdentityHash, nickname } = req.body;
+    if (!targetIdentityHash || typeof targetIdentityHash !== "string" || !/^[a-f0-9]{64}$/.test(targetIdentityHash)) {
+      return res.json({ status: "request_sent" });
+    }
+
+    const senderUser = users.get(req.user.username);
+    if (senderUser?.identityHashHex && timingSafeEqual(senderUser.identityHashHex, targetIdentityHash)) {
+      return res.json({ status: "request_sent" });
+    }
+
+    const found = findUserByIdentityHash(targetIdentityHash);
+    if (!found) {
+      return res.json({ status: "request_sent" });
+    }
+
+    const toToken = found.user.contactToken;
+    if (!toToken || timingSafeEqual(fromToken, toToken)) {
+      return res.json({ status: "request_sent" });
+    }
+
+    const existing = pendingByToken.get(toToken);
+    if (existing) {
+      for (const rid of existing) {
+        const r = contactRequests.get(rid);
+        if (r && r.fromToken === fromToken && r.status === "pending") {
+          return res.json({ status: "request_sent" });
+        }
+      }
+    }
+
+    const requestId = uuidv4();
+    contactRequests.set(requestId, {
+      fromToken,
+      toToken,
+      fromUsername: req.user.username,
+      fromIdentityHash: senderUser ? senderUser.identityHashHex : "",
+      fromPublicKeyB64: senderUser ? senderUser.publicKeyB64 : "",
+      fromNickname: nickname || req.user.username,
+      status: "pending",
+      createdAt: Date.now(),
+    });
+
+    if (!pendingByToken.has(toToken)) pendingByToken.set(toToken, new Set());
+    pendingByToken.get(toToken).add(requestId);
+
+    res.json({ status: "request_sent" });
+  } catch (e) {
+    res.json({ status: "request_sent" });
   }
 });
 
@@ -560,8 +644,9 @@ app.get("/api/v1/contact/accepted", authenticateToken, (req, res) => {
 /**
  * POST /api/v1/ticket
  * Issues a signed session ticket for a pair of identity hashes.
+ * The authenticated caller must be one of the identities in the ticket.
  */
-app.post("/api/v1/ticket", (req, res) => {
+app.post("/api/v1/ticket", authenticateToken, (req, res) => {
   const { a_id, b_id } = req.body;
 
   if (!a_id || !b_id || typeof a_id !== "string" || typeof b_id !== "string") {
@@ -573,6 +658,12 @@ app.post("/api/v1/ticket", (req, res) => {
   }
 
   try {
+    const caller = users.get(req.user.username);
+    const callerIdentityHash = caller?.identityHashHex;
+    if (!callerIdentityHash || (callerIdentityHash !== a_id && callerIdentityHash !== b_id)) {
+      return res.status(403).json({ error: "Ticket request must include caller identity" });
+    }
+
     const aIdBytes = Buffer.from(a_id, "hex");
     const bIdBytes = Buffer.from(b_id, "hex");
     const timestamp = Date.now();
@@ -602,9 +693,15 @@ app.post("/api/v1/ticket", (req, res) => {
 /**
  * POST /api/v1/presence
  */
-app.post("/api/v1/presence", (req, res) => {
+app.post("/api/v1/presence", authenticateToken, (req, res) => {
   const { identity_hash, connection_token } = req.body;
   if (!identity_hash) return res.status(400).json({ error: "identity_hash required" });
+
+  // Verify that the identity hash belongs to the authenticated caller
+  const callerIdentityHash = users.get(req.user.username)?.identityHashHex;
+  if (callerIdentityHash && identity_hash !== callerIdentityHash) {
+    return res.status(403).json({ error: "Identity hash does not match authenticated user" });
+  }
 
   const token = connection_token || crypto.randomBytes(32).toString("hex");
   presenceMap.set(identity_hash, { connectionToken: token, lastSeen: Date.now(), online: true });
@@ -675,7 +772,7 @@ wss.on("connection", (ws, req) => {
   const url = new URL(req.url, "http://localhost");
   const conversationId = url.searchParams.get("conv");
   const sessionId = url.searchParams.get("session");
-  const authTokenParam = url.searchParams.get("token"); // JWT for session auth
+  const authToken = extractBearerToken(req.headers);
 
   // Determine the room key: either a session UUID or a conversation ID
   const roomKey = sessionId || conversationId;
@@ -699,13 +796,13 @@ wss.on("connection", (ws, req) => {
     }
 
     // Authenticate: verify JWT and check participant membership
-    if (!authTokenParam) {
+    if (!authToken) {
       ws.close(4012, "Authentication required for session");
       return;
     }
     let decoded;
     try {
-      decoded = jwt.verify(authTokenParam, JWT_SECRET);
+      decoded = jwt.verify(authToken, JWT_SECRET);
     } catch (e) {
       ws.close(4013, "Invalid token");
       return;
@@ -808,7 +905,35 @@ wss.on("connection", (ws, req) => {
     ws.close(4002, "Invalid conversation ID");
     return;
   }
+  // Require JWT auth for regular conversation rooms
+  if (!authToken) {
+    ws.close(4012, "Authentication required");
+    return;
+  }
+  let convDecoded;
+  try {
+    convDecoded = jwt.verify(authToken, JWT_SECRET);
+  } catch (e) {
+    ws.close(4013, "Invalid token");
+    return;
+  }
+  if (convDecoded.jti && burnedTokens.has(convDecoded.jti)) {
+    ws.close(4013, "Token has been revoked");
+    return;
+  }
 
+  // Best-effort membership check: if the caller's identity is known, verify they are
+  // one of the two participants embedded in the standard conv ID ("<hash64>_<hash64>").
+  const convCaller = users.get(convDecoded.username);
+  if (convCaller?.identityHashHex) {
+    const parts = conversationId.split("_");
+    if (parts.length === 2 && parts[0].length === 64 && parts[1].length === 64) {
+      if (convCaller.identityHashHex !== parts[0] && convCaller.identityHashHex !== parts[1]) {
+        ws.close(4014, "Not a participant of this conversation");
+        return;
+      }
+    }
+  }
   if (!conversationSockets.has(conversationId)) {
     conversationSockets.set(conversationId, new Set());
   }
@@ -973,10 +1098,14 @@ setInterval(() => {
     }
   }
 
-  // Cleanup expired burnedTokens (keep for 35 min; JWT max 30 min + 5 min grace)
-  // burnedTokens are just jti strings; we track them in burnedTokenTimestamps
-  // Simple approach: clear all burned tokens periodically since JWTs expire after 30m anyway
-  if (burnedTokens.size > 1000) burnedTokens.clear();
+  // Cleanup expired burnedTokens: evict entries whose corresponding JWTs have expired
+  // (JWT_EXPIRY = 30 min + 5 min grace = 35 min). Never bulk-clear — that would re-validate
+  // recently revoked tokens that are still within their 30-minute window.
+  const REVOCATION_GRACE_MS = 35 * 60 * 1000;
+  const nowBurned = Date.now();
+  for (const [jti, burnedAt] of burnedTokens.entries()) {
+    if (nowBurned - burnedAt > REVOCATION_GRACE_MS) burnedTokens.delete(jti);
+  }
 }, 60_000);
 
 server.listen(PORT, () => {

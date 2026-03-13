@@ -81,6 +81,13 @@ fun QrScanScreen(
     var manualCode by remember { mutableStateOf("") }
     var keyboardVisible by remember { mutableStateOf(false) }
 
+    // Auto-open keyboard when manual entry mode is activated
+    LaunchedEffect(showManualEntry) {
+        if (showManualEntry && !keyboardVisible) {
+            keyboardVisible = true
+        }
+    }
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
@@ -282,6 +289,11 @@ fun ContactConfirmScreen(
     var showKeyChangeDialog by remember { mutableStateOf<com.cryptika.messenger.domain.model.Contact?>(null) }
     var keyboardVisible by remember { mutableStateOf(false) }
 
+    // Auto-open keyboard when screen loads
+    LaunchedEffect(Unit) {
+        keyboardVisible = true
+    }
+
     // Decode the public key
     val (publicKeyBytes, identityHash, fingerprintHex) = remember(publicKeyB64) {
         val pubKey = android.util.Base64.decode(publicKeyB64, android.util.Base64.URL_SAFE or android.util.Base64.NO_PADDING or android.util.Base64.NO_WRAP)
@@ -326,7 +338,7 @@ fun ContactConfirmScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Verify Contact") },
+                title = { Text("Add Contact") },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, "Back") } }
             )
         },
@@ -342,37 +354,26 @@ fun ContactConfirmScreen(
     ) { padding ->
         Column(
             modifier = Modifier.fillMaxSize().padding(padding).padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             Icon(
-                Icons.Filled.VerifiedUser,
+                Icons.Filled.Person,
                 null,
                 modifier = Modifier.size(64.dp).align(Alignment.CenterHorizontally),
                 tint = MaterialTheme.colorScheme.primary
             )
 
             Text(
-                "Verify Identity Fingerprint",
+                "Enter Contact Name",
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
 
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Identity Fingerprint", style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(
-                        fingerprintHex,
-                        style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
             Text(
-                "Ask your contact to read their fingerprint aloud. Make sure it matches exactly before confirming.",
+                "Give this contact a name for easy reference in your conversations.",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
 
             OutlinedTextField(
@@ -426,6 +427,7 @@ fun ContactConfirmScreen(
 fun SettingsScreen(
     onBack: () -> Unit,
     onNavigateToQrDisplay: () -> Unit,
+    onNavigateToQrScan: () -> Unit = {},
     onForceLogout: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
@@ -434,6 +436,18 @@ fun SettingsScreen(
     // Navigate to auth when identity is regenerated (force logout)
     LaunchedEffect(state.forceLogout) {
         if (state.forceLogout) onForceLogout()
+    }
+
+    var showLogoutConfirm by remember { mutableStateOf(false) }
+    var showManualQrEntry by remember { mutableStateOf(false) }
+    var manualQrCode by remember { mutableStateOf("") }
+    var manualQrKeyboardVisible by remember { mutableStateOf(false) }
+
+    // Auto-open keyboard when manual entry is activated
+    LaunchedEffect(showManualQrEntry) {
+        if (showManualQrEntry && !manualQrKeyboardVisible) {
+            manualQrKeyboardVisible = true
+        }
     }
 
     if (state.showRegenerateConfirm) {
@@ -452,6 +466,26 @@ fun SettingsScreen(
             },
             dismissButton = {
                 TextButton(onClick = viewModel::dismissRegenerateConfirm) { Text("Cancel") }
+            }
+        )
+    }
+
+    if (showLogoutConfirm) {
+        AlertDialog(
+            onDismissRequest = { showLogoutConfirm = false },
+            icon = { Icon(Icons.Filled.Logout, null, tint = MaterialTheme.colorScheme.error) },
+            title = { Text("Logout?") },
+            text = {
+                Text("This will end all active sessions and return you to the login screen.")
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showLogoutConfirm = false; viewModel.logout() },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) { Text("Logout") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutConfirm = false }) { Text("Cancel") }
             }
         )
     }
@@ -488,52 +522,63 @@ fun SettingsScreen(
             HorizontalDivider(Modifier.padding(horizontal = 16.dp))
 
             ListItem(
+                headlineContent = { Text("Scan QR Code") },
+                supportingContent = { Text("Add a contact by scanning their QR code") },
+                leadingContent = { Icon(Icons.Filled.QrCodeScanner, null) },
+                modifier = Modifier.clickable(onClick = onNavigateToQrScan)
+            )
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+
+            ListItem(
+                headlineContent = { Text("Enter Code Manually") },
+                supportingContent = { Text("Paste a cryptika:// code to add a contact") },
+                leadingContent = { Icon(Icons.Filled.Keyboard, null) },
+                modifier = Modifier.clickable { showManualQrEntry = !showManualQrEntry }
+            )
+
+            if (showManualQrEntry) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    OutlinedTextField(
+                        value = manualQrCode,
+                        onValueChange = { /* handled by secure keyboard */ },
+                        label = { Text("Contact code") },
+                        placeholder = { Text("cryptika://id/v1/...") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { manualQrKeyboardVisible = true },
+                        minLines = 2,
+                        maxLines = 4,
+                        readOnly = true
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Button(
+                        onClick = {
+                            if (manualQrCode.isNotBlank()) {
+                                showManualQrEntry = false
+                                manualQrKeyboardVisible = false
+                                // Navigate to QR scan which handles the manual processing
+                                onNavigateToQrScan()
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = manualQrCode.isNotBlank()
+                    ) { Text("Add Contact") }
+                    SecureKeyboard(
+                        visible = manualQrKeyboardVisible,
+                        onKeyPress = { key -> manualQrCode += key },
+                        onBackspace = { if (manualQrCode.isNotEmpty()) manualQrCode = manualQrCode.dropLast(1) },
+                        onDone = { manualQrKeyboardVisible = false },
+                        onToggle = { manualQrKeyboardVisible = !manualQrKeyboardVisible }
+                    )
+                }
+            }
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+
+            ListItem(
                 headlineContent = { Text("Regenerate Identity", color = MaterialTheme.colorScheme.error) },
                 supportingContent = { Text("Creates a new keypair. Existing contacts must re-verify.") },
                 leadingContent = { Icon(Icons.Filled.Refresh, null, tint = MaterialTheme.colorScheme.error) },
                 modifier = Modifier.clickable(onClick = viewModel::showRegenerateConfirm)
-            )
-
-            // ── Security ─────────────────────────────────────────────────────
-            SettingsSectionHeader("Security")
-
-            ListItem(
-                headlineContent = { Text("Screenshot Blocking") },
-                supportingContent = { Text("Prevents screenshots inside chat screens") },
-                leadingContent = { Icon(Icons.Filled.NoPhotography, null) },
-                trailingContent = {
-                    Switch(
-                        checked = state.screenshotBlockingEnabled,
-                        onCheckedChange = viewModel::setScreenshotBlocking
-                    )
-                }
-            )
-
-            // Connection
-            SettingsSectionHeader("Connection")
-
-            ListItem(
-                headlineContent = {
-                    OutlinedButton(
-                        onClick = { viewModel.pingServer() },
-                        enabled = !state.isPinging
-                    ) {
-                        if (state.isPinging) {
-                            CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
-                            Spacer(Modifier.width(6.dp))
-                        }
-                        Text("Test Connection")
-                    }
-                },
-                supportingContent = if (state.pingStatus.isNotEmpty()) ({
-                    Text(
-                        state.pingStatus,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if (state.pingStatus.startsWith("Cannot")) MaterialTheme.colorScheme.error
-                                else MaterialTheme.colorScheme.primary
-                    )
-                }) else null,
-                leadingContent = { Icon(Icons.Filled.NetworkCheck, null) }
             )
 
             // About
@@ -543,6 +588,16 @@ fun SettingsScreen(
                 headlineContent = { Text("Version") },
                 supportingContent = { Text("${AppVersion.NAME} (${AppVersion.CODE})") },
                 leadingContent = { Icon(Icons.Filled.Info, null) }
+            )
+
+            // ── Account ──────────────────────────────────────────────────────
+            SettingsSectionHeader("Account")
+
+            ListItem(
+                headlineContent = { Text("Logout", color = MaterialTheme.colorScheme.error) },
+                supportingContent = { Text("End all sessions and return to login") },
+                leadingContent = { Icon(Icons.Filled.Logout, null, tint = MaterialTheme.colorScheme.error) },
+                modifier = Modifier.clickable { showLogoutConfirm = true }
             )
 
             Spacer(Modifier.height(24.dp))
