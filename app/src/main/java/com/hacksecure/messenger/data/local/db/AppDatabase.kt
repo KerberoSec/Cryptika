@@ -139,6 +139,9 @@ interface MessageDao {
     @Query("DELETE FROM messages WHERE conversationId = :conversationId")
     suspend fun deleteConversationMessages(conversationId: String)
 
+    @Query("SELECT * FROM messages WHERE conversationId = :conversationId")
+    suspend fun getAllMessagesForConversation(conversationId: String): List<MessageEntity>
+
     @Query("SELECT MAX(counter) FROM messages WHERE conversationId = :conversationId AND senderIdHex = :senderHex")
     suspend fun getMaxCounter(conversationId: String, senderHex: String): Long?
 

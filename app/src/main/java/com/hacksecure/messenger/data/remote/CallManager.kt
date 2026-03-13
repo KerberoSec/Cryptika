@@ -97,8 +97,9 @@ class CallManager @Inject constructor(
 
         // Inactivity timeout: auto-cancel OUTGOING ring after 60 s
         private const val RING_TIMEOUT_MS = 60_000L
-        // Audio watchdog: end call if no audio received from peer for this long
-        private const val AUDIO_WATCHDOG_MS = 15_000L
+        // Audio watchdog: end call if no audio received from peer for this long.
+        // 30 s gives enough headroom for high-latency relay connections.
+        private const val AUDIO_WATCHDOG_MS = 30_000L
     }
 
     // ── Coroutine scope ───────────────────────────────────────────────────────
@@ -159,6 +160,7 @@ class CallManager @Inject constructor(
 
     /**
      * Initiates an outgoing call to the contact owning [convId].
+     * Waits up to 5 s for the relay WebSocket to connect before sending OFFER.
      * Sends a signed CALL_OFFER packet over the relay; starts a 60 s ring timeout.
      */
     fun startCall(convId: String, contact: Contact) {
@@ -175,8 +177,26 @@ class CallManager @Inject constructor(
                 val ephemeral = sessionKeyManager.generateEphemeralKeyPair()
                 ourEphemeralPair = ephemeral
 
+                // Wait up to 5 s for the WebSocket to connect — ensureConnected()
+                // starts the connection asynchronously, so it may not be ready yet.
+                val waitUntilMs = System.currentTimeMillis() + 5_000L
+                while (!backgroundConnectionManager.isConnected(convId) &&
+                    System.currentTimeMillis() < waitUntilMs) {
+                    delay(250)
+                }
+                if (!backgroundConnectionManager.isConnected(convId)) {
+                    Log.e(TAG, "startCall: WebSocket not connected for $convId — aborting call")
+                    cleanup()
+                    return@launch
+                }
+
                 val packet = buildSignalPacket(CallSignalType.OFFER, callId, ephemeral.publicKeyBytes)
-                backgroundConnectionManager.sendPacket(convId, "call_offer_${UUID.randomUUID()}", packet)
+                val sent = backgroundConnectionManager.sendPacket(convId, "call_offer_${UUID.randomUUID()}", packet)
+                if (!sent) {
+                    Log.e(TAG, "startCall: OFFER send failed — aborting call")
+                    cleanup()
+                    return@launch
+                }
 
                 _callState.value = CallState.OUTGOING_RINGING
 
@@ -217,7 +237,12 @@ class CallManager @Inject constructor(
                 ourEphemeralPair = null
 
                 val packet = buildSignalPacket(CallSignalType.ANSWER, callId, ephemeral.publicKeyBytes)
-                backgroundConnectionManager.sendPacket(convId, "call_answer_${UUID.randomUUID()}", packet)
+                val sent = backgroundConnectionManager.sendPacket(convId, "call_answer_${UUID.randomUUID()}", packet)
+                if (!sent) {
+                    Log.e(TAG, "answerCall: ANSWER send failed — aborting call")
+                    cleanup()
+                    return@launch
+                }
 
                 pendingOfferEphPub = null
                 _callState.value = CallState.ACTIVE
@@ -467,6 +492,14 @@ class CallManager @Inject constructor(
         val minRecBuf = AudioRecord.getMinBufferSize(
             SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT
         )
+        if (androidx.core.content.ContextCompat.checkSelfPermission(
+                context, android.Manifest.permission.RECORD_AUDIO
+            ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) {
+            Log.e(TAG, "RECORD_AUDIO permission not granted — aborting call")
+            cleanup()
+            return
+        }
         try {
             audioRecord = AudioRecord(
                 MediaRecorder.AudioSource.VOICE_COMMUNICATION,
@@ -499,10 +532,11 @@ class CallManager @Inject constructor(
                     if (bytesRead <= 0) continue
 
                     val key = encryptKey ?: break
-                    if (isMuted) continue  // capture but discard, so buffer stays drained
-
+                    // Keep packet cadence even while muted by sending encrypted silence.
+                    // This prevents remote watchdog timeouts when one side mutes.
+                    val payload = if (isMuted) ByteArray(bytesRead) else pcmBuf.copyOf(bytesRead)
                     val seq = sendSequenceAtomic.getAndIncrement()
-                    val framePacket = buildAudioFrame(key, pcmBuf.copyOf(bytesRead), seq)
+                    val framePacket = buildAudioFrame(key, payload, seq)
                     backgroundConnectionManager.sendPacket(convId, "af_${seq}", framePacket)
                 } catch (_: Exception) { /* drop frame on transient error */ }
             }

@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.activity.compose.BackHandler
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
@@ -42,20 +43,34 @@ fun ChatScreen(
     var keyboardVisible by remember { mutableStateOf(false) }
     val lifecycleOwner = LocalLifecycleOwner.current
 
+    val handleBack: () -> Unit = {
+        viewModel.exitCurrentChat()
+        onForceLogout()
+    }
+
+    BackHandler { handleBack() }
+
     // Register ViewModel as lifecycle observer for background/foreground reconnect
     DisposableEffect(lifecycleOwner) {
         lifecycleOwner.lifecycle.addObserver(viewModel)
         onDispose { lifecycleOwner.lifecycle.removeObserver(viewModel) }
     }
 
-    // Per-chat screenshot blocking: apply FLAG_SECURE only while inside a chat
+    // Auto-open keyboard when session is established
+    LaunchedEffect(state.sessionEstablished) {
+        if (state.sessionEstablished && !keyboardVisible) {
+            keyboardVisible = true
+        }
+    }
+
+    // Peer-controlled screenshot policy: apply FLAG_SECURE only when peer disallows screenshots.
     val context = LocalContext.current
-    DisposableEffect(Unit) {
+    DisposableEffect(state.screenshotsAllowedOnThisDevice) {
         val activity = context as? android.app.Activity
-        val prefs = context.getSharedPreferences("cryptika_settings", android.content.Context.MODE_PRIVATE)
-        val blockingEnabled = prefs.getBoolean("screenshot_blocking", true)
-        if (blockingEnabled && activity != null) {
+        if (!state.screenshotsAllowedOnThisDevice && activity != null) {
             activity.window.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+        } else {
+            activity?.window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
         }
         onDispose {
             // Always clear FLAG_SECURE when leaving the chat screen
@@ -124,20 +139,23 @@ fun ChatScreen(
                 contact = state.contact,
                 connectionState = state.connectionState,
                 sessionEstablished = state.sessionEstablished,
-                onBack = onBack,
+                onBack = handleBack,
                 onStartCall = if (state.isEphemeral) {{}} else onStartCall,
-                ephemeralState = state.ephemeralState
+                ephemeralState = state.ephemeralState,
+                allowPeerScreenshots = state.allowPeerScreenshots,
+                onTogglePeerScreenshotPermission = {
+                    viewModel.setAllowPeerScreenshots(!state.allowPeerScreenshots)
+                }
             )
         },
         bottomBar = {
             if (!isEphemeralExpired) {
-                Column {
+                Column(modifier = Modifier.fillMaxWidth()) {
                     ChatInputBar(
                         text = state.inputText,
                         onTextChange = { /* handled by secure keyboard */ },
                         onSend = {
                             viewModel.sendMessage()
-                            keyboardVisible = false
                         },
                         sessionEstablished = state.sessionEstablished,
                         expirySeconds = state.selectedExpirySeconds,
@@ -266,6 +284,8 @@ private fun ChatTopBar(
     sessionEstablished: Boolean,
     onBack: () -> Unit,
     onStartCall: () -> Unit = {},
+    allowPeerScreenshots: Boolean,
+    onTogglePeerScreenshotPermission: () -> Unit,
     ephemeralState: com.cryptika.messenger.domain.model.EphemeralSessionState = com.cryptika.messenger.domain.model.EphemeralSessionState.None
 ) {
     TopAppBar(
@@ -301,9 +321,9 @@ private fun ChatTopBar(
                         }
                         else -> {
                             Text(
-                                text = connectionState.label,
+                                text = if (sessionEstablished) "Connected" else connectionState.label,
                                 style = MaterialTheme.typography.labelSmall,
-                                color = connectionState.indicatorColor()
+                                color = if (sessionEstablished) MaterialTheme.colorScheme.primary else connectionState.indicatorColor()
                             )
                         }
                     }
@@ -316,6 +336,13 @@ private fun ChatTopBar(
             }
         },
         actions = {
+            IconButton(onClick = onTogglePeerScreenshotPermission) {
+                Icon(
+                    imageVector = if (allowPeerScreenshots) Icons.Filled.PhotoCamera else Icons.Filled.NoPhotography,
+                    contentDescription = if (allowPeerScreenshots) "Peer screenshots allowed" else "Peer screenshots blocked",
+                    tint = if (allowPeerScreenshots) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                )
+            }
             if (contact?.hasKeyChanged == true) {
                 IconButton(onClick = {}) {
                     Icon(Icons.Filled.Warning, "Key Change Warning", tint = WarningAmber)

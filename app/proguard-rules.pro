@@ -29,3 +29,9 @@
 
 # ZXing
 -keep class com.google.zxing.** { *; }
+
+# Google Tink / error-prone annotations (transitive via AndroidX Security Crypto)
+-dontwarn com.google.errorprone.annotations.CanIgnoreReturnValue
+-dontwarn com.google.errorprone.annotations.CheckReturnValue
+-dontwarn com.google.errorprone.annotations.Immutable
+-dontwarn com.google.errorprone.annotations.RestrictedApi

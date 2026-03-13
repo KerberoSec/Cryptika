@@ -270,7 +270,8 @@ fun CryptikaNavGraph() {
                 onBack = { navController.popBackStack() },
                 onStartCall = {
                     navController.navigate(Routes.call(contactId, isIncoming = false))
-                }
+                },
+                onForceLogout = forceLogout
             )
         }
 
@@ -296,6 +297,7 @@ fun CryptikaNavGraph() {
             SettingsScreen(
                 onBack = { navController.popBackStack() },
                 onNavigateToQrDisplay = { navController.navigate(Routes.QR_DISPLAY) },
+                onNavigateToQrScan = { navController.navigate(Routes.QR_SCAN) },
                 onForceLogout = forceLogout
             )
         }

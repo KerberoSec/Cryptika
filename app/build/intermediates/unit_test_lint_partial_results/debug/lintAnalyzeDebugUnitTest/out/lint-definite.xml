@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.11.2" type="incidents">
+
+    <incident
+        id="Aligned16KB"
+        severity="warning"
+        message="The native library `arm64-v8a/libsqlcipher.so` (from `net.zetetic:android-database-sqlcipher:4.5.4`) is not 16 KB aligned">
+        <location
+            file="$GRADLE_USER_HOME/caches/8.13/transforms/ffb651704125d7564d35434eddff371f/transformed/jetified-android-database-sqlcipher-4.5.4/jni/arm64-v8a/libsqlcipher.so"/>
+    </incident>
+
+</incidents>

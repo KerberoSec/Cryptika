@@ -27,6 +27,11 @@ data class ContactRequestBody(
     val nickname: String
 )
 
+data class ContactRequestByFingerprintBody(
+    val targetIdentityHash: String,
+    val nickname: String
+)
+
 data class ContactRequestResponse(val status: String)
 
 data class PendingRequest(
@@ -79,6 +84,13 @@ interface AuthApi {
         @Url url: String,
         @Header("Authorization") auth: String,
         @Body request: ContactRequestBody
+    ): ContactRequestResponse
+
+    @POST
+    suspend fun sendContactRequestByFingerprint(
+        @Url url: String,
+        @Header("Authorization") auth: String,
+        @Body request: ContactRequestByFingerprintBody
     ): ContactRequestResponse
 
     @GET

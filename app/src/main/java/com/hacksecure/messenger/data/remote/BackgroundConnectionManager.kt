@@ -17,6 +17,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.cryptika.messenger.MainActivity
 import com.cryptika.messenger.R
+import com.cryptika.messenger.data.local.AuthStore
 import com.cryptika.messenger.data.local.db.ConversationDao
 import com.cryptika.messenger.data.local.db.ConversationEntity
 import com.cryptika.messenger.data.remote.api.PresenceRequest
@@ -65,6 +66,7 @@ class BackgroundConnectionManager @Inject constructor(
     private val identityKeyManager: IdentityKeyManager,
     private val ticketManager: TicketManager,
     private val relayApi: RelayApi,
+    private val authStore: AuthStore,
     private val serverConfig: ServerConfig,
     private val okHttpClient: OkHttpClient,
     // Lazy<CallManager> breaks the circular dependency:
@@ -255,30 +257,50 @@ class BackgroundConnectionManager @Inject constructor(
 
     private suspend fun connectConversation(state: ConvState) {
         try {
-            // Register presence
-            val connectionToken = UUID.randomUUID().toString()
-            val presence = relayApi.registerPresence(
-                url = "${serverConfig.apiBaseUrl}/api/v1/presence",
-                request = PresenceRequest(
-                    identity_hash = state.myIdentity.identityHex,
-                    connection_token = connectionToken
+            // JWT is required for all server interactions: presence, ticket, and WS auth.
+            val jwtToken = authStore.jwtToken
+            if (jwtToken.isNullOrBlank()) {
+                Log.w(TAG, "Skipping connection for ${state.conversationId.take(16)}: no JWT available")
+                return
+            }
+
+            // Register presence (non-blocking on failure)
+            try {
+                relayApi.registerPresence(
+                    url = "${serverConfig.apiBaseUrl}/api/v1/presence",
+                    auth = "Bearer $jwtToken",
+                    request = PresenceRequest(
+                        identity_hash = state.myIdentity.identityHex,
+                        connection_token = UUID.randomUUID().toString()
+                    )
                 )
-            )
-            val authToken = presence.token ?: connectionToken
+            } catch (e: Exception) {
+                Log.w(TAG, "Presence registration failed for ${state.conversationId.take(16)}: ${e.message}")
+            }
 
             // Request and verify session ticket (non-blocking on failure)
             try {
                 val sorted = listOf(state.myIdentity.identityHex, state.contact.identityHex).sorted()
                 val ticketResponse = relayApi.requestTicket(
                     url = "${serverConfig.apiBaseUrl}/api/v1/ticket",
+                    auth = "Bearer $jwtToken",
                     request = TicketRequest(a_id = sorted[0], b_id = sorted[1])
                 )
                 val ticketBytes = Base64.getDecoder().decode(ticketResponse.ticket_b64)
-                state.verifiedTicket = ticketManager.verifyTicket(ticketBytes)
-            } catch (_: Exception) { /* ticket is advisory — fall through without ticket binding */ }
+                val verified = ticketManager.verifyTicket(ticketBytes)
+                // Validate ticket participants match this conversation
+                ticketManager.validateParticipants(
+                    verified,
+                    state.myIdentity.identityHash,
+                    state.contact.identityHash
+                )
+                state.verifiedTicket = verified
+            } catch (e: Exception) {
+                Log.w(TAG, "Ticket fetch/verify failed for ${state.conversationId.take(16)}: ${e.message}. Proceeding without ticket binding.")
+            }
 
-            // Connect WebSocket (RelayWebSocketClient handles auto-reconnect internally)
-            state.wsClient.connect(state.conversationId, authToken, state.myIdentity.identityHex)
+            // Connect WebSocket with JWT auth in the Authorization header
+            state.wsClient.connect(state.conversationId, jwtToken, state.myIdentity.identityHex)
 
             // Collect relay events for this conversation
             state.collectionJob = scope.launch {
@@ -371,7 +393,7 @@ class BackgroundConnectionManager @Inject constructor(
         val ephemeralPair = state.ourEphemeralPair ?: return
 
         try {
-            val sessionKey = withContext(Dispatchers.Default) {
+            val (_, sendRoot, recvRoot) = withContext(Dispatchers.Default) {
                 handshakeManager.deriveSessionKey(
                     offerBytes = offerBytes,
                     peerIdentityPublicKey = state.contact.publicKeyBytes,
@@ -384,9 +406,8 @@ class BackgroundConnectionManager @Inject constructor(
             state.ourEphemeralPair = null
             state.verifiedTicket = null  // clear after use — ticketHash no longer needed
 
-            val sendRatchet = HashRatchet(sessionKey.copyOf())
-            val recvRatchet = HashRatchet(sessionKey.copyOf())
-            sessionKey.fill(0) // zeroize root
+            val sendRatchet = HashRatchet(sendRoot)
+            val recvRatchet = HashRatchet(recvRoot)
 
             val processor = MessageProcessor(
                 sendRatchet = sendRatchet,
@@ -433,7 +454,7 @@ class BackgroundConnectionManager @Inject constructor(
                 counter = header.counter,
                 expirySeconds = header.expirySeconds,
                 expiryDeadlineMs = if (header.expirySeconds > 0)
-                    now + (header.expirySeconds * 1000L) else null,
+                    header.timestampMs + (header.expirySeconds * 1000L) else null,
                 isOutgoing = false,
                 state = MessageState.DELIVERED,
                 messageType = header.messageType
@@ -460,9 +481,11 @@ class BackgroundConnectionManager @Inject constructor(
                 // Show notification with unread count
                 showUnreadNotification(state.contact.displayName, state.conversationId)
             }
-        } catch (_: CryptoError) {
-            // Silently discard messages that fail crypto checks in background
-        } catch (_: Exception) { }
+        } catch (e: CryptoError) {
+            Log.w("BGConn", "Crypto check failed for msg $messageId: ${e::class.simpleName}")
+        } catch (e: Exception) {
+            Log.w("BGConn", "Background receive failed for msg $messageId", e)
+        }
     }
 
     // ── Shutdown ──────────────────────────────────────────────────────────────

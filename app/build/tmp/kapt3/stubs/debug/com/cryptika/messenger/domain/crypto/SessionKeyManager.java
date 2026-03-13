@@ -15,7 +15,7 @@ import java.security.SecureRandom;
  * The ephemeral key pair is generated once per session.
  * Private key is ZEROIZED immediately after shared secret computation.
  */
-@kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000*\n\u0002\u0018\u0002\n\u0002\u0010\u0000\n\u0002\b\u0002\n\u0002\u0010\u0012\n\u0000\n\u0002\u0018\u0002\n\u0002\b\u0007\n\u0002\u0010\t\n\u0002\b\u0002\n\u0002\u0010\u0002\n\u0002\b\u0003\u0018\u00002\u00020\u0001:\u0001\u0013B\u0005\u00a2\u0006\u0002\u0010\u0002J\u0016\u0010\u0003\u001a\u00020\u00042\u0006\u0010\u0005\u001a\u00020\u00062\u0006\u0010\u0007\u001a\u00020\u0004J.\u0010\b\u001a\u00020\u00042\u0006\u0010\t\u001a\u00020\u00042\u0006\u0010\n\u001a\u00020\u00042\u0006\u0010\u000b\u001a\u00020\u00042\u0006\u0010\f\u001a\u00020\u00042\u0006\u0010\r\u001a\u00020\u000eJ\u0006\u0010\u000f\u001a\u00020\u0006J\u000e\u0010\u0010\u001a\u00020\u00112\u0006\u0010\u0012\u001a\u00020\u0004\u00a8\u0006\u0014"}, d2 = {"Lcom/cryptika/messenger/domain/crypto/SessionKeyManager;", "", "()V", "computeSharedSecret", "", "ephemeralKeyPair", "Lcom/cryptika/messenger/domain/crypto/SessionKeyManager$EphemeralKeyPair;", "peerPublicKeyBytes", "deriveSessionKey", "sharedSecret", "aIdentityHash", "bIdentityHash", "ticketHash", "timestampMs", "", "generateEphemeralKeyPair", "zeroize", "", "key", "EphemeralKeyPair", "Cryptika_debug"})
+@kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u00002\n\u0002\u0018\u0002\n\u0002\u0010\u0000\n\u0002\b\u0002\n\u0002\u0010\u0012\n\u0000\n\u0002\u0018\u0002\n\u0002\b\u0002\n\u0002\u0018\u0002\n\u0002\b\t\n\u0002\u0010\t\n\u0002\b\u0002\n\u0002\u0010\u0002\n\u0002\b\u0003\u0018\u00002\u00020\u0001:\u0001\u0018B\u0005\u00a2\u0006\u0002\u0010\u0002J\u0016\u0010\u0003\u001a\u00020\u00042\u0006\u0010\u0005\u001a\u00020\u00062\u0006\u0010\u0007\u001a\u00020\u0004J*\u0010\b\u001a\u000e\u0012\u0004\u0012\u00020\u0004\u0012\u0004\u0012\u00020\u00040\t2\u0006\u0010\n\u001a\u00020\u00042\u0006\u0010\u000b\u001a\u00020\u00042\u0006\u0010\f\u001a\u00020\u0004J.\u0010\r\u001a\u00020\u00042\u0006\u0010\u000e\u001a\u00020\u00042\u0006\u0010\u000f\u001a\u00020\u00042\u0006\u0010\u0010\u001a\u00020\u00042\u0006\u0010\u0011\u001a\u00020\u00042\u0006\u0010\u0012\u001a\u00020\u0013J\u0006\u0010\u0014\u001a\u00020\u0006J\u000e\u0010\u0015\u001a\u00020\u00162\u0006\u0010\u0017\u001a\u00020\u0004\u00a8\u0006\u0019"}, d2 = {"Lcom/cryptika/messenger/domain/crypto/SessionKeyManager;", "", "()V", "computeSharedSecret", "", "ephemeralKeyPair", "Lcom/cryptika/messenger/domain/crypto/SessionKeyManager$EphemeralKeyPair;", "peerPublicKeyBytes", "deriveDirectionalRoots", "Lkotlin/Pair;", "sessionKey", "myIdentityHash", "peerIdentityHash", "deriveSessionKey", "sharedSecret", "aIdentityHash", "bIdentityHash", "ticketHash", "timestampMs", "", "generateEphemeralKeyPair", "zeroize", "", "key", "EphemeralKeyPair", "Cryptika_debug"})
 public final class SessionKeyManager {
     
     public SessionKeyManager() {
@@ -62,6 +62,34 @@ public final class SessionKeyManager {
     byte[] aIdentityHash, @org.jetbrains.annotations.NotNull()
     byte[] bIdentityHash, @org.jetbrains.annotations.NotNull()
     byte[] ticketHash, long timestampMs) {
+        return null;
+    }
+    
+    /**
+     * Derives direction-separated ratchet roots from a session key.
+     *
+     * Both peers MUST agree on who is "A" and who is "B" (smaller identity hash = A).
+     * A's send root = B's receive root and vice versa, preventing key/nonce reuse.
+     *
+     * sendRoot = SHA-256(sessionKey ∥ "SEND" ∥ myIdentityHash)
+     * recvRoot = SHA-256(sessionKey ∥ "RECV" ∥ myIdentityHash)
+     *
+     * Since both peers use their own identity hash with complementary labels,
+     * A_send = SHA-256(K ∥ "SEND" ∥ A_id) == B_recv because B computes
+     * SHA-256(K ∥ "RECV" ∥ B_id)... — NO. Instead, use canonical roles:
+     *
+     * roleA_root = SHA-256(sessionKey ∥ "A_TO_B")
+     * roleB_root = SHA-256(sessionKey ∥ "B_TO_A")
+     *
+     * The peer with the lexicographically smaller identity hash is "A".
+     *
+     * @return Pair of (sendRoot, recvRoot) — each 32 bytes
+     */
+    @org.jetbrains.annotations.NotNull()
+    public final kotlin.Pair<byte[], byte[]> deriveDirectionalRoots(@org.jetbrains.annotations.NotNull()
+    byte[] sessionKey, @org.jetbrains.annotations.NotNull()
+    byte[] myIdentityHash, @org.jetbrains.annotations.NotNull()
+    byte[] peerIdentityHash) {
         return null;
     }
     

@@ -10,65 +10,65 @@
 10
 11    <!-- Networking -->
 12    <uses-permission android:name="android.permission.INTERNET" />
-12-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:6:5-66
-12-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:6:22-64
+12-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:6:5-66
+12-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:6:22-64
 13    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-13-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:7:5-78
-13-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:7:22-76
+13-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:7:5-78
+13-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:7:22-76
 14
 15    <!-- Camera for QR scanning -->
 16    <uses-permission android:name="android.permission.CAMERA" />
-16-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:10:5-64
-16-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:10:22-62
+16-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:10:5-64
+16-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:10:22-62
 17
 18    <uses-feature
-18-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:11:5-84
+18-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:11:5-84
 19        android:name="android.hardware.camera"
-19-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:11:19-57
+19-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:11:19-57
 20        android:required="false" />
-20-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:11:58-82
+20-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:11:58-82
 21
 22    <!-- WorkManager -->
 23    <uses-permission android:name="android.permission.WAKE_LOCK" />
-23-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:14:5-67
-23-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:14:22-65
+23-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:14:5-67
+23-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:14:22-65
 24    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-24-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:15:5-80
-24-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:15:22-78
+24-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:15:5-80
+24-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:15:22-78
 25
 26    <!-- Vibrate for notifications -->
 27    <uses-permission android:name="android.permission.VIBRATE" />
-27-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:18:5-65
-27-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:18:22-63
+27-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:18:5-65
+27-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:18:22-63
 28
 29    <!-- Foreground service: keeps WebSocket connections alive in background -->
 30    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-30-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:21:5-76
-30-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:21:22-74
+30-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:21:5-76
+30-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:21:22-74
 31    <!-- API 34: required for foreground service type "remoteMessaging" -->
 32    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING" />
-32-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:23:5-93
-32-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:23:22-91
+32-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:23:5-93
+32-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:23:22-91
 33    <!-- API 34: required for foreground service type "microphone" (voice calls) -->
 34    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
-34-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:25:5-87
-34-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:25:22-85
+34-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:25:5-87
+34-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:25:22-85
 35
 36    <!-- Notifications (API 33+ requires runtime permission) -->
 37    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-37-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:28:5-76
-37-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:28:22-74
+37-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:28:5-76
+37-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:28:22-74
 38
 39    <!-- Voice calls — microphone capture and audio mode control -->
 40    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-40-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:31:5-70
-40-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:31:22-68
+40-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:31:5-70
+40-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:31:22-68
 41    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-41-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:32:5-75
-41-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:32:22-73
+41-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:32:5-75
+41-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:32:22-73
 42    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
-42-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:33:5-79
-42-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:33:22-77
+42-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:33:5-79
+42-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:33:22-77
 43
 44    <permission
 44-->[androidx.core:core:1.12.0] C:\Users\arung\.gradle\caches\8.13\transforms\3508c942acd3b718df66ef05b637efd1\transformed\core-1.12.0\AndroidManifest.xml:22:5-24:47
@@ -115,84 +115,83 @@
 66
 67    <application
 68        android:name="com.cryptika.messenger.CryptikaApp"
-68-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:36:9-36
+68-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:36:9-36
 69        android:allowBackup="false"
-69-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:37:9-36
+69-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:37:9-36
 70        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
 70-->[androidx.core:core:1.12.0] C:\Users\arung\.gradle\caches\8.13\transforms\3508c942acd3b718df66ef05b637efd1\transformed\core-1.12.0\AndroidManifest.xml:28:18-86
 71        android:dataExtractionRules="@xml/data_extraction_rules"
-71-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:38:9-65
+71-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:38:9-65
 72        android:debuggable="true"
 73        android:extractNativeLibs="false"
 74        android:fullBackupContent="false"
-74-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:39:9-42
+74-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:39:9-42
 75        android:hardwareAccelerated="true"
-75-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:45:9-43
+75-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:45:9-43
 76        android:icon="@mipmap/ic_launcher"
-76-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:41:9-43
+76-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:41:9-43
 77        android:label="Cryptika"
-77-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:40:9-33
+77-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:40:9-33
 78        android:roundIcon="@mipmap/ic_launcher_round"
-78-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:42:9-54
+78-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:42:9-54
 79        android:supportsRtl="true"
-79-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:43:9-35
+79-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:43:9-35
 80        android:theme="@style/Theme.Cryptika"
-80-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:44:9-46
+80-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:44:9-46
 81        android:usesCleartextTraffic="true" >
-81-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:46:9-63
+81-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:46:9-63
 82        <activity
-82-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:48:9-65:20
+82-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:48:9-65:20
 83            android:name="com.cryptika.messenger.MainActivity"
-83-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:49:13-41
+83-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:49:13-41
 84            android:exported="true"
-84-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:50:13-36
+84-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:50:13-36
 85            android:screenOrientation="portrait"
-85-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:52:13-49
+85-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:52:13-49
 86            android:windowSoftInputMode="stateAlwaysHidden|adjustResize" >
-86-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:51:13-73
+86-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:51:13-73
 87            <intent-filter>
-87-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:53:13-56:29
+87-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:53:13-56:29
 88                <action android:name="android.intent.action.MAIN" />
-88-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:54:17-68
-88-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:54:25-66
+88-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:54:17-68
+88-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:54:25-66
 89
 90                <category android:name="android.intent.category.LAUNCHER" />
-90-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:55:17-76
-90-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:55:27-74
+90-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:55:17-76
+90-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:55:27-74
 91            </intent-filter>
 92
 93            <!-- Deep link handler for QR codes -->
-94            <intent-filter android:autoVerify="true" >
-94-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:59:13-64:29
-94-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:59:28-53
+94            <intent-filter>
+94-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:59:13-64:29
 95                <action android:name="android.intent.action.VIEW" />
-95-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:60:17-68
-95-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:60:25-66
+95-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:60:17-68
+95-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:60:25-66
 96
 97                <category android:name="android.intent.category.DEFAULT" />
-97-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:61:17-75
-97-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:61:27-73
+97-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:61:17-75
+97-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:61:27-73
 98                <category android:name="android.intent.category.BROWSABLE" />
-98-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:62:17-77
-98-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:62:27-75
+98-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:62:17-77
+98-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:62:27-75
 99
 100                <data
-100-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:63:17-68
+100-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:63:17-68
 101                    android:host="id"
-101-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:63:49-66
+101-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:63:49-66
 102                    android:scheme="cryptika" />
-102-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:63:23-48
+102-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:63:23-48
 103            </intent-filter>
 104        </activity>
 105
 106        <!-- WorkManager Provider -->
 107        <provider
 108            android:name="androidx.startup.InitializationProvider"
-108-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:69:13-67
+108-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:69:13-67
 109            android:authorities="com.cryptika.messenger.debug.androidx-startup"
-109-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:70:13-68
+109-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:70:13-68
 110            android:exported="false" >
-110-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:71:13-37
+110-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:71:13-37
 111            <meta-data
 111-->[androidx.emoji2:emoji2:1.3.0] C:\Users\arung\.gradle\caches\8.13\transforms\25374ad2e74d9c7d409e436b220b65d2\transformed\jetified-emoji2-1.3.0\AndroidManifest.xml:29:13-31:52
 112                android:name="androidx.emoji2.text.EmojiCompatInitializer"
@@ -218,26 +217,26 @@
 124             can maintain WebSocket relay connections while app is backgrounded
 125        -->
 126        <service
-126-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:81:9-84:39
+126-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:81:9-84:39
 127            android:name="com.cryptika.messenger.data.remote.ConnectionForegroundService"
-127-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:82:13-68
+127-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:82:13-68
 128            android:exported="false"
-128-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:84:13-37
+128-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:84:13-37
 129            android:foregroundServiceType="remoteMessaging" />
-129-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:83:13-60
+129-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:83:13-60
 130
 131        <!--
 132             Foreground service: keeps AudioRecord/AudioTrack alive during an active call
 133             when the app is backgrounded (microphone type required on API 29+)
 134        -->
 135        <service
-135-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:88:9-91:39
+135-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:88:9-91:39
 136            android:name="com.cryptika.messenger.data.remote.CallForegroundService"
-136-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:89:13-62
+136-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:89:13-62
 137            android:exported="false"
-137-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:91:13-37
+137-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:91:13-37
 138            android:foregroundServiceType="microphone" />
-138-->C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\AndroidManifest.xml:90:13-55
+138-->E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\AndroidManifest.xml:90:13-55
 139
 140        <!--
 141        Service for holding metadata. Cannot be instantiated.

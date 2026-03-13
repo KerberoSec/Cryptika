@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.cryptika.messenger.crypto.IdentityHashTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-03-13T03:46:37.500Z" hostname="DESKTOP-P3C3923" time="0.037">
+  <properties/>
+  <testcase name="SHA256 of zeros 32 bytes matches known vector" classname="com.cryptika.messenger.crypto.IdentityHashTest" time="0.035"/>
+  <testcase name="SHA256 of different inputs produces different hashes" classname="com.cryptika.messenger.crypto.IdentityHashTest" time="0.001"/>
+  <testcase name="SHA256 is deterministic" classname="com.cryptika.messenger.crypto.IdentityHashTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

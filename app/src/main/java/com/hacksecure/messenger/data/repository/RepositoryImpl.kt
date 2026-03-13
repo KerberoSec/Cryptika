@@ -198,8 +198,14 @@ class MessageRepositoryImpl @Inject constructor(
         dao.deleteMessage(entity.id)
     }
 
-    override suspend fun deleteConversationMessages(conversationId: String) =
+    override suspend fun deleteConversationMessages(conversationId: String) {
+        // Delete per-message Keystore keys BEFORE removing DB rows (cryptographic erasure)
+        val messages = dao.getAllMessagesForConversation(conversationId)
+        messages.forEach { entity ->
+            try { keystoreManager.deleteKeyByAlias(entity.storageKeyAlias) } catch (_: Exception) {}
+        }
         dao.deleteConversationMessages(conversationId)
+    }
 
     override suspend fun getMaxCounter(conversationId: String, senderHex: String): Long =
         dao.getMaxCounter(conversationId, senderHex) ?: 0L

@@ -7,7 +7,6 @@ import com.cryptika.messenger.data.remote.EphemeralSessionManager
 import com.cryptika.messenger.data.remote.api.AcceptRequestResponse
 import com.cryptika.messenger.data.remote.api.PendingRequest
 import com.cryptika.messenger.domain.repository.AuthRepository
-import com.cryptika.messenger.domain.repository.IdentityRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,8 +28,7 @@ data class AuthUiState(
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val authRepository: AuthRepository,
-    private val identityRepository: IdentityRepository
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthUiState(
@@ -47,10 +45,10 @@ class AuthViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            // Ensure a fresh identity exists
-            if (identityRepository.getLocalIdentity() == null) {
-                identityRepository.generateIdentity()
-            }
+            // Identity is stable across logins: rotating on every login would
+            // break Ed25519 signature verification for all existing contacts,
+            // silently killing calls and messages. Explicit rotation is still
+            // available via the "Regenerate Identity" button in Settings.
             authRepository.enter(username)
                 .onSuccess {
                     _uiState.update {
@@ -118,6 +116,25 @@ class ContactDiscoveryViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null, requestSent = false) }
             authRepository.sendContactRequest(targetUsername, nickname)
+                .onSuccess {
+                    _uiState.update { it.copy(isLoading = false, requestSent = true) }
+                }
+                .onFailure { e ->
+                    _uiState.update { it.copy(isLoading = false, error = e.message) }
+                }
+        }
+    }
+
+    fun sendContactRequestByFingerprint(targetIdentityHash: String) {
+        val nickname = "User_${java.util.UUID.randomUUID().toString().take(8)}"
+        val normalized = targetIdentityHash.trim().lowercase().replace(" ", "")
+        if (!normalized.matches(Regex("^[a-f0-9]{64}$"))) {
+            _uiState.update { it.copy(error = "Fingerprint must be exactly 64 hex characters") }
+            return
+        }
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null, requestSent = false) }
+            authRepository.sendContactRequestByFingerprint(normalized, nickname)
                 .onSuccess {
                     _uiState.update { it.copy(isLoading = false, requestSent = true) }
                 }

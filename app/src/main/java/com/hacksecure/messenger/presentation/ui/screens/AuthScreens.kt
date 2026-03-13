@@ -115,7 +115,9 @@ fun AuthScreen(
                 label = { Text("Username") },
                 singleLine = true,
                 readOnly = true,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { keyboardVisible = true },
                 enabled = !uiState.isLoading,
                 supportingText = { Text("Case-sensitive • Tap keyboard below to type") }
             )
@@ -170,8 +172,10 @@ fun ContactDiscoveryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var targetUsername by remember { mutableStateOf("") }
+    var targetFingerprint by remember { mutableStateOf("") }
     var setupDisplayName by remember { mutableStateOf("") }
     var keyboardVisible by remember { mutableStateOf(false) }
+    var connectMode by remember { mutableStateOf("username") }
     // Which field is active: "target" for contact search, "displayName" for setup dialog
     var activeField by remember { mutableStateOf("target") }
 
@@ -311,13 +315,21 @@ fun ContactDiscoveryScreen(
                 visible = keyboardVisible,
                 onKeyPress = { key ->
                     when (activeField) {
-                        "target" -> targetUsername += key
+                        "target" -> {
+                            if (connectMode == "username") targetUsername += key else targetFingerprint += key
+                        }
                         "displayName" -> setupDisplayName += key
                     }
                 },
                 onBackspace = {
                     when (activeField) {
-                        "target" -> if (targetUsername.isNotEmpty()) targetUsername = targetUsername.dropLast(1)
+                        "target" -> {
+                            if (connectMode == "username") {
+                                if (targetUsername.isNotEmpty()) targetUsername = targetUsername.dropLast(1)
+                            } else {
+                                if (targetFingerprint.isNotEmpty()) targetFingerprint = targetFingerprint.dropLast(1)
+                            }
+                        }
                         "displayName" -> if (setupDisplayName.isNotEmpty()) setupDisplayName = setupDisplayName.dropLast(1)
                     }
                 },
@@ -346,10 +358,30 @@ fun ContactDiscoveryScreen(
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(8.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FilterChip(
+                            selected = connectMode == "username",
+                            onClick = { connectMode = "username" },
+                            label = { Text("Username") }
+                        )
+                        FilterChip(
+                            selected = connectMode == "fingerprint",
+                            onClick = { connectMode = "fingerprint" },
+                            label = { Text("Fingerprint") }
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
-                        value = targetUsername,
+                        value = if (connectMode == "username") targetUsername else targetFingerprint,
                         onValueChange = { /* handled by secure keyboard */ },
-                        label = { Text("Username") },
+                        label = {
+                            Text(if (connectMode == "username") "Username" else "Identity Fingerprint")
+                        },
+                        supportingText = {
+                            if (connectMode == "fingerprint") {
+                                Text("Enter 64-character hex fingerprint")
+                            }
+                        },
                         singleLine = true,
                         readOnly = true,
                         modifier = Modifier
@@ -363,10 +395,16 @@ fun ContactDiscoveryScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(
                         onClick = {
-                            viewModel.sendContactRequest(targetUsername.trim())
-                            targetUsername = ""
+                            if (connectMode == "username") {
+                                viewModel.sendContactRequest(targetUsername.trim())
+                                targetUsername = ""
+                            } else {
+                                viewModel.sendContactRequestByFingerprint(targetFingerprint)
+                                targetFingerprint = ""
+                            }
                         },
-                        enabled = !uiState.isLoading && targetUsername.isNotBlank(),
+                        enabled = !uiState.isLoading &&
+                            (if (connectMode == "username") targetUsername.isNotBlank() else targetFingerprint.isNotBlank()),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text("Send Request")

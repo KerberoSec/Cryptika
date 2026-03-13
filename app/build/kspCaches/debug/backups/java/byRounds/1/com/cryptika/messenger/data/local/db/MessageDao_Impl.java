@@ -557,6 +557,85 @@ public final class MessageDao_Impl implements MessageDao {
   }
 
   @Override
+  public Object getAllMessagesForConversation(final String conversationId,
+      final Continuation<? super List<MessageEntity>> $completion) {
+    final String _sql = "SELECT * FROM messages WHERE conversationId = ?";
+    final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 1);
+    int _argIndex = 1;
+    _statement.bindString(_argIndex, conversationId);
+    final CancellationSignal _cancellationSignal = DBUtil.createCancellationSignal();
+    return CoroutinesRoom.execute(__db, false, _cancellationSignal, new Callable<List<MessageEntity>>() {
+      @Override
+      @NonNull
+      public List<MessageEntity> call() throws Exception {
+        final Cursor _cursor = DBUtil.query(__db, _statement, false, null);
+        try {
+          final int _cursorIndexOfId = CursorUtil.getColumnIndexOrThrow(_cursor, "id");
+          final int _cursorIndexOfConversationId = CursorUtil.getColumnIndexOrThrow(_cursor, "conversationId");
+          final int _cursorIndexOfSenderIdHex = CursorUtil.getColumnIndexOrThrow(_cursor, "senderIdHex");
+          final int _cursorIndexOfCiphertextBlob = CursorUtil.getColumnIndexOrThrow(_cursor, "ciphertextBlob");
+          final int _cursorIndexOfStorageKeyAlias = CursorUtil.getColumnIndexOrThrow(_cursor, "storageKeyAlias");
+          final int _cursorIndexOfStorageHashHex = CursorUtil.getColumnIndexOrThrow(_cursor, "storageHashHex");
+          final int _cursorIndexOfHeaderJson = CursorUtil.getColumnIndexOrThrow(_cursor, "headerJson");
+          final int _cursorIndexOfTimestampMs = CursorUtil.getColumnIndexOrThrow(_cursor, "timestampMs");
+          final int _cursorIndexOfCounter = CursorUtil.getColumnIndexOrThrow(_cursor, "counter");
+          final int _cursorIndexOfExpiryMs = CursorUtil.getColumnIndexOrThrow(_cursor, "expiryMs");
+          final int _cursorIndexOfIsDecryptable = CursorUtil.getColumnIndexOrThrow(_cursor, "isDecryptable");
+          final int _cursorIndexOfIsOutgoing = CursorUtil.getColumnIndexOrThrow(_cursor, "isOutgoing");
+          final int _cursorIndexOfMessageType = CursorUtil.getColumnIndexOrThrow(_cursor, "messageType");
+          final int _cursorIndexOfMessageState = CursorUtil.getColumnIndexOrThrow(_cursor, "messageState");
+          final List<MessageEntity> _result = new ArrayList<MessageEntity>(_cursor.getCount());
+          while (_cursor.moveToNext()) {
+            final MessageEntity _item;
+            final String _tmpId;
+            _tmpId = _cursor.getString(_cursorIndexOfId);
+            final String _tmpConversationId;
+            _tmpConversationId = _cursor.getString(_cursorIndexOfConversationId);
+            final String _tmpSenderIdHex;
+            _tmpSenderIdHex = _cursor.getString(_cursorIndexOfSenderIdHex);
+            final byte[] _tmpCiphertextBlob;
+            _tmpCiphertextBlob = _cursor.getBlob(_cursorIndexOfCiphertextBlob);
+            final String _tmpStorageKeyAlias;
+            _tmpStorageKeyAlias = _cursor.getString(_cursorIndexOfStorageKeyAlias);
+            final String _tmpStorageHashHex;
+            _tmpStorageHashHex = _cursor.getString(_cursorIndexOfStorageHashHex);
+            final String _tmpHeaderJson;
+            _tmpHeaderJson = _cursor.getString(_cursorIndexOfHeaderJson);
+            final long _tmpTimestampMs;
+            _tmpTimestampMs = _cursor.getLong(_cursorIndexOfTimestampMs);
+            final long _tmpCounter;
+            _tmpCounter = _cursor.getLong(_cursorIndexOfCounter);
+            final Long _tmpExpiryMs;
+            if (_cursor.isNull(_cursorIndexOfExpiryMs)) {
+              _tmpExpiryMs = null;
+            } else {
+              _tmpExpiryMs = _cursor.getLong(_cursorIndexOfExpiryMs);
+            }
+            final boolean _tmpIsDecryptable;
+            final int _tmp;
+            _tmp = _cursor.getInt(_cursorIndexOfIsDecryptable);
+            _tmpIsDecryptable = _tmp != 0;
+            final boolean _tmpIsOutgoing;
+            final int _tmp_1;
+            _tmp_1 = _cursor.getInt(_cursorIndexOfIsOutgoing);
+            _tmpIsOutgoing = _tmp_1 != 0;
+            final String _tmpMessageType;
+            _tmpMessageType = _cursor.getString(_cursorIndexOfMessageType);
+            final String _tmpMessageState;
+            _tmpMessageState = _cursor.getString(_cursorIndexOfMessageState);
+            _item = new MessageEntity(_tmpId,_tmpConversationId,_tmpSenderIdHex,_tmpCiphertextBlob,_tmpStorageKeyAlias,_tmpStorageHashHex,_tmpHeaderJson,_tmpTimestampMs,_tmpCounter,_tmpExpiryMs,_tmpIsDecryptable,_tmpIsOutgoing,_tmpMessageType,_tmpMessageState);
+            _result.add(_item);
+          }
+          return _result;
+        } finally {
+          _cursor.close();
+          _statement.release();
+        }
+      }
+    }, $completion);
+  }
+
+  @Override
   public Object getMaxCounter(final String conversationId, final String senderHex,
       final Continuation<? super Long> $completion) {
     final String _sql = "SELECT MAX(counter) FROM messages WHERE conversationId = ? AND senderIdHex = ?";

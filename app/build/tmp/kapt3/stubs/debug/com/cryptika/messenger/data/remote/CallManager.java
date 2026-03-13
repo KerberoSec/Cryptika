@@ -101,7 +101,7 @@ public final class CallManager {
     private static final int FRAME_SAMPLES = 160;
     private static final int FRAME_BYTES = 320;
     private static final long RING_TIMEOUT_MS = 60000L;
-    private static final long AUDIO_WATCHDOG_MS = 15000L;
+    private static final long AUDIO_WATCHDOG_MS = 30000L;
     @org.jetbrains.annotations.NotNull()
     private final kotlinx.coroutines.CoroutineScope scope = null;
     @org.jetbrains.annotations.NotNull()
@@ -214,6 +214,7 @@ public final class CallManager {
     
     /**
      * Initiates an outgoing call to the contact owning [convId].
+     * Waits up to 5 s for the relay WebSocket to connect before sending OFFER.
      * Sends a signed CALL_OFFER packet over the relay; starts a 60 s ring timeout.
      */
     public final void startCall(@org.jetbrains.annotations.NotNull()

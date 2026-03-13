@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Cryptika — Data Extraction Rules
+  NO sensitive data is backed up.
+  Private keys, encrypted messages, and session data stay on device only.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" path="cryptika_identity_prefs.xml"/>
+        <exclude domain="sharedpref" path="cryptika_db_prefs.xml"/>
+        <exclude domain="database"/>
+        <exclude domain="file"/>
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="cryptika_identity_prefs.xml"/>
+        <exclude domain="sharedpref" path="cryptika_db_prefs.xml"/>
+        <exclude domain="database"/>
+        <exclude domain="file"/>
+    </device-transfer>
+</data-extraction-rules>

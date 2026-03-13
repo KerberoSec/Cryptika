@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.11.2" type="conditional_incidents">
+
+    <incident
+        id="InlinedApi"
+        severity="warning"
+        message="">
+        <fix-data minSdk="29-∞" requiresApi="30-∞"/>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/remote/CallForegroundService.kt"
+            line="82"
+            column="25"
+            startOffset="3314"
+            endLine="82"
+            endColumn="71"
+            endOffset="3360"/>
+        <map>
+            <entry
+                name="message"
+                string="Field requires API level 30 (current min is %1$s): `android.content.pm.ServiceInfo#FOREGROUND_SERVICE_TYPE_MICROPHONE`"/>
+            <api-levels id="minSdk"
+                value="29-∞"/>
+            <entry
+                name="name"
+                string="FOREGROUND_SERVICE_TYPE_MICROPHONE"/>
+            <entry
+                name="owner"
+                string="android.content.pm.ServiceInfo"/>
+            <api-levels id="requiresApi"
+                value="30-∞"/>
+        </map>
+    </incident>
+
+    <incident
+        id="NotificationPermission"
+        severity="error"
+        message="When targeting Android 13 or higher, posting a permission requires holding the `POST_NOTIFICATIONS` permission">
+        <fix-data missing="android.permission.POST_NOTIFICATIONS"/>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/remote/BackgroundConnectionManager.kt"
+            line="571"
+            column="9"
+            startOffset="25073"
+            endLine="571"
+            endColumn="53"
+            endOffset="25117"/>
+    </incident>
+
+    <incident
+        id="LockedOrientationActivity"
+        severity="warning"
+        message="Expecting `android:screenOrientation=&quot;unspecified&quot;` or `&quot;fullSensor&quot;` for this activity so the user can use the application in any orientation and provide a great experience on Chrome OS devices">
+        <fix-attribute
+            description="Set screenOrientation=&quot;fullSensor&quot;"
+            robot="true"
+            independent="true"
+            namespace="http://schemas.android.com/apk/res/android"
+            attribute="screenOrientation"
+            value="fullSensor"/>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*manifest*0}"
+            line="52"
+            column="13"
+            startOffset="2423"
+            endLine="52"
+            endColumn="49"
+            endOffset="2459"/>
+        <map>
+            <condition library="false"/>
+        </map>
+    </incident>
+
+</incidents>

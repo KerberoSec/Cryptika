@@ -1,0 +1,77 @@
+com.cryptika.messenger.app-jetified-material-icons-core-release-0 C:\Users\arung\.gradle\caches\8.13\transforms\01162bc025cf13b7439fc9fee251c405\transformed\jetified-material-icons-core-release\res
+com.cryptika.messenger.app-lifecycle-livedata-2.7.0-1 C:\Users\arung\.gradle\caches\8.13\transforms\02ae3d506fe33d1bcf4aea42a68574f5\transformed\lifecycle-livedata-2.7.0\res
+com.cryptika.messenger.app-jetified-ui-text-release-2 C:\Users\arung\.gradle\caches\8.13\transforms\04ec7a41e96394eb069bea023479e6db\transformed\jetified-ui-text-release\res
+com.cryptika.messenger.app-core-runtime-2.2.0-3 C:\Users\arung\.gradle\caches\8.13\transforms\065d20e301ca02706b5099b334065e91\transformed\core-runtime-2.2.0\res
+com.cryptika.messenger.app-jetified-activity-ktx-1.8.2-4 C:\Users\arung\.gradle\caches\8.13\transforms\082380133dff3484ca9d0a48d1e024ff\transformed\jetified-activity-ktx-1.8.2\res
+com.cryptika.messenger.app-lifecycle-livedata-core-2.7.0-5 C:\Users\arung\.gradle\caches\8.13\transforms\08a7a44bad3c24790d4588f9960d04ed\transformed\lifecycle-livedata-core-2.7.0\res
+com.cryptika.messenger.app-navigation-common-ktx-2.7.7-6 C:\Users\arung\.gradle\caches\8.13\transforms\0ba04ca43366d3a721d6c17593dce4d3\transformed\navigation-common-ktx-2.7.7\res
+com.cryptika.messenger.app-jetified-lifecycle-livedata-core-ktx-2.7.0-7 C:\Users\arung\.gradle\caches\8.13\transforms\1a5f896569a98b463c82bb96a07309b9\transformed\jetified-lifecycle-livedata-core-ktx-2.7.0\res
+com.cryptika.messenger.app-sqlite-framework-2.4.0-8 C:\Users\arung\.gradle\caches\8.13\transforms\1bb85a16fe327856ba99dbb0c4271e7a\transformed\sqlite-framework-2.4.0\res
+com.cryptika.messenger.app-jetified-material3-release-9 C:\Users\arung\.gradle\caches\8.13\transforms\1c9db097a8f6c6aa925d7361624ee69d\transformed\jetified-material3-release\res
+com.cryptika.messenger.app-jetified-hilt-navigation-1.2.0-10 C:\Users\arung\.gradle\caches\8.13\transforms\2001eb23249d0bfbc857cf002309c818\transformed\jetified-hilt-navigation-1.2.0\res
+com.cryptika.messenger.app-jetified-material-ripple-release-11 C:\Users\arung\.gradle\caches\8.13\transforms\217f07e9df5f06dbc80dc3c226e2e972\transformed\jetified-material-ripple-release\res
+com.cryptika.messenger.app-jetified-hilt-navigation-compose-1.2.0-12 C:\Users\arung\.gradle\caches\8.13\transforms\22975fa1dc4e508d5e929bb896824aa1\transformed\jetified-hilt-navigation-compose-1.2.0\res
+com.cryptika.messenger.app-jetified-emoji2-1.3.0-13 C:\Users\arung\.gradle\caches\8.13\transforms\25374ad2e74d9c7d409e436b220b65d2\transformed\jetified-emoji2-1.3.0\res
+com.cryptika.messenger.app-jetified-lifecycle-runtime-ktx-2.7.0-14 C:\Users\arung\.gradle\caches\8.13\transforms\25381d2b0993c829b28e91481a7a128f\transformed\jetified-lifecycle-runtime-ktx-2.7.0\res
+com.cryptika.messenger.app-jetified-sqlite-ktx-2.4.0-15 C:\Users\arung\.gradle\caches\8.13\transforms\334c856469981bdda3567112a73697b2\transformed\jetified-sqlite-ktx-2.4.0\res
+com.cryptika.messenger.app-core-1.12.0-16 C:\Users\arung\.gradle\caches\8.13\transforms\3508c942acd3b718df66ef05b637efd1\transformed\core-1.12.0\res
+com.cryptika.messenger.app-jetified-datastore-1.0.0-17 C:\Users\arung\.gradle\caches\8.13\transforms\3868489b96e196e31d4aa26abca94d21\transformed\jetified-datastore-1.0.0\res
+com.cryptika.messenger.app-jetified-core-ktx-1.12.0-18 C:\Users\arung\.gradle\caches\8.13\transforms\39bddc95d25f87d0a878dd862c915d26\transformed\jetified-core-ktx-1.12.0\res
+com.cryptika.messenger.app-jetified-camera-video-1.3.1-19 C:\Users\arung\.gradle\caches\8.13\transforms\3dcaeab1bb55bdccb2537b16aa253d70\transformed\jetified-camera-video-1.3.1\res
+com.cryptika.messenger.app-jetified-ui-util-release-20 C:\Users\arung\.gradle\caches\8.13\transforms\3e3faa5524b83599297ec5d8b42d2fc0\transformed\jetified-ui-util-release\res
+com.cryptika.messenger.app-jetified-lifecycle-viewmodel-compose-2.7.0-21 C:\Users\arung\.gradle\caches\8.13\transforms\3fb8fa1f0dcf6c655411385cf7a937f1\transformed\jetified-lifecycle-viewmodel-compose-2.7.0\res
+com.cryptika.messenger.app-jetified-foundation-layout-release-22 C:\Users\arung\.gradle\caches\8.13\transforms\43a8557951e1f5246227e8a60de61454\transformed\jetified-foundation-layout-release\res
+com.cryptika.messenger.app-jetified-lifecycle-process-2.7.0-23 C:\Users\arung\.gradle\caches\8.13\transforms\48328dcfde8a8af08018eee3807d75d9\transformed\jetified-lifecycle-process-2.7.0\res
+com.cryptika.messenger.app-jetified-foundation-release-24 C:\Users\arung\.gradle\caches\8.13\transforms\4b5803a442c2a8b0261a6fbd4b06bd30\transformed\jetified-foundation-release\res
+com.cryptika.messenger.app-jetified-camera-core-1.3.1-25 C:\Users\arung\.gradle\caches\8.13\transforms\4c9ecd748ff0d918d33184b510d1cbc3\transformed\jetified-camera-core-1.3.1\res
+com.cryptika.messenger.app-jetified-appcompat-resources-1.1.0-26 C:\Users\arung\.gradle\caches\8.13\transforms\4fb9037848e4043cff49d9ac0cb715ca\transformed\jetified-appcompat-resources-1.1.0\res
+com.cryptika.messenger.app-jetified-security-crypto-1.1.0-alpha06-27 C:\Users\arung\.gradle\caches\8.13\transforms\5b658673ca5f5b0a9cc7cb9eb597558f\transformed\jetified-security-crypto-1.1.0-alpha06\res
+com.cryptika.messenger.app-jetified-navigation-compose-2.7.7-28 C:\Users\arung\.gradle\caches\8.13\transforms\63a4ac6ff27d7930d493ca020abde31b\transformed\jetified-navigation-compose-2.7.7\res
+com.cryptika.messenger.app-jetified-lifecycle-runtime-compose-2.7.0-29 C:\Users\arung\.gradle\caches\8.13\transforms\64d0d040761378c5b6c863fa93469b1b\transformed\jetified-lifecycle-runtime-compose-2.7.0\res
+com.cryptika.messenger.app-jetified-activity-1.8.2-30 C:\Users\arung\.gradle\caches\8.13\transforms\6eeb6b5e77fddfdf1d063b4e74f6fa3b\transformed\jetified-activity-1.8.2\res
+com.cryptika.messenger.app-jetified-runtime-release-31 C:\Users\arung\.gradle\caches\8.13\transforms\7049dd8c83c051d2f1dd324f41363438\transformed\jetified-runtime-release\res
+com.cryptika.messenger.app-jetified-material-icons-extended-release-32 C:\Users\arung\.gradle\caches\8.13\transforms\7541e735f296b1f91e9c4c35f5a763b9\transformed\jetified-material-icons-extended-release\res
+com.cryptika.messenger.app-jetified-profileinstaller-1.3.0-33 C:\Users\arung\.gradle\caches\8.13\transforms\75877ea36e20df47dbef625a8c5282c3\transformed\jetified-profileinstaller-1.3.0\res
+com.cryptika.messenger.app-jetified-ui-unit-release-34 C:\Users\arung\.gradle\caches\8.13\transforms\7a11c675f612965a8aac6195016ec116\transformed\jetified-ui-unit-release\res
+com.cryptika.messenger.app-lifecycle-viewmodel-2.7.0-35 C:\Users\arung\.gradle\caches\8.13\transforms\7f38677d9811a847a4995e98e804bb18\transformed\lifecycle-viewmodel-2.7.0\res
+com.cryptika.messenger.app-appcompat-1.1.0-36 C:\Users\arung\.gradle\caches\8.13\transforms\8181053777e893b3074a2d07adbe9068\transformed\appcompat-1.1.0\res
+com.cryptika.messenger.app-navigation-runtime-2.7.7-37 C:\Users\arung\.gradle\caches\8.13\transforms\8b5b2f484e69741ba53a57558a552165\transformed\navigation-runtime-2.7.7\res
+com.cryptika.messenger.app-jetified-lifecycle-service-2.7.0-38 C:\Users\arung\.gradle\caches\8.13\transforms\8dcfacecae23603e5ae780599c208290\transformed\jetified-lifecycle-service-2.7.0\res
+com.cryptika.messenger.app-navigation-common-2.7.7-39 C:\Users\arung\.gradle\caches\8.13\transforms\954d13dc157e4bb2eb5ed5cef748eb5e\transformed\navigation-common-2.7.7\res
+com.cryptika.messenger.app-jetified-ui-release-40 C:\Users\arung\.gradle\caches\8.13\transforms\95ca86357e204cb07d6d930a0983bc54\transformed\jetified-ui-release\res
+com.cryptika.messenger.app-sqlite-2.4.0-41 C:\Users\arung\.gradle\caches\8.13\transforms\95d07b884e809b57e92e9b559b895165\transformed\sqlite-2.4.0\res
+com.cryptika.messenger.app-jetified-ui-geometry-release-42 C:\Users\arung\.gradle\caches\8.13\transforms\9634a062c066df6d741f8235093e988e\transformed\jetified-ui-geometry-release\res
+com.cryptika.messenger.app-jetified-savedstate-ktx-1.2.1-43 C:\Users\arung\.gradle\caches\8.13\transforms\a2980e2541c8b84350eba2df3231c0f1\transformed\jetified-savedstate-ktx-1.2.1\res
+com.cryptika.messenger.app-jetified-camera-view-1.3.1-44 C:\Users\arung\.gradle\caches\8.13\transforms\a9071dd273ba6344e1f14132c44905bd\transformed\jetified-camera-view-1.3.1\res
+com.cryptika.messenger.app-work-runtime-ktx-2.9.0-45 C:\Users\arung\.gradle\caches\8.13\transforms\aaf0550c5f56389815b59983053e237c\transformed\work-runtime-ktx-2.9.0\res
+com.cryptika.messenger.app-jetified-annotation-experimental-1.4.0-46 C:\Users\arung\.gradle\caches\8.13\transforms\af07bb3398215765730a392b040fa587\transformed\jetified-annotation-experimental-1.4.0\res
+com.cryptika.messenger.app-jetified-startup-runtime-1.1.1-47 C:\Users\arung\.gradle\caches\8.13\transforms\af735145e62fef27a53784ace878f7af\transformed\jetified-startup-runtime-1.1.1\res
+com.cryptika.messenger.app-jetified-activity-compose-1.8.2-48 C:\Users\arung\.gradle\caches\8.13\transforms\b6899d31a2b9195ee0a4872d3296f906\transformed\jetified-activity-compose-1.8.2\res
+com.cryptika.messenger.app-jetified-camera-lifecycle-1.3.1-49 C:\Users\arung\.gradle\caches\8.13\transforms\b7bef1848a7e8a99f792ba0de4b99aa3\transformed\jetified-camera-lifecycle-1.3.1\res
+com.cryptika.messenger.app-jetified-camera-camera2-1.3.1-50 C:\Users\arung\.gradle\caches\8.13\transforms\bb151867bb32087818860ae5d0793c17\transformed\jetified-camera-camera2-1.3.1\res
+com.cryptika.messenger.app-jetified-savedstate-1.2.1-51 C:\Users\arung\.gradle\caches\8.13\transforms\bfc0af8df98958260ba31054894d16cb\transformed\jetified-savedstate-1.2.1\res
+com.cryptika.messenger.app-fragment-1.5.1-52 C:\Users\arung\.gradle\caches\8.13\transforms\c3a40d043803735604e761c75ce2728e\transformed\fragment-1.5.1\res
+com.cryptika.messenger.app-jetified-animation-release-53 C:\Users\arung\.gradle\caches\8.13\transforms\c8189e9914d11f1552d9a652999e727a\transformed\jetified-animation-release\res
+com.cryptika.messenger.app-jetified-customview-poolingcontainer-1.0.0-54 C:\Users\arung\.gradle\caches\8.13\transforms\c9badad029abdc7979ba2bff59c04b30\transformed\jetified-customview-poolingcontainer-1.0.0\res
+com.cryptika.messenger.app-lifecycle-runtime-2.7.0-55 C:\Users\arung\.gradle\caches\8.13\transforms\ce0e80409df7fa0284b89bb26d1fbe6d\transformed\lifecycle-runtime-2.7.0\res
+com.cryptika.messenger.app-jetified-lifecycle-viewmodel-savedstate-2.7.0-56 C:\Users\arung\.gradle\caches\8.13\transforms\d0abaf92c9e425a44f583d028e7f07c9\transformed\jetified-lifecycle-viewmodel-savedstate-2.7.0\res
+com.cryptika.messenger.app-jetified-hilt-work-1.2.0-57 C:\Users\arung\.gradle\caches\8.13\transforms\d4f26782cd87cdeb57a134d865b2ef5c\transformed\jetified-hilt-work-1.2.0\res
+com.cryptika.messenger.app-jetified-ui-graphics-release-58 C:\Users\arung\.gradle\caches\8.13\transforms\d82a6b11c1958967c5dfb4851d94745d\transformed\jetified-ui-graphics-release\res
+com.cryptika.messenger.app-work-runtime-2.9.0-59 C:\Users\arung\.gradle\caches\8.13\transforms\e2a03b208a759c476ba91ddec8c6bf39\transformed\work-runtime-2.9.0\res
+com.cryptika.messenger.app-navigation-runtime-ktx-2.7.7-60 C:\Users\arung\.gradle\caches\8.13\transforms\e6eef975ade259a909a542af702fef07\transformed\navigation-runtime-ktx-2.7.7\res
+com.cryptika.messenger.app-jetified-zxing-android-embedded-4.3.0-61 C:\Users\arung\.gradle\caches\8.13\transforms\ed2800cdab3c1aaf8c83b125bf13a64c\transformed\jetified-zxing-android-embedded-4.3.0\res
+com.cryptika.messenger.app-room-runtime-2.6.1-62 C:\Users\arung\.gradle\caches\8.13\transforms\edf65841396276d6b0457a0e0c0648ca\transformed\room-runtime-2.6.1\res
+com.cryptika.messenger.app-jetified-room-ktx-2.6.1-63 C:\Users\arung\.gradle\caches\8.13\transforms\ef41464e9ec2b6fdb352dbec84cd6ea4\transformed\jetified-room-ktx-2.6.1\res
+com.cryptika.messenger.app-jetified-animation-core-release-64 C:\Users\arung\.gradle\caches\8.13\transforms\eff96a1a320125abf971cc90f5c68996\transformed\jetified-animation-core-release\res
+com.cryptika.messenger.app-jetified-runtime-saveable-release-65 C:\Users\arung\.gradle\caches\8.13\transforms\f1b71307a51b6aaddc58d8322d5c52a0\transformed\jetified-runtime-saveable-release\res
+com.cryptika.messenger.app-jetified-datastore-preferences-1.0.0-66 C:\Users\arung\.gradle\caches\8.13\transforms\fabf09ec319b8993eb18f3582f5821c5\transformed\jetified-datastore-preferences-1.0.0\res
+com.cryptika.messenger.app-jetified-lifecycle-viewmodel-ktx-2.7.0-67 C:\Users\arung\.gradle\caches\8.13\transforms\fb2ba04871a4672a404798a70e34e2a0\transformed\jetified-lifecycle-viewmodel-ktx-2.7.0\res
+com.cryptika.messenger.app-jetified-ui-tooling-preview-release-68 C:\Users\arung\.gradle\caches\8.13\transforms\fd37d7aa17d7866a62cd4e834795e1f1\transformed\jetified-ui-tooling-preview-release\res
+com.cryptika.messenger.app-jetified-android-database-sqlcipher-4.5.4-69 C:\Users\arung\.gradle\caches\8.13\transforms\ffb651704125d7564d35434eddff371f\transformed\jetified-android-database-sqlcipher-4.5.4\res
+com.cryptika.messenger.app-resValues-70 E:\MY HARD W0RK\NITH\HackSecureMessenger\app\build\generated\res\resValues\release
+com.cryptika.messenger.app-packageReleaseResources-71 E:\MY HARD W0RK\NITH\HackSecureMessenger\app\build\intermediates\incremental\release\packageReleaseResources\merged.dir
+com.cryptika.messenger.app-packageReleaseResources-72 E:\MY HARD W0RK\NITH\HackSecureMessenger\app\build\intermediates\incremental\release\packageReleaseResources\stripped.dir
+com.cryptika.messenger.app-merged-not-compiled-resources-73 E:\MY HARD W0RK\NITH\HackSecureMessenger\app\build\intermediates\merged-not-compiled-resources\release
+com.cryptika.messenger.app-release-74 E:\MY HARD W0RK\NITH\HackSecureMessenger\app\build\intermediates\merged_res\release\mergeReleaseResources
+com.cryptika.messenger.app-main-75 E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\res
+com.cryptika.messenger.app-release-76 E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\release\res

@@ -71,9 +71,9 @@ com.cryptika.messenger.app-jetified-datastore-preferences-1.0.0-69 C:\Users\arun
 com.cryptika.messenger.app-jetified-lifecycle-viewmodel-ktx-2.7.0-70 C:\Users\arung\.gradle\caches\8.13\transforms\fb2ba04871a4672a404798a70e34e2a0\transformed\jetified-lifecycle-viewmodel-ktx-2.7.0\res
 com.cryptika.messenger.app-jetified-ui-tooling-preview-release-71 C:\Users\arung\.gradle\caches\8.13\transforms\fd37d7aa17d7866a62cd4e834795e1f1\transformed\jetified-ui-tooling-preview-release\res
 com.cryptika.messenger.app-jetified-android-database-sqlcipher-4.5.4-72 C:\Users\arung\.gradle\caches\8.13\transforms\ffb651704125d7564d35434eddff371f\transformed\jetified-android-database-sqlcipher-4.5.4\res
-com.cryptika.messenger.app-resValues-73 C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\build\generated\res\resValues\debug
-com.cryptika.messenger.app-packageDebugResources-74 C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
-com.cryptika.messenger.app-packageDebugResources-75 C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
-com.cryptika.messenger.app-debug-76 C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\build\intermediates\merged_res\debug\mergeDebugResources
-com.cryptika.messenger.app-debug-77 C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\debug\res
-com.cryptika.messenger.app-main-78 C:\Users\arung\OneDrive\Desktop\HackSecureMessenger_v1.0.2_fixed\HackSecureMessenger\app\src\main\res
+com.cryptika.messenger.app-resValues-73 E:\MY HARD W0RK\NITH\HackSecureMessenger\app\build\generated\res\resValues\debug
+com.cryptika.messenger.app-packageDebugResources-74 E:\MY HARD W0RK\NITH\HackSecureMessenger\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
+com.cryptika.messenger.app-packageDebugResources-75 E:\MY HARD W0RK\NITH\HackSecureMessenger\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
+com.cryptika.messenger.app-debug-76 E:\MY HARD W0RK\NITH\HackSecureMessenger\app\build\intermediates\merged_res\debug\mergeDebugResources
+com.cryptika.messenger.app-debug-77 E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\debug\res
+com.cryptika.messenger.app-main-78 E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\res

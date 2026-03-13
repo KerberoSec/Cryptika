@@ -83,29 +83,20 @@ class TicketManager(
     }
 
     /**
-     * Creates a mock ticket for offline/testing use.
-     * In production, tickets come from the server.
+     * Validates that a verified ticket's participant IDs match the expected
+     * local and peer identity hashes (in either order, since ticket uses canonical sort).
+     *
+     * @throws CryptoError.TicketSignatureInvalid if participants don't match
      */
-    fun createMockTicket(aId: ByteArray, bId: ByteArray): VerifiedTicket {
-        val now = System.currentTimeMillis()
-        val mockPayload = ByteBuffer.allocate(TICKET_PAYLOAD_SIZE)
-            .put(aId.copyOf(32))
-            .put(bId.copyOf(32))
-            .putLong(now)
-            .putInt(3600) // 1 hour
-            .array()
-
-        // Use a zeroed signature for mock (won't verify against real server)
-        val mockTicket = mockPayload + ByteArray(SIGNATURE_SIZE)
-        val ticketHash = MessageDigest.getInstance("SHA-256").digest(mockTicket)
-
-        return VerifiedTicket(
-            rawBytes = mockTicket,
-            ticketHash = ticketHash,
-            aId = aId,
-            bId = bId,
-            timestamp = now,
-            expirySeconds = 3600
-        )
+    fun validateParticipants(
+        ticket: VerifiedTicket,
+        myIdentityHash: ByteArray,
+        peerIdentityHash: ByteArray
+    ) {
+        val matchForward = ticket.aId.contentEquals(myIdentityHash) && ticket.bId.contentEquals(peerIdentityHash)
+        val matchReverse = ticket.aId.contentEquals(peerIdentityHash) && ticket.bId.contentEquals(myIdentityHash)
+        if (!matchForward && !matchReverse) {
+            throw CryptoError.TicketSignatureInvalid
+        }
     }
 }

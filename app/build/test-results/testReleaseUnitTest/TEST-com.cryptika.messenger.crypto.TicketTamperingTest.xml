@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.cryptika.messenger.crypto.TicketTamperingTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-03-13T03:46:38.238Z" hostname="DESKTOP-P3C3923" time="0.003">
+  <properties/>
+  <testcase name="Ticket with valid size but incorrect signature is rejected" classname="com.cryptika.messenger.crypto.TicketTamperingTest" time="0.001"/>
+  <testcase name="Flipping one byte in ticket payload invalidates signature" classname="com.cryptika.messenger.crypto.TicketTamperingTest" time="0.001"/>
+  <testcase name="Expired ticket is rejected even if signature is valid (mock)" classname="com.cryptika.messenger.crypto.TicketTamperingTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

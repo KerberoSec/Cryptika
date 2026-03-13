@@ -39,7 +39,8 @@ class MessageProcessor(
         const val TIMESTAMP_TOLERANCE_MS = 300_000L  // 5 minutes
     }
 
-    private var lastSeenRecvCounter: Long = 0L
+    private var highWaterRecvCounter: Long = 0L
+    private val processedCounters = mutableSetOf<Long>()
 
     /** Zeroize all crypto material — called during cryptographic erasure. */
     fun zeroize() {
@@ -152,13 +153,16 @@ class MessageProcessor(
             throw CryptoError.TimestampStale
         }
 
-        // 4. VERIFY COUNTER (strictly monotonically increasing — replay protection)
-        if (header.counter <= lastSeenRecvCounter) {
+        // 4. VERIFY COUNTER — reject replays (already processed) and ancient counters
+        if (header.counter in processedCounters) {
+            throw CryptoError.ReplayDetected
+        }
+        if (header.counter <= highWaterRecvCounter - HashRatchet.MAX_LOOKAHEAD) {
             throw CryptoError.ReplayDetected
         }
 
-        // 5. ADVANCE RATCHET to counter position (handles out-of-order)
-        val ratchetKey = recvRatchet.keyForCounter(header.counter, lastSeenRecvCounter)
+        // 5. ADVANCE RATCHET to counter position (handles out-of-order via lookahead)
+        val ratchetKey = recvRatchet.keyForCounter(header.counter)
 
         // 6. Derive nonce
         val nonce = AEADCipher.deriveNonce(ratchetKey, header.counter)
@@ -180,8 +184,13 @@ class MessageProcessor(
             ratchetKey.fill(0)  // Always zeroize, even on exception
         }
 
-        // 9. Update last seen counter ONLY on complete success (after AEAD passes)
-        lastSeenRecvCounter = header.counter
+        // 9. Update counter tracking ONLY on complete success (after AEAD passes)
+        processedCounters.add(header.counter)
+        if (header.counter > highWaterRecvCounter) {
+            highWaterRecvCounter = header.counter
+        }
+        // Evict processed counters outside the lookahead window to bound memory
+        processedCounters.removeAll { it <= highWaterRecvCounter - HashRatchet.MAX_LOOKAHEAD }
 
         return plaintext to header
     }
@@ -235,11 +244,23 @@ class MessageProcessor(
     }
 
     fun deserializeWirePacket(bytes: ByteArray): WirePacket {
+        if (bytes.size < 4 + 1 + 4 + 1 + 64) {
+            throw CryptoError.Unknown(IllegalArgumentException("Packet too short: ${bytes.size} bytes"))
+        }
         val buf = ByteBuffer.wrap(bytes)
         val headerLen = buf.int
+        if (headerLen <= 0 || headerLen > buf.remaining() - (4 + 64)) {
+            throw CryptoError.Unknown(IllegalArgumentException("Invalid header length: $headerLen"))
+        }
         val headerBytes = ByteArray(headerLen).also { buf.get(it) }
         val ciphertextLen = buf.int
+        if (ciphertextLen <= 0 || ciphertextLen > buf.remaining() - 64) {
+            throw CryptoError.Unknown(IllegalArgumentException("Invalid ciphertext length: $ciphertextLen"))
+        }
         val ciphertext = ByteArray(ciphertextLen).also { buf.get(it) }
+        if (buf.remaining() < 64) {
+            throw CryptoError.Unknown(IllegalArgumentException("Missing signature"))
+        }
         val signature = ByteArray(64).also { buf.get(it) }
         return WirePacket(headerBytes, ciphertext, signature)
     }

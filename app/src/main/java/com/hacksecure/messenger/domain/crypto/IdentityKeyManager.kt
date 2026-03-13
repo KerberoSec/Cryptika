@@ -49,13 +49,13 @@ open class IdentityKeyManager(private val context: Context?) {
     }
 
     /** Returns true if an identity key has already been generated */
-    fun hasIdentity(): Boolean = prefs.contains(KEY_PUBLIC) && prefs.contains(KEY_ENCRYPTED_PRIVATE)
+    open fun hasIdentity(): Boolean = prefs.contains(KEY_PUBLIC) && prefs.contains(KEY_ENCRYPTED_PRIVATE)
 
     /**
      * Generates a new Ed25519 keypair on first launch.
      * Idempotent if already exists.
      */
-    fun generateIdentityIfNeeded(): Pair<ByteArray, Long> {
+    open fun generateIdentityIfNeeded(): Pair<ByteArray, Long> {
         if (hasIdentity()) return getPublicKeyBytes() to (prefs.getLong(KEY_CREATED_AT, 0L))
 
         // Generate Ed25519 keypair using BouncyCastle
@@ -92,7 +92,7 @@ open class IdentityKeyManager(private val context: Context?) {
     }
 
     /** Returns the raw 32-byte Ed25519 public key */
-    fun getPublicKeyBytes(): ByteArray {
+    open fun getPublicKeyBytes(): ByteArray {
         val b64 = prefs.getString(KEY_PUBLIC, null)
             ?: throw IllegalStateException("Identity not initialized")
         return b64.fromBase64()
@@ -103,7 +103,7 @@ open class IdentityKeyManager(private val context: Context?) {
      * The data is pre-hashed (SHA-256) before signing.
      * Returns 64-byte signature.
      */
-    fun sign(data: ByteArray): ByteArray {
+    open fun sign(data: ByteArray): ByteArray {
         val privateKeyBytes = decryptWithKeystore(
             encrypted = prefs.getString(KEY_ENCRYPTED_PRIVATE, null)!!.fromBase64(),
             iv = prefs.getString(KEY_IV, null)!!.fromBase64()
