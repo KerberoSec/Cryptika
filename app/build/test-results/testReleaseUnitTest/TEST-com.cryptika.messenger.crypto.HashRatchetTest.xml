@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.cryptika.messenger.crypto.HashRatchetTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-03-13T03:46:37.380Z" hostname="DESKTOP-P3C3923" time="0.115">
+<testsuite name="com.cryptika.messenger.crypto.HashRatchetTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-03-13T04:51:01.627Z" hostname="DESKTOP-P3C3923" time="0.108">
   <properties/>
-  <testcase name="Forward secrecy — cannot derive K1 from K5" classname="com.cryptika.messenger.crypto.HashRatchetTest" time="0.068"/>
+  <testcase name="Forward secrecy — cannot derive K1 from K5" classname="com.cryptika.messenger.crypto.HashRatchetTest" time="0.044"/>
   <testcase name="Ratchet produces different keys at each step" classname="com.cryptika.messenger.crypto.HashRatchetTest" time="0.001"/>
   <testcase name="Ratchet counter increments correctly" classname="com.cryptika.messenger.crypto.HashRatchetTest" time="0.0"/>
-  <testcase name="Ratchet determinism — same root produces same key sequence" classname="com.cryptika.messenger.crypto.HashRatchetTest" time="0.045"/>
+  <testcase name="Ratchet determinism — same root produces same key sequence" classname="com.cryptika.messenger.crypto.HashRatchetTest" time="0.062"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

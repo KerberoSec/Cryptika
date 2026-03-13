@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.cryptika.messenger.crypto.StorageHashTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-03-13T03:46:48.993Z" hostname="DESKTOP-P3C3923" time="0.049">
+<testsuite name="com.cryptika.messenger.crypto.StorageHashTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-03-13T04:50:45.456Z" hostname="DESKTOP-P3C3923" time="0.019">
   <properties/>
-  <testcase name="Single bit flip in storage blob is detected as tamper" classname="com.cryptika.messenger.crypto.StorageHashTest" time="0.04"/>
-  <testcase name="Storage hash matches blob written at save time" classname="com.cryptika.messenger.crypto.StorageHashTest" time="0.002"/>
-  <testcase name="Hash is deterministic across calls" classname="com.cryptika.messenger.crypto.StorageHashTest" time="0.002"/>
-  <testcase name="All-zeros blob and all-ones blob produce different hashes" classname="com.cryptika.messenger.crypto.StorageHashTest" time="0.001"/>
-  <testcase name="Empty storageHashHex (legacy rows) is treated as unverified — no false rejection" classname="com.cryptika.messenger.crypto.StorageHashTest" time="0.003"/>
+  <testcase name="Single bit flip in storage blob is detected as tamper" classname="com.cryptika.messenger.crypto.StorageHashTest" time="0.006"/>
+  <testcase name="Storage hash matches blob written at save time" classname="com.cryptika.messenger.crypto.StorageHashTest" time="0.003"/>
+  <testcase name="Hash is deterministic across calls" classname="com.cryptika.messenger.crypto.StorageHashTest" time="0.003"/>
+  <testcase name="All-zeros blob and all-ones blob produce different hashes" classname="com.cryptika.messenger.crypto.StorageHashTest" time="0.003"/>
+  <testcase name="Empty storageHashHex (legacy rows) is treated as unverified — no false rejection" classname="com.cryptika.messenger.crypto.StorageHashTest" time="0.0"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

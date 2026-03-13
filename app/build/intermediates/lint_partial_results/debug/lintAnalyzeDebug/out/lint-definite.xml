@@ -784,17 +784,17 @@
             priority="0">
             <range
                 file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/presentation/ui/screens/ChatScreen.kt"
-                startOffset="21169"
-                endOffset="21183"/>
+                startOffset="21309"
+                endOffset="21323"/>
         </fix-replace>
         <location
             file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/presentation/ui/screens/ChatScreen.kt"
             line="516"
             column="29"
-            startOffset="21169"
+            startOffset="21309"
             endLine="516"
             endColumn="43"
-            endOffset="21183"/>
+            endOffset="21323"/>
     </incident>
 
     <incident

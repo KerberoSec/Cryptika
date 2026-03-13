@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.cryptika.messenger.crypto.SessionKeyTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-03-13T03:46:48.903Z" hostname="DESKTOP-P3C3923" time="0.071">
+<testsuite name="com.cryptika.messenger.crypto.SessionKeyTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-03-13T04:50:45.327Z" hostname="DESKTOP-P3C3923" time="0.117">
   <properties/>
   <testcase name="Session key derivation is deterministic" classname="com.cryptika.messenger.crypto.SessionKeyTest" time="0.002"/>
-  <testcase name="Directional roots are complementary between peers" classname="com.cryptika.messenger.crypto.SessionKeyTest" time="0.016"/>
-  <testcase name="Directional roots are different from each other" classname="com.cryptika.messenger.crypto.SessionKeyTest" time="0.017"/>
+  <testcase name="Directional roots are complementary between peers" classname="com.cryptika.messenger.crypto.SessionKeyTest" time="0.008"/>
+  <testcase name="Directional roots are different from each other" classname="com.cryptika.messenger.crypto.SessionKeyTest" time="0.003"/>
   <testcase name="Session key changes when A_id and B_id are swapped" classname="com.cryptika.messenger.crypto.SessionKeyTest" time="0.001"/>
-  <testcase name="X25519 DH produces same shared secret from both sides" classname="com.cryptika.messenger.crypto.SessionKeyTest" time="0.032"/>
+  <testcase name="X25519 DH produces same shared secret from both sides" classname="com.cryptika.messenger.crypto.SessionKeyTest" time="0.101"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

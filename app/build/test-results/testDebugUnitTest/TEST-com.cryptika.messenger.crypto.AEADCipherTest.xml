@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.cryptika.messenger.crypto.AEADCipherTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-03-13T03:46:47.668Z" hostname="DESKTOP-P3C3923" time="0.599">
+<testsuite name="com.cryptika.messenger.crypto.AEADCipherTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-03-13T04:50:44.073Z" hostname="DESKTOP-P3C3923" time="0.624">
   <properties/>
-  <testcase name="Different counters produce different nonces" classname="com.cryptika.messenger.crypto.AEADCipherTest" time="0.55"/>
-  <testcase name="Nonce derivation is deterministic" classname="com.cryptika.messenger.crypto.AEADCipherTest" time="0.004"/>
-  <testcase name="Encrypt then decrypt produces original plaintext" classname="com.cryptika.messenger.crypto.AEADCipherTest" time="0.04"/>
-  <testcase name="Flipped bit in additional data causes AEADAuthFailed" classname="com.cryptika.messenger.crypto.AEADCipherTest" time="0.002"/>
-  <testcase name="Flipped bit in ciphertext causes AEADAuthFailed" classname="com.cryptika.messenger.crypto.AEADCipherTest" time="0.001"/>
+  <testcase name="Different counters produce different nonces" classname="com.cryptika.messenger.crypto.AEADCipherTest" time="0.568"/>
+  <testcase name="Nonce derivation is deterministic" classname="com.cryptika.messenger.crypto.AEADCipherTest" time="0.006"/>
+  <testcase name="Encrypt then decrypt produces original plaintext" classname="com.cryptika.messenger.crypto.AEADCipherTest" time="0.044"/>
+  <testcase name="Flipped bit in additional data causes AEADAuthFailed" classname="com.cryptika.messenger.crypto.AEADCipherTest" time="0.003"/>
+  <testcase name="Flipped bit in ciphertext causes AEADAuthFailed" classname="com.cryptika.messenger.crypto.AEADCipherTest" time="0.002"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>
