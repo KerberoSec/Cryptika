@@ -18,7 +18,7 @@ COPY package*.json ./
 
 # Install dependencies
 # Use --production flag in production to skip devDependencies
-RUN npm ci --only=production
+RUN npm install --omit=dev
 
 # Bundle app source
 COPY . .
