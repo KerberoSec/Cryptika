@@ -48,7 +48,8 @@ class SplashViewModel @Inject constructor() : ViewModel() {
 // HOME VIEWMODEL
 data class HomeUiState(
     val conversations: List<ConversationUiItem> = emptyList(),
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val pendingRequestCount: Int = 0
 )
 
 data class ConversationUiItem(
@@ -64,7 +65,8 @@ class HomeViewModel @Inject constructor(
     private val contactRepository: ContactRepository,
     private val identityRepository: IdentityRepository,
     private val messageRepository: MessageRepository,
-    private val conversationDao: com.cryptika.messenger.data.local.db.ConversationDao
+    private val conversationDao: com.cryptika.messenger.data.local.db.ConversationDao,
+    private val authRepository: com.cryptika.messenger.domain.repository.AuthRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -89,6 +91,18 @@ class HomeViewModel @Inject constructor(
                     )
                 }
                 _uiState.update { it.copy(conversations = items, isLoading = false) }
+            }
+        }
+        // Poll for pending contact requests every 10 seconds
+        viewModelScope.launch {
+            while (true) {
+                try {
+                    authRepository.getPendingRequests()
+                        .onSuccess { requests ->
+                            _uiState.update { it.copy(pendingRequestCount = requests.size) }
+                        }
+                } catch (_: Exception) {}
+                kotlinx.coroutines.delay(10_000)
             }
         }
     }
@@ -1096,6 +1110,10 @@ class CallViewModel @Inject constructor(
     /** Mirror of CallManager.incomingCallData  for global nav observer in MainActivity. */
     val incomingCallData: StateFlow<IncomingCallData?> = callManager.incomingCallData
 
+    /** Emitted when the screen should navigate back (e.g. contact lookup failed). */
+    private val _navigateBackEvent = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val navigateBackEvent: SharedFlow<Unit> = _navigateBackEvent.asSharedFlow()
+
     private var durationJob: Job? = null
 
     init {
@@ -1129,54 +1147,73 @@ class CallViewModel @Inject constructor(
     // -- Called when ChatScreen phone button is tapped (outgoing call) ---------
 
     fun startOutgoingCall(contactIdOrEphemeralId: String) {
+        android.util.Log.d("CallViewModel", "startOutgoingCall: contactIdOrEphemeralId=$contactIdOrEphemeralId")
         viewModelScope.launch {
-            // Resolve contact ID: it could be a regular contact ID or "sessionUUID_ephemeral"
-            val actualContactId = if (contactIdOrEphemeralId.endsWith("_ephemeral")) {
-                // Extract sessionUUID from "sessionUUID_ephemeral"
-                val sessionUUID = contactIdOrEphemeralId.removeSuffix("_ephemeral")
-                // Look up the actual contact ID via ephemeral session manager
-                ephemeralSessionManager.getContactId(sessionUUID)
-                    ?: run {
+            // Resolve contact ID and determine convId
+            // For ephemeral sessions, use sessionUUID as convId
+            // For regular contacts, use sorted identity hashes
+            val isEphemeral = contactIdOrEphemeralId.endsWith("_ephemeral")
+            val sessionUUID = if (isEphemeral) {
+                contactIdOrEphemeralId.removeSuffix("_ephemeral")
+            } else null
+            android.util.Log.d("CallViewModel", "startOutgoingCall: isEphemeral=$isEphemeral sessionUUID=$sessionUUID")
 
-                        _uiState.update { it.copy(contactName = "Error: Session not found") }
-                        return@launch
-                    }
+            val actualContactId = if (isEphemeral) {
+                // Look up the actual contact ID via ephemeral session manager
+                val contactId = ephemeralSessionManager.getContactId(sessionUUID!!)
+                if (contactId == null) {
+                    android.util.Log.e("CallViewModel", "startOutgoingCall: ephemeral contact not found for sessionUUID=$sessionUUID")
+                    _navigateBackEvent.tryEmit(Unit)
+                    return@launch
+                }
+                contactId
             } else {
                 contactIdOrEphemeralId
             }
+            android.util.Log.d("CallViewModel", "startOutgoingCall: actualContactId=$actualContactId")
 
             val contact = withContext(Dispatchers.IO) { contactRepository.getContact(actualContactId) }
-                ?: run {
-
-                    _uiState.update { it.copy(contactName = "Error: Contact not found") }
-                    return@launch
-                }
+            if (contact == null) {
+                android.util.Log.e("CallViewModel", "startOutgoingCall: contact not found for id=$actualContactId")
+                _navigateBackEvent.tryEmit(Unit)
+                return@launch
+            }
             val myIdentity = withContext(Dispatchers.IO) { identityRepository.getLocalIdentity() }
-                ?: run {
-                    
-                    _uiState.update { it.copy(contactName = "Error: Identity not found") }
-                    return@launch
-                }
+            if (myIdentity == null) {
+                android.util.Log.e("CallViewModel", "startOutgoingCall: identity not found")
+                _navigateBackEvent.tryEmit(Unit)
+                return@launch
+            }
 
             _uiState.update { it.copy(contactName = contact.displayName) }
 
-            val sorted = listOf(myIdentity.identityHex, contact.identityHex).sorted()
-            val convId = "${sorted[0]}_${sorted[1]}"
+            // For ephemeral sessions, use sessionUUID as convId (routes via EphemeralSessionManager)
+            // For regular conversations, use sorted identity hashes (routes via BackgroundConnectionManager)
+            val convId = if (isEphemeral && sessionUUID != null) {
+                sessionUUID
+            } else {
+                val sorted = listOf(myIdentity.identityHex, contact.identityHex).sorted()
+                "${sorted[0]}_${sorted[1]}"
+            }
+            android.util.Log.d("CallViewModel", "startOutgoingCall: convId=$convId contactName=${contact.displayName}")
 
-            
-            
-            // Ensure relay connection exists before sending the call offer
-            backgroundConnectionManager.ensureConnected(myIdentity, contact)
-            
-            
+            if (!isEphemeral) {
+                // Ensure relay connection exists before sending the call offer (regular contacts only)
+                backgroundConnectionManager.ensureConnected(myIdentity, contact)
+            }
+
             callManager.startCall(convId, contact)
-            
         }
     }
 
     // -- Called from CallScreen when an incoming call is being displayed -------
 
     fun initIncomingCall(contactIdOrEphemeralId: String) {
+        // Use the name already cached in incomingCallData to avoid a "..." flash
+        // while the async DB lookup runs below.
+        callManager.incomingCallData.value?.contactName?.takeIf { it.isNotBlank() }?.let { name ->
+            _uiState.update { it.copy(contactName = name) }
+        }
         viewModelScope.launch {
             // Resolve contact ID: it could be a regular contact ID or "sessionUUID_ephemeral"
             val actualContactId = if (contactIdOrEphemeralId.endsWith("_ephemeral")) {
@@ -1221,5 +1258,6 @@ class CallViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         stopDurationCounter()
+        callManager.hangup()   // clean up any orphaned call if the ViewModel is destroyed
     }
 }

@@ -6,9 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.cryptika.messenger.data.remote.EphemeralSessionManager
 import com.cryptika.messenger.data.remote.api.AcceptRequestResponse
 import com.cryptika.messenger.data.remote.api.PendingRequest
-import com.cryptika.messenger.domain.model.Contact
 import com.cryptika.messenger.domain.repository.AuthRepository
-import com.cryptika.messenger.domain.repository.ContactRepository
 import com.cryptika.messenger.domain.repository.IdentityRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -118,8 +116,7 @@ data class ContactDiscoveryUiState(
 @HiltViewModel
 class ContactDiscoveryViewModel @Inject constructor(
     private val authRepository: AuthRepository,
-    private val ephemeralSessionManager: EphemeralSessionManager,
-    private val contactRepository: ContactRepository
+    private val ephemeralSessionManager: EphemeralSessionManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ContactDiscoveryUiState())
@@ -198,15 +195,15 @@ class ContactDiscoveryViewModel @Inject constructor(
     }
 
     /**
-     * Joins the ephemeral session and saves the contact for calling support within
-     * this session, then transitions to the accepted state so navigation occurs.
+     * Joins the ephemeral session and transitions to the accepted state so navigation occurs.
+     * joinSession() already saves the peer as an ephemeral contact; no separate save needed.
      */
     fun confirmSetup(@Suppress("UNUSED_PARAMETER") displayName: String) {
         val setup = _uiState.value.pendingSetup ?: return
         val randomName = "User_${java.util.UUID.randomUUID().toString().take(8)}"
         viewModelScope.launch {
             try {
-                // 1. Join ephemeral session for immediate chat
+                // Join ephemeral session for immediate chat (also saves ephemeral contact)
                 ephemeralSessionManager.joinSession(
                     sessionUUID = setup.sessionUUID,
                     expiresAt = setup.expiresAt,
@@ -215,21 +212,7 @@ class ContactDiscoveryViewModel @Inject constructor(
                     peerNickname = randomName
                 )
 
-                // 2. Save as in-session contact so calling works
-                val now = System.currentTimeMillis()
-                val persistentContact = Contact(
-                    id = setup.peerIdentityHash,
-                    identityHash = setup.peerIdentityHash.hexToByteArray(),
-                    publicKeyBytes = android.util.Base64.decode(
-                        setup.peerPublicKeyB64, android.util.Base64.NO_WRAP
-                    ),
-                    displayName = randomName,
-                    verifiedAt = now,
-                    keyChangedAt = now
-                )
-                contactRepository.saveContact(persistentContact)
-
-                // 3. Surface accepted session so the nav graph navigates to chat
+                // Surface accepted session so the nav graph navigates to chat
                 _uiState.update {
                     it.copy(
                         pendingSetup = null,
@@ -244,15 +227,8 @@ class ContactDiscoveryViewModel @Inject constructor(
                     )
                 }
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = "Error saving contact: ${e.message}") }
+                _uiState.update { it.copy(error = "Error joining session: ${e.message}") }
             }
-        }
-    }
-
-    private fun String.hexToByteArray(): ByteArray {
-        check(length % 2 == 0)
-        return ByteArray(length / 2) { i ->
-            ((get(i * 2).digitToInt(16) shl 4) or get(i * 2 + 1).digitToInt(16)).toByte()
         }
     }
 

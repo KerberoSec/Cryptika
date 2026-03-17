@@ -512,8 +512,9 @@ private fun MessageBubble(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    // Expiry countdown
-                    message.expiryDeadlineMs?.let { deadline ->
+                    // Expiry countdown (or spacer if no expiry to push timestamp to the right)
+                    if (message.expiryDeadlineMs != null) {
+                        val deadline = message.expiryDeadlineMs
                         val remaining = remember(deadline) {
                             mutableStateOf(((deadline - System.currentTimeMillis()) / 1000).coerceAtLeast(0))
                         }
@@ -532,6 +533,9 @@ private fun MessageBubble(
                                     else if (isOutgoing) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
                                     else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         )
+                    } else {
+                        // Empty spacer to push timestamp to the right when no expiry
+                        Spacer(Modifier.weight(1f))
                     }
 
                     Row(

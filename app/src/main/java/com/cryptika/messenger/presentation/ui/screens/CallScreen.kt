@@ -41,6 +41,12 @@ fun CallScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
+    // Navigate back immediately if the ViewModel signals an unrecoverable error
+    // (e.g. contact not found, session expired) before a call was ever started.
+    LaunchedEffect(Unit) {
+        viewModel.navigateBackEvent.collect { onCallEnded() }
+    }
+
     // Request microphone permission before starting audio
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -78,6 +84,18 @@ fun CallScreen(
     LaunchedEffect(uiState.callState) {
         if (uiState.callState != CallState.IDLE) hasLeftIdle = true
         if (hasLeftIdle && uiState.callState == CallState.IDLE) onCallEnded()
+    }
+
+    // Safety net: if outgoing call setup fails so quickly that hasLeftIdle never
+    // becomes true (OUTGOING_RINGING → IDLE before first collection), detect the
+    // stuck state after a short delay and exit.
+    if (!isIncoming) {
+        LaunchedEffect(Unit) {
+            kotlinx.coroutines.delay(5_000)
+            if (!hasLeftIdle && uiState.callState == CallState.IDLE) {
+                onCallEnded()
+            }
+        }
     }
 
     // Back-button / gesture interception: hang up gracefully so the LaunchedEffect above

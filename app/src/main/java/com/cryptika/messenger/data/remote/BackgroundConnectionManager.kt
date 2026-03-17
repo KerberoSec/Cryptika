@@ -13,6 +13,7 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.cryptika.messenger.MainActivity
 import com.cryptika.messenger.R
@@ -380,6 +381,9 @@ class BackgroundConnectionManager @Inject constructor(
                                     (packetBytes[0] == CallManager.CALL_SIGNAL_MAGIC ||
                                      packetBytes[0] == CallManager.AUDIO_FRAME_MAGIC) -> {
                                         // Call signal or audio frame: route to CallManager
+                                        if (packetBytes[0] == CallManager.CALL_SIGNAL_MAGIC) {
+                                            Log.d("BGConnMgr", "Routing call signal to CallManager: convId=${state.conversationId} size=${packetBytes.size} contact=${state.contact.displayName}")
+                                        }
                                         callManager.get().onRelayPacket(
                                             state.conversationId,
                                             event.message.messageId,

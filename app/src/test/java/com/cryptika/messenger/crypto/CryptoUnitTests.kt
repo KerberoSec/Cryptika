@@ -330,7 +330,7 @@ class TicketManagerTest {
         val fakeTicket = buf.array()
 
         try {
-            ticketManager.verifyTicket(fakeTicket)
+            ticketManager.verifyTicket(fakeTicket, ByteArray(32))
             fail("Zeroed signature should throw TicketSignatureInvalid")
         } catch (e: CryptoError.TicketSignatureInvalid) {
             // Expected: no valid mock bypass exists in production
@@ -343,7 +343,7 @@ class TicketManagerTest {
         val ticketManager = TicketManager(serverKey)
 
         try {
-            ticketManager.verifyTicket(ByteArray(50))  // wrong size
+            ticketManager.verifyTicket(ByteArray(50), ByteArray(32))  // wrong size
             fail("Should throw")
         } catch (e: CryptoError.TicketSignatureInvalid) {
             // Expected
@@ -532,7 +532,7 @@ class TicketTamperingTest {
         val ticketManager = TicketManager(serverKey)
 
         try {
-            ticketManager.verifyTicket(badTicket)
+            ticketManager.verifyTicket(badTicket, ByteArray(32))
             fail("Ticket with invalid signature should throw TicketSignatureInvalid")
         } catch (e: CryptoError.TicketSignatureInvalid) {
             // Expected
@@ -557,7 +557,7 @@ class TicketTamperingTest {
         tampered[0] = (tampered[0].toInt() xor 0xFF).toByte()
 
         try {
-            ticketManager.verifyTicket(tampered)
+            ticketManager.verifyTicket(tampered, ByteArray(32))
             fail("Tampered ticket payload should fail signature verification")
         } catch (e: CryptoError.TicketSignatureInvalid) {
             // Expected: signature no longer covers modified payload
