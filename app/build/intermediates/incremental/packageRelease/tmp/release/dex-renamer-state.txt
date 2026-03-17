@@ -1,4 +1,0 @@
-#Sat Mar 14 10:11:17 IST 2026
-base.0=E\:\\MY HARD W0RK\\NITH\\Cryptika\\app\\build\\intermediates\\dex\\release\\minifyReleaseWithR8\\classes.dex
-renamed.0=classes.dex
-path.0=classes.dex
