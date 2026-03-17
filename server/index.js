@@ -223,6 +223,19 @@ app.post("/api/v1/auth/enter", (req, res) => {
 
     const trimmed = username.trim();
 
+    // Check if username is already taken by an active user
+    const existingUser = users.get(trimmed);
+    if (existingUser) {
+      // If the existing user has the same identityHashHex, allow re-login (same device)
+      // Otherwise, reject login attempt for this username
+      if (identityHashHex && existingUser.identityHashHex &&
+          identityHashHex !== existingUser.identityHashHex) {
+        return res.status(409).json({
+          error: "Username is currently in use by another user. Please try a different username."
+        });
+      }
+    }
+
     // Derive contact token (case-sensitive: different case = different token)
     const contactToken = deriveContactToken(trimmed);
 
@@ -321,11 +334,10 @@ app.post("/api/v1/contact/request", authenticateToken, async (req, res) => {
       return res.json({ status: "request_sent" });
     }
 
-    const targetUser = users.get(targetUsername);
-    if (!targetUser) {
-      // Target doesn't exist, return identical response (anti-enumeration)
-      return res.json({ status: "request_sent" });
-    }
+    // Note: We intentionally store requests even if targetUser doesn't exist yet.
+    // This allows users to receive pending requests when they register later.
+    // The request is indexed by toToken (derived from username), so it will be
+    // available when the target user registers and fetches their pending requests.
 
     // Check for duplicate pending request
     const existing = pendingByToken.get(toToken);

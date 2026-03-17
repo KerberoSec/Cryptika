@@ -316,7 +316,7 @@ fun CryptikaNavGraph(onFullWipe: () -> Unit = {}) {
             CallScreen(
                 contactId  = contactId,
                 isIncoming = isIncoming,
-                onCallEnded = { forceLogout() }
+                onCallEnded = { navController.popBackStack() }
             )
         }
 

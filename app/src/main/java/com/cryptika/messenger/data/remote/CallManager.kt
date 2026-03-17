@@ -9,6 +9,7 @@ import android.media.AudioManager
 import android.media.AudioRecord
 import android.media.AudioTrack
 import android.media.MediaRecorder
+import android.util.Log
 import com.cryptika.messenger.domain.crypto.AEADCipher
 import com.cryptika.messenger.domain.crypto.Ed25519Verifier
 import com.cryptika.messenger.domain.crypto.IdentityKeyManager
@@ -78,7 +79,9 @@ class CallManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val backgroundConnectionManager: BackgroundConnectionManager,
     private val identityKeyManager: IdentityKeyManager,
-    private val sessionKeyManager: SessionKeyManager
+    private val sessionKeyManager: SessionKeyManager,
+    // Lazy<EphemeralSessionManager> allows sending call packets via ephemeral sessions
+    private val ephemeralSessionManager: dagger.Lazy<EphemeralSessionManager>
 ) {
 
     companion object {
@@ -145,6 +148,12 @@ class CallManager @Inject constructor(
     // Channel for ordered audio playback: single consumer ensures AudioTrack thread safety
     private var audioPlaybackChannel = Channel<ByteArray>(capacity = 64)
 
+    // Replay protection: track recently-processed callIds so a captured packet cannot be
+    // replayed within the 5-minute timestamp freshness window.
+    // Bounded to 100 entries (≈1 call/minute → 1.5 h of history).
+    private val recentCallIds     = LinkedHashSet<String>(128)
+    private val recentCallIdsLock = Any()
+
     // Speaker state (AudioManager)
     private val audioManager: AudioManager =
         context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -154,6 +163,24 @@ class CallManager @Inject constructor(
     private val _isMutedState = MutableStateFlow(false)
     val isMutedState: StateFlow<Boolean> = _isMutedState
 
+    /**
+     * Sends a packet via either BackgroundConnectionManager or EphemeralSessionManager.
+     * For ephemeral sessions (UUID-style convId), uses EphemeralSessionManager.
+     * For regular conversations, uses BackgroundConnectionManager.
+     */
+    private suspend fun sendCallPacket(convId: String, messageId: String, packet: ByteArray): Boolean {
+        // Check if convId is a UUID (ephemeral session) vs identity hash pair (regular conversation)
+        val isEphemeralSession = convId.length == 36 && convId.count { it == '-' } == 4
+        Log.d(TAG, "sendCallPacket: convId=$convId isEphemeral=$isEphemeralSession msgId=$messageId packetSize=${packet.size}")
+        val result = if (isEphemeralSession) {
+            ephemeralSessionManager.get().sendPacket(convId, messageId, packet)
+        } else {
+            backgroundConnectionManager.sendPacket(convId, messageId, packet)
+        }
+        Log.d(TAG, "sendCallPacket: result=$result")
+        return result
+    }
+
     // PUBLIC API: called by CallViewModel
 
     /**
@@ -162,51 +189,94 @@ class CallManager @Inject constructor(
      * Sends a signed CALL_OFFER packet over the relay; starts a 60 s ring timeout.
      */
     fun startCall(convId: String, contact: Contact) {
-        if (_callState.value != CallState.IDLE) return
+        if (_callState.value != CallState.IDLE) {
+            Log.w(TAG, "startCall: blocked, state=${_callState.value}")
+            return
+        }
+
+        // Transition to OUTGOING_RINGING immediately so:
+        //  1. The CallScreen sees a non-IDLE state and doesn't exit prematurely.
+        //  2. Duplicate taps are blocked (the guard above will return).
+        val callId = generateCallId()
+        activeCallId = callId
+        activeConvId = convId
+        activeContact = contact
+        isCallerRole = true
+        _callState.value = CallState.OUTGOING_RINGING
+        Log.d(TAG, "startCall: convId=$convId callId=$callId contact=${contact.displayName}")
 
         scope.launch {
             try {
-                val callId = generateCallId()
-                activeCallId = callId
-                activeConvId = convId
-                activeContact = contact
-                isCallerRole = true
-
                 val ephemeral = sessionKeyManager.generateEphemeralKeyPair()
                 ourEphemeralPair = ephemeral
 
-                val connectionStateFlow = backgroundConnectionManager.getConnectionState(convId)
-                if (connectionStateFlow == null) {
-                    cleanup()
-                    return@launch
+                // Check if this is an ephemeral session (UUID format)
+                val isEphemeralSession = convId.length == 36 && convId.count { it == '-' } == 4
+                Log.d(TAG, "startCall: isEphemeralSession=$isEphemeralSession")
+
+                if (isEphemeralSession) {
+                    // For ephemeral sessions, the WebSocket is already connected when the chat is open.
+                    // Check if the session has a message processor (handshake completed).
+                    var processor = ephemeralSessionManager.get().getMessageProcessor(convId)
+                    Log.d(TAG, "startCall: ephemeral processor initial=${processor != null}")
+                    if (processor == null) {
+                        // Give it a few seconds for the handshake to complete
+                        var attempts = 0
+                        while (attempts < 10) {
+                            delay(1000)
+                            processor = ephemeralSessionManager.get().getMessageProcessor(convId)
+                            Log.d(TAG, "startCall: ephemeral processor attempt $attempts = ${processor != null}")
+                            if (processor != null) break
+                            attempts++
+                        }
+                        if (ephemeralSessionManager.get().getMessageProcessor(convId) == null) {
+                            Log.e(TAG, "startCall: ephemeral session not ready for convId=$convId after $attempts attempts")
+                            cleanup()
+                            return@launch
+                        }
+                    }
+                } else {
+                    // Regular conversation: wait for BackgroundConnectionManager to connect
+                    val connectionStateFlow = backgroundConnectionManager.getConnectionState(convId)
+                    if (connectionStateFlow == null) {
+                        Log.e(TAG, "startCall: no connection state for convId=$convId")
+                        cleanup()
+                        return@launch
+                    }
+
+                    try {
+                        withTimeout(30_000L) {
+                            connectionStateFlow.first { it == ConnectionState.CONNECTED_RELAY }
+                        }
+                    } catch (e: TimeoutCancellationException) {
+                        Log.e(TAG, "startCall: relay connection timeout for convId=$convId")
+                        cleanup()
+                        return@launch
+                    }
                 }
 
-                try {
-                    withTimeout(30_000L) {
-                        connectionStateFlow.first { it == ConnectionState.CONNECTED_RELAY }
-                    }
-                } catch (e: TimeoutCancellationException) {
-                    cleanup()
-                    return@launch
-                }
+                // Double-check: cleanup() might have been called while waiting
+                if (_callState.value != CallState.OUTGOING_RINGING) return@launch
 
                 val packet = buildSignalPacket(CallSignalType.OFFER, callId, ephemeral.publicKeyBytes)
-                val sent = backgroundConnectionManager.sendPacket(convId, "call_offer_${UUID.randomUUID()}", packet)
+                val sent = sendCallPacket(convId, "call_offer_${UUID.randomUUID()}", packet)
+                Log.d(TAG, "startCall: OFFER sent=$sent packetSize=${packet.size}")
                 if (!sent) {
+                    Log.e(TAG, "startCall: sendPacket failed for convId=$convId")
                     cleanup()
                     return@launch
                 }
-
-                _callState.value = CallState.OUTGOING_RINGING
 
                 // Auto-cancel after timeout
                 ringTimeoutJob = launch {
                     delay(RING_TIMEOUT_MS)
                     if (_callState.value == CallState.OUTGOING_RINGING) {
+                        Log.d(TAG, "startCall: ring timeout, hanging up")
                         hangup()
                     }
                 }
             } catch (e: Exception) {
+                Log.e(TAG, "startCall: exception", e)
                 cleanup()
             }
         }
@@ -244,7 +314,7 @@ class CallManager @Inject constructor(
                 ourEphemeralPair = null
 
                 val packet = buildSignalPacket(CallSignalType.ANSWER, callId, ephemeral.publicKeyBytes)
-                val sent = backgroundConnectionManager.sendPacket(convId, "call_answer_${UUID.randomUUID()}", packet)
+                val sent = sendCallPacket(convId, "call_answer_${UUID.randomUUID()}", packet)
                 if (!sent) {
                     cleanup()
                     return@launch
@@ -271,7 +341,7 @@ class CallManager @Inject constructor(
         scope.launch {
             try {
                 val packet = buildSignalPacket(CallSignalType.REJECT, callId, ByteArray(32))
-                backgroundConnectionManager.sendPacket(convId, "call_reject_${UUID.randomUUID()}", packet)
+                sendCallPacket(convId, "call_reject_${UUID.randomUUID()}", packet)
             } catch (_: Exception) {}
             cleanup()
         }
@@ -279,14 +349,17 @@ class CallManager @Inject constructor(
 
     /** Ends the active call or cancels an outgoing/incoming ringing call. */
     fun hangup() {
-        if (_callState.value == CallState.IDLE) return   // already ended: nothing to do
+        // Also check activeCallId: startCall() sets it before transitioning out of IDLE,
+        // so a hangup() tap during the connection-wait window (state=IDLE, activeCallId≠null)
+        // must still reach cleanup() instead of being silently discarded.
+        if (_callState.value == CallState.IDLE && activeCallId == null) return
         val convId = activeConvId ?: run { cleanup(); return }
         val callId = activeCallId ?: run { cleanup(); return }
 
         scope.launch {
             try {
                 val packet = buildSignalPacket(CallSignalType.HANGUP, callId, ByteArray(32))
-                backgroundConnectionManager.sendPacket(convId, "call_hangup_${UUID.randomUUID()}", packet)
+                sendCallPacket(convId, "call_hangup_${UUID.randomUUID()}", packet)
             } catch (_: Exception) {}
             cleanup()
         }
@@ -312,6 +385,7 @@ class CallManager @Inject constructor(
      * @param contact the Contact associated with this conversation (for signature verification)
      */
     fun onRelayPacket(convId: String, msgId: String, packet: ByteArray, contact: Contact) {
+        Log.d(TAG, "onRelayPacket: convId=$convId size=${packet.size} magic=${if (packet.isNotEmpty()) "%02x".format(packet[0]) else "empty"}")
         when {
             packet.isNotEmpty() && packet[0] == CALL_SIGNAL_MAGIC ->
                 onSignalReceived(convId, packet, contact)
@@ -323,10 +397,17 @@ class CallManager @Inject constructor(
     // SIGNAL HANDLING
 
     private fun onSignalReceived(convId: String, packet: ByteArray, contact: Contact) {
-        if (packet.size != SIGNAL_SIZE) return
+        if (packet.size != SIGNAL_SIZE) {
+            Log.w(TAG, "onSignalReceived: wrong size ${packet.size}, expected $SIGNAL_SIZE")
+            return
+        }
 
         val typeByte = packet[1]
-        val type = CallSignalType.fromByte(typeByte) ?: return
+        val type = CallSignalType.fromByte(typeByte)
+        if (type == null) {
+            Log.w(TAG, "onSignalReceived: unknown signal type byte $typeByte")
+            return
+        }
 
         // Parse fields
         val callIdBytes = packet.copyOfRange(2, 18)
@@ -339,11 +420,19 @@ class CallManager @Inject constructor(
         // Ed25519 signature verification: signed data is bytes[0..57]
         val signedData = packet.copyOfRange(0, 58)
         val sigDigest = MessageDigest.getInstance("SHA-256").digest(signedData)
-        if (!Ed25519Verifier.verify(contact.publicKeyBytes, sigDigest, signature)) return
+        if (!Ed25519Verifier.verify(contact.publicKeyBytes, sigDigest, signature)) {
+            Log.w(TAG, "onSignalReceived: signature verification FAILED for type=$type from ${contact.displayName}")
+            return
+        }
 
         // Timestamp freshness ±5 minutes
         val now = System.currentTimeMillis()
-        if (kotlin.math.abs(now - tsMs) > 5 * 60_000L) return
+        if (kotlin.math.abs(now - tsMs) > 5 * 60_000L) {
+            Log.w(TAG, "onSignalReceived: timestamp stale, diff=${now - tsMs}ms for type=$type")
+            return
+        }
+
+        Log.d(TAG, "onSignalReceived: type=$type callId=${callId.take(8)}… from ${contact.displayName} state=${_callState.value}")
 
         when (type) {
             CallSignalType.OFFER  -> handleIncomingOffer(convId, callId, ephPub, contact)
@@ -356,14 +445,23 @@ class CallManager @Inject constructor(
 
     private fun handleIncomingOffer(convId: String, callId: String, callerEphPub: ByteArray, contact: Contact) {
         if (_callState.value != CallState.IDLE) {
+            Log.w(TAG, "handleIncomingOffer: busy (state=${_callState.value}), sending BUSY signal")
             // Already busy: send BUSY and discard
             scope.launch {
                 try {
                     val packet = buildSignalPacket(CallSignalType.BUSY, callId, ByteArray(32))
-                    backgroundConnectionManager.sendPacket(convId, "call_busy_${UUID.randomUUID()}", packet)
+                    sendCallPacket(convId, "call_busy_${UUID.randomUUID()}", packet)
                 } catch (e: Exception) {
                 }
             }
+            return
+        }
+
+        // Replay protection: OFFER packets share a callId with subsequent ANSWER/HANGUP
+        // packets for the same session, so deduplication is scoped to OFFER only.
+        // Prevents a captured OFFER from re-ringing the callee after the original call ends.
+        if (!recordCallIdIfNew(callId)) {
+            Log.w(TAG, "handleIncomingOffer: duplicate callId (replay), discarding")
             return
         }
 
@@ -380,6 +478,7 @@ class CallManager @Inject constructor(
             callId = callId
         )
         _callState.value = CallState.INCOMING_RINGING
+        Log.d(TAG, "handleIncomingOffer: INCOMING_RINGING from ${contact.displayName} callId=${callId.take(8)}…")
     }
 
     private fun handleAnswer(callId: String, calleeEphPub: ByteArray) {
@@ -391,7 +490,12 @@ class CallManager @Inject constructor(
 
         scope.launch {
             try {
-                val ephemeral = ourEphemeralPair ?: return@launch
+                // Capture the ephemeral pair inside cleanupLock so cleanup() cannot
+                // zeroize the private key between our null-check and our DH call.
+                val ephemeral = synchronized(cleanupLock) {
+                    if (_callState.value != CallState.OUTGOING_RINGING) return@launch
+                    ourEphemeralPair
+                } ?: return@launch
                 // Derive call keys: caller side
                 val sharedSecret = sessionKeyManager.computeSharedSecret(ephemeral, calleeEphPub)
                 val (enc, dec) = deriveCallKeys(sharedSecret, callId, isCaller = true)
@@ -530,7 +634,7 @@ class CallManager @Inject constructor(
                     val payload = if (isMuted) ByteArray(bytesRead) else pcmBuf.copyOf(bytesRead)
                     val seq = sendSequenceAtomic.getAndIncrement()
                     val framePacket = buildAudioFrame(key, payload, seq)
-                    backgroundConnectionManager.sendPacket(convId, "af_${seq}", framePacket)
+                    sendCallPacket(convId, "af_${seq}", framePacket)
                 } catch (_: Exception) { /* drop frame on transient error */ }
             }
         }
@@ -632,6 +736,19 @@ class CallManager @Inject constructor(
     }
 
     // HELPERS
+
+    /**
+     * Returns true if [callId] is new and records it; returns false if already seen (replay).
+     * Thread-safe; bounded to 100 entries — FIFO eviction.
+     */
+    private fun recordCallIdIfNew(callId: String): Boolean {
+        synchronized(recentCallIdsLock) {
+            if (recentCallIds.contains(callId)) return false
+            recentCallIds.add(callId)
+            if (recentCallIds.size > 100) recentCallIds.iterator().also { it.next(); it.remove() }
+            return true
+        }
+    }
 
     /**
      * Derives the two directional call keys.

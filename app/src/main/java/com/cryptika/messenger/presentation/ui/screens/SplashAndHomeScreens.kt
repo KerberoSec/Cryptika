@@ -134,7 +134,23 @@ fun HomeScreen(
                 },
                 actions = {
                     IconButton(onClick = onNavigateToContactDiscovery) {
-                        Icon(Icons.Filled.PersonAdd, "Add Contact")
+                        BadgedBox(
+                            badge = {
+                                if (state.pendingRequestCount > 0) {
+                                    Badge(
+                                        containerColor = MaterialTheme.colorScheme.error,
+                                        contentColor = MaterialTheme.colorScheme.onError
+                                    ) {
+                                        Text(
+                                            text = if (state.pendingRequestCount > 99) "99+" else state.pendingRequestCount.toString(),
+                                            fontSize = 10.sp
+                                        )
+                                    }
+                                }
+                            }
+                        ) {
+                            Icon(Icons.Filled.PersonAdd, "Add Contact")
+                        }
                     }
                     IconButton(onClick = onNavigateToSettings) {
                         Icon(Icons.Filled.Settings, "Settings")
@@ -146,11 +162,27 @@ fun HomeScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = onNavigateToContactDiscovery,
-                containerColor = MaterialTheme.colorScheme.primary
+            BadgedBox(
+                badge = {
+                    if (state.pendingRequestCount > 0) {
+                        Badge(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError
+                        ) {
+                            Text(
+                                text = if (state.pendingRequestCount > 99) "99+" else state.pendingRequestCount.toString(),
+                                fontSize = 10.sp
+                            )
+                        }
+                    }
+                }
             ) {
-                Icon(Icons.Filled.PersonAdd, "Add contact", tint = Color.Black)
+                FloatingActionButton(
+                    onClick = onNavigateToContactDiscovery,
+                    containerColor = MaterialTheme.colorScheme.primary
+                ) {
+                    Icon(Icons.Filled.PersonAdd, "Add contact", tint = Color.Black)
+                }
             }
         }
     ) { padding ->

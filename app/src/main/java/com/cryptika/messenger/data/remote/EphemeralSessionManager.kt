@@ -42,7 +42,9 @@ class EphemeralSessionManager @Inject constructor(
     private val messageRepository: MessageRepository,
     private val handshakeManager: HandshakeManager,
     private val identityKeyManager: IdentityKeyManager,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    // Lazy<CallManager> breaks the circular dependency
+    private val callManager: dagger.Lazy<CallManager>
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -198,6 +200,21 @@ class EphemeralSessionManager @Inject constructor(
                             }
                             handshakeManager.isHandshakeOffer(packetBytes) -> {
                                 completeHandshake(session, packetBytes)
+                            }
+                            // Call signal / audio frame: route to CallManager
+                            // Use sessionUUID as the convId so CallManager can send packets back
+                            packetBytes.isNotEmpty() &&
+                            (packetBytes[0] == CallManager.CALL_SIGNAL_MAGIC ||
+                             packetBytes[0] == CallManager.AUDIO_FRAME_MAGIC) -> {
+                                val contact = contactRepository.getContact(session.contactId)
+                                if (contact != null) {
+                                    callManager.get().onRelayPacket(
+                                        session.sessionUUID,
+                                        event.message.messageId,
+                                        packetBytes,
+                                        contact
+                                    )
+                                }
                             }
                             else -> {
                                 // Forward to ChatViewModel if registered
