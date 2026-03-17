@@ -1,7 +1,7 @@
 {
-  "name": "hacksecure-relay-server",
+  "name": "cryptika-relay-server",
   "version": "1.0.0",
-  "description": "HackSecure blind relay server — routes encrypted packets without inspecting content",
+  "description": "Cryptika blind relay server: routes encrypted packets without inspecting content",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

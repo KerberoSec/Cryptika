@@ -1,14 +1,14 @@
-# HackSecure Messenger ProGuard Rules
+# Cryptika Messenger ProGuard Rules
 
 # Keep BouncyCastle crypto primitives
 -keep class org.bouncycastle.** { *; }
 -dontwarn org.bouncycastle.**
 
 # Keep Room entities
--keep class com.hacksecure.messenger.data.local.db.** { *; }
+-keep class com.cryptika.messenger.data.local.db.** { *; }
 
 # Keep domain models (Gson serialization)
--keep class com.hacksecure.messenger.domain.model.** { *; }
+-keep class com.cryptika.messenger.domain.model.** { *; }
 
 # Keep Hilt generated code
 -keep class * extends dagger.hilt.android.internal.managers.ActivityComponentManager { *; }

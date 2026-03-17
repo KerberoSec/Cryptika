@@ -1,8 +1,8 @@
 ﻿// server/index.js
-// Cryptika Relay Server â€” v3.0.0
+// Cryptika Relay Server v3.0.0
 // Blind relay: routes encrypted packets without inspecting content
 // Auth layer: username-only entry, contact tokens, ephemeral anonymous sessions
-// No passwords, no logs, no stored data â€” pure ephemeral blind relay
+// No passwords, no logs, no stored data: pure ephemeral blind relay
 //
 // Run: node index.js
 // Dependencies: npm install express ws tweetnacl jsonwebtoken uuid helmet
@@ -18,18 +18,18 @@ const jwt = require("jsonwebtoken");
 const { v4: uuidv4 } = require("uuid");
 const helmet = require("helmet");
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//
 // SERVER CONFIG
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//
 const PORT = process.env.PORT || 8443;
 const TICKET_EXPIRY_SECONDS = 3600; // 1 hour
 const MAX_CONNECTIONS_PER_CONV = 10;
 const SESSION_TTL_MS = 30 * 60 * 1000; // 30 minutes
 const JWT_EXPIRY = "30m";
-const USER_TTL_MS = SESSION_TTL_MS; // 30 minutes â€” auto-delete user record
+const USER_TTL_MS = SESSION_TTL_MS; // 30 minutes: auto-delete user record
 const MIN_USERNAME_LENGTH = 1;
 
-// Secrets â€” generate once per server lifetime, persist via env vars
+// Secrets: generate once per server lifetime, persist via env vars
 const HMAC_SECRET = process.env.HMAC_SECRET_HEX
   ? Buffer.from(process.env.HMAC_SECRET_HEX, "hex")
   : crypto.randomBytes(32);
@@ -44,7 +44,7 @@ if (!process.env.JWT_SECRET_HEX) {
   console.log("   Set JWT_SECRET_HEX=" + JWT_SECRET.toString("hex") + " to persist");
 }
 
-// Server Ed25519 signing keypair â€” generate once, hardcode public key in app
+// Server Ed25519 signing keypair: generate once, hardcode public key in app
 let serverKeyPair;
 try {
   const savedKey = process.env.SERVER_PRIVATE_KEY_HEX;
@@ -64,9 +64,9 @@ try {
 
 console.log(`Server public key: ${Buffer.from(serverKeyPair.publicKey).toString("hex")}`);
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//
 // IN-MEMORY DATA STORES
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//
 
 // --- Existing relay state ---
 const conversationSockets = new Map(); // conversationId/sessionUUID â†’ Set<ws>
@@ -78,7 +78,7 @@ const BUFFER_TTL_MS = 3_600_000; // 1 hour
 
 // --- Auth state (Phase 1) ---
 const users = new Map(); // username â†’ { contactToken, identityHashHex, publicKeyB64, createdAt }
-const burnedTokens = new Map(); // jti → burnedAtMs — tracks revoked JWTs until their natural expiry
+const burnedTokens = new Map(); // jti → burnedAtMs: tracks revoked JWTs until their natural expiry
 
 // --- Contact request state (Phase 2) ---
 const contactRequests = new Map();  // requestId â†’ { fromToken, toToken, fromIdentityHash, fromPublicKeyB64, fromNickname, status, createdAt }
@@ -91,9 +91,9 @@ const tokenToSession = new Map();    // contactToken â†’ Set<sessionUUID>  
 // --- Rate limiting ---
 const rateLimits = new Map(); // key â†’ { count, windowStart }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//
 // UTILITY FUNCTIONS
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//
 
 /** Derive a contact token from a username using HMAC-SHA256 */
 function deriveContactToken(username) {
@@ -115,11 +115,11 @@ function timingSafeEqual(a, b) {
   return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
 }
 
-/** Artificial delay to prevent timing side-channels on auth â€” no longer needed (passwordless) */
+/** Artificial delay to prevent timing side-channels on auth: no longer needed (passwordless) */
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//
 // RATE LIMITING
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//
 
 /**
  * Check and increment rate limit for a given key.
@@ -144,9 +144,9 @@ setInterval(() => {
   }
 }, 300_000);
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//
 // JWT MIDDLEWARE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//
 
 function authenticateToken(req, res, next) {
   const authHeader = req.headers["authorization"];
@@ -180,9 +180,9 @@ function findUserByIdentityHash(identityHashHex) {
   return null;
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//
 // EXPRESS REST API
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//
 const app = express();
 app.use(helmet());
 app.use(express.json({ limit: "16kb" }));
@@ -198,11 +198,11 @@ app.get("/health", (req, res) => {
   });
 });
 
-// â”€â”€ AUTH ENDPOINTS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// AUTH ENDPOINTS
 
 /**
  * POST /api/v1/auth/enter
- * Passwordless entry â€” provide a public username to get a JWT + contact token.
+ * Passwordless entry: provide a public username to get a JWT + contact token.
  * If username is already taken, the existing user is replaced (ephemeral model).
  * Case-sensitive usernames. No passwords stored anywhere.
  */
@@ -223,10 +223,10 @@ app.post("/api/v1/auth/enter", (req, res) => {
 
     const trimmed = username.trim();
 
-    // Derive contact token (case-sensitive â€” different case = different token)
+    // Derive contact token (case-sensitive: different case = different token)
     const contactToken = deriveContactToken(trimmed);
 
-    // Store/replace user (purely ephemeral â€” no password)
+    // Store/replace user (purely ephemeral, no password)
     users.set(trimmed, {
       contactToken,
       identityHashHex: identityHashHex || "",
@@ -250,7 +250,7 @@ app.post("/api/v1/auth/enter", (req, res) => {
   }
 });
 
-// â”€â”€ CONTACT REQUEST ENDPOINTS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// CONTACT REQUEST ENDPOINTS
 
 /**
  * POST /api/v1/auth/burn
@@ -323,7 +323,7 @@ app.post("/api/v1/contact/request", authenticateToken, async (req, res) => {
 
     const targetUser = users.get(targetUsername);
     if (!targetUser) {
-      // Target doesn't exist â€” return identical response (anti-enumeration)
+      // Target doesn't exist, return identical response (anti-enumeration)
       return res.json({ status: "request_sent" });
     }
 
@@ -471,7 +471,7 @@ app.get("/api/v1/contact/requests", authenticateToken, (req, res) => {
 
 /**
  * POST /api/v1/contact/accept
- * Accept a contact request â€” creates an ephemeral anonymous session.
+ * Accept a contact request: creates an ephemeral anonymous session.
  * Returns the session UUID and server-issued expiry timestamp.
  */
 app.post("/api/v1/contact/accept", authenticateToken, async (req, res) => {
@@ -598,7 +598,7 @@ app.post("/api/v1/contact/reject", authenticateToken, (req, res) => {
 
 /**
  * GET /api/v1/contact/accepted
- * Poll for accepted contact requests â€” returns sessions created for requests
+ * Poll for accepted contact requests: returns sessions created for requests
  * originally sent BY the authenticated user.
  */
 app.get("/api/v1/contact/accepted", authenticateToken, (req, res) => {
@@ -639,51 +639,114 @@ app.get("/api/v1/contact/accepted", authenticateToken, (req, res) => {
   }
 });
 
-// â”€â”€ EXISTING RELAY ENDPOINTS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// EXISTING RELAY ENDPOINTS
 
 /**
  * POST /api/v1/ticket
- * Issues a signed session ticket for a pair of identity hashes.
- * The authenticated caller must be one of the identities in the ticket.
+ * Dual-signature ticket: User A signs the payload, server verifies and countersigns.
+ *
+ * Only the initiator (caller whose identity hash == a_id) may call this.
+ * Server verifies User A's Ed25519 signature before issuing a countersignature,
+ * so the server acts as a notary that independently confirms authorship.
+ *
+ * Request body: { a_id, b_id, timestamp_ms, expiry_seconds, user_a_sig_b64 }
+ * Response:     { ticket_b64 }  — 204-byte ticket (payload + userASig + serverSig)
  */
 app.post("/api/v1/ticket", authenticateToken, (req, res) => {
-  const { a_id, b_id } = req.body;
-
-  if (!a_id || !b_id || typeof a_id !== "string" || typeof b_id !== "string") {
-    return res.status(400).json({ error: "a_id and b_id are required hex strings" });
+  // Rate limit: 10 ticket requests per user per minute
+  if (isRateLimited(`ticket_${req.user.username}`, 10, 60_000)) {
+    return res.status(429).json({ error: "Too many requests" });
   }
 
-  if (a_id.length !== 64 || b_id.length !== 64) {
-    return res.status(400).json({ error: "Identity hashes must be 32-byte hex strings (64 chars)" });
+  const { a_id, b_id, timestamp_ms, expiry_seconds, user_a_sig_b64 } = req.body;
+
+  // Strict type checks — prevent JSON type-confusion attacks
+  if (!a_id || !b_id || !user_a_sig_b64) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+  if (typeof a_id !== "string" || typeof b_id !== "string" || typeof user_a_sig_b64 !== "string") {
+    return res.status(400).json({ error: "a_id, b_id, user_a_sig_b64 must be strings" });
+  }
+  if (typeof timestamp_ms !== "number" || !Number.isInteger(timestamp_ms)) {
+    return res.status(400).json({ error: "timestamp_ms must be an integer" });
+  }
+  if (typeof expiry_seconds !== "number" || !Number.isInteger(expiry_seconds)) {
+    return res.status(400).json({ error: "expiry_seconds must be an integer" });
+  }
+
+  // Enforce strict lowercase hex — Buffer.from(x,"hex") silently drops invalid chars otherwise
+  const hexPattern = /^[a-f0-9]{64}$/;
+  if (!hexPattern.test(a_id) || !hexPattern.test(b_id)) {
+    return res.status(400).json({ error: "Identity hashes must be 64-char lowercase hex" });
+  }
+
+  // Participants must be distinct
+  if (a_id === b_id) {
+    return res.status(400).json({ error: "a_id and b_id must differ" });
   }
 
   try {
     const caller = users.get(req.user.username);
     const callerIdentityHash = caller?.identityHashHex;
-    if (!callerIdentityHash || (callerIdentityHash !== a_id && callerIdentityHash !== b_id)) {
-      return res.status(403).json({ error: "Ticket request must include caller identity" });
+
+    // Only the initiator (a_id) may request a ticket.
+    // Allowing b_id would let the acceptor submit arbitrary bytes as User A's signature.
+    if (!callerIdentityHash || callerIdentityHash !== a_id) {
+      return res.status(403).json({ error: "Only the initiator (a_id) may request a ticket" });
     }
 
+    // Timestamp freshness — prevents pre-generated and replayed ticket requests
+    const now = Date.now();
+    const CLOCK_SKEW_MS = 300_000; // 5 minutes
+    if (Math.abs(now - timestamp_ms) > CLOCK_SKEW_MS) {
+      return res.status(400).json({ error: "Timestamp outside acceptable range" });
+    }
+
+    // Cap expiry to server maximum
+    if (expiry_seconds <= 0 || expiry_seconds > TICKET_EXPIRY_SECONDS) {
+      return res.status(400).json({ error: "Invalid expiry_seconds" });
+    }
+
+    // Build the 76-byte payload from validated, type-safe fields
     const aIdBytes = Buffer.from(a_id, "hex");
     const bIdBytes = Buffer.from(b_id, "hex");
-    const timestamp = Date.now();
-    const expirySeconds = TICKET_EXPIRY_SECONDS;
-
     const payload = Buffer.alloc(76);
     aIdBytes.copy(payload, 0);
     bIdBytes.copy(payload, 32);
-    payload.writeBigInt64BE(BigInt(timestamp), 64);
-    payload.writeInt32BE(expirySeconds, 72);
+    payload.writeBigInt64BE(BigInt(timestamp_ms), 64);
+    payload.writeInt32BE(expiry_seconds, 72);
 
-    const signature = nacl.sign.detached(payload, serverKeyPair.secretKey);
-    const ticket = Buffer.concat([payload, Buffer.from(signature)]);
+    // Decode and length-check user_a_sig before verifying
+    const userASig = Buffer.from(user_a_sig_b64, "base64");
+    if (userASig.length !== 64) {
+      return res.status(400).json({ error: "user_a_sig_b64 must encode exactly 64 bytes" });
+    }
 
-    /* blind: no logging */
+    // Verify User A's Ed25519 signature over SHA-256(payload)
+    const callerPubKeyB64 = caller?.publicKeyB64;
+    if (!callerPubKeyB64) {
+      return res.status(403).json({ error: "Caller public key not registered" });
+    }
+    const callerPubKeyBytes = Buffer.from(callerPubKeyB64, "base64");
+    if (callerPubKeyBytes.length !== 32) {
+      return res.status(400).json({ error: "Invalid registered public key length" });
+    }
+    const payloadHash = crypto.createHash("sha256").update(payload).digest();
+    if (!nacl.sign.detached.verify(payloadHash, userASig, callerPubKeyBytes)) {
+      return res.status(403).json({ error: "User A signature verification failed" });
+    }
 
-    res.json({
-      ticket_b64: ticket.toString("base64"),
-      server_public_key_b64: Buffer.from(serverKeyPair.publicKey).toString("base64")
-    });
+    // Server countersigns SHA-256(payload || user_a_sig)
+    const combined = Buffer.concat([payload, userASig]); // 140 bytes
+    const combinedHash = crypto.createHash("sha256").update(combined).digest();
+    const serverSig = nacl.sign.detached(combinedHash, serverKeyPair.secretKey);
+
+    // Full 204-byte ticket: payload(76) + userASig(64) + serverSig(64)
+    const ticket = Buffer.concat([payload, userASig, Buffer.from(serverSig)]);
+
+    /* blind: no logging of participant identities */
+
+    res.json({ ticket_b64: ticket.toString("base64") });
   } catch (e) {
     /* blind: no logging */
     res.status(500).json({ error: "Internal error" });
@@ -721,12 +784,12 @@ app.get("/api/v1/presence/:hash", (req, res) => {
   res.json({ online: stale ? false : (entry.online ?? true), lastSeen: entry.lastSeen });
 });
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//
 // EPHEMERAL SESSION MANAGEMENT
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//
 
 /**
- * Destroy an ephemeral session â€” close sockets, purge all data.
+ * Destroy an ephemeral session: close sockets, purge all data.
  * This is the cryptographic erasure point: after this, the session is
  * unrecoverable even if the server is fully compromised.
  */
@@ -762,9 +825,9 @@ function destroySession(sessionUUID) {
   ephemeralSessions.delete(sessionUUID);
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//
 // WEBSOCKET SERVER
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server, path: "/ws" });
 
@@ -782,7 +845,7 @@ wss.on("connection", (ws, req) => {
     return;
   }
 
-  // â”€â”€ Ephemeral session connection â”€â”€
+  // Ephemeral session connection
   if (sessionId) {
     const session = ephemeralSessions.get(sessionId);
     if (!session) {
@@ -897,10 +960,10 @@ wss.on("connection", (ws, req) => {
     });
 
     ws.on("error", () => { room.delete(ws); });
-    return; // Done â€” skip regular conversation logic
+    return; // Done, skip regular conversation logic
   }
 
-  // â”€â”€ Regular conversation connection (existing logic) â”€â”€
+  // Regular conversation connection (existing logic)
   if (!/^[a-f0-9_]+$/.test(conversationId) || conversationId.length > 200) {
     ws.close(4002, "Invalid conversation ID");
     return;
@@ -1019,9 +1082,9 @@ function getTotalConnections() {
   return total;
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// HEARTBEAT â€” ping all clients every 30s; terminate unresponsive ones
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//
+// HEARTBEAT: ping all clients every 30s; terminate unresponsive ones
+//
 setInterval(() => {
   for (const room of conversationSockets.values()) {
     for (const ws of room) {
@@ -1099,7 +1162,7 @@ setInterval(() => {
   }
 
   // Cleanup expired burnedTokens: evict entries whose corresponding JWTs have expired
-  // (JWT_EXPIRY = 30 min + 5 min grace = 35 min). Never bulk-clear — that would re-validate
+  // (JWT_EXPIRY = 30 min + 5 min grace = 35 min). Never bulk-clear: that would re-validate
   // recently revoked tokens that are still within their 30-minute window.
   const REVOCATION_GRACE_MS = 35 * 60 * 1000;
   const nowBurned = Date.now();

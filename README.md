@@ -1,12 +1,12 @@
 <div align="center">
 
-# Cryptika — Complete Technical Reference
+# Cryptika: Complete Technical Reference
 
 **A self-hosted, end-to-end encrypted Android messenger with ephemeral sessions,  
 encrypted voice calls, self-destructing messages, and a cryptographically blind relay server.**
 
 No passwords. No stored data. No metadata beyond connection timing.  
-Identity is a locally generated Ed25519 keypair — nothing else.
+Identity is a locally generated Ed25519 keypair. Nothing else.
 
 ![Platform](https://img.shields.io/badge/Platform-Android%208.0%2B-brightgreen)
 ![Language](https://img.shields.io/badge/Language-Kotlin-7F52FF)
@@ -24,30 +24,30 @@ Identity is a locally generated Ed25519 keypair — nothing else.
 
 1. [What Is Cryptika](#1-what-is-cryptika)
 2. [High-Level System Diagram](#2-high-level-system-diagram)
-3. [How The App Starts — First Launch Flow](#3-how-the-app-starts--first-launch-flow)
-4. [Passwordless Entry — No Accounts, No Passwords](#4-passwordless-entry--no-accounts-no-passwords)
-5. [Custom Secure Keyboard — System IME Blocked](#5-custom-secure-keyboard--system-ime-blocked)
-6. [Identity System — Ed25519 Deep Dive](#6-identity-system--ed25519-deep-dive)
-7. [Contact Discovery — Username-Based Ephemeral Pairing](#7-contact-discovery--username-based-ephemeral-pairing)
-8. [Ephemeral Sessions — 5-Phase Credential Architecture](#8-ephemeral-sessions--5-phase-credential-architecture)
-9. [Adding a Contact — QR Exchange Flow](#9-adding-a-contact--qr-exchange-flow)
-10. [Networking Layer — WebSocket Architecture](#10-networking-layer--websocket-architecture)
-11. [Cryptographic Handshake — X25519 DH Step by Step](#11-cryptographic-handshake--x25519-dh-step-by-step)
-12. [Hash Ratchet — Forward Secrecy Mechanism](#12-hash-ratchet--forward-secrecy-mechanism)
-13. [Sending a Message — Complete Step-by-Step Flow](#13-sending-a-message--complete-step-by-step-flow)
-14. [Receiving a Message — Complete Step-by-Step Flow](#14-receiving-a-message--complete-step-by-step-flow)
-15. [Wire Packet Format — Byte-Level Breakdown](#15-wire-packet-format--byte-level-breakdown)
-16. [Encrypted Storage — How Messages Rest On Disk](#16-encrypted-storage--how-messages-rest-on-disk)
-17. [Message Expiry — Cryptographic Self-Destruction](#17-message-expiry--cryptographic-self-destruction)
-18. [Peer Disconnect — Automatic Session Destruction](#18-peer-disconnect--automatic-session-destruction)
-19. [Auto-Logout — Screen Off, Back, Home, Minimize](#19-auto-logout--screen-off-back-home-minimize)
+3. [How The App Starts: First Launch Flow](#3-how-the-app-starts-first-launch-flow)
+4. [Passwordless Entry: No Accounts, No Passwords](#4-passwordless-entry-no-accounts-no-passwords)
+5. [Custom Secure Keyboard: System IME Blocked](#5-custom-secure-keyboard-system-ime-blocked)
+6. [Identity System: Ed25519 Deep Dive](#6-identity-system-ed25519-deep-dive)
+7. [Contact Discovery: Username-Based Ephemeral Pairing](#7-contact-discovery-username-based-ephemeral-pairing)
+8. [Ephemeral Sessions: 5-Phase Credential Architecture](#8-ephemeral-sessions-5-phase-credential-architecture)
+9. [Adding a Contact: QR Exchange Flow](#9-adding-a-contact-qr-exchange-flow)
+10. [Networking Layer: WebSocket Architecture](#10-networking-layer-websocket-architecture)
+11. [Cryptographic Handshake: X25519 DH Step by Step](#11-cryptographic-handshake-x25519-dh-step-by-step)
+12. [Hash Ratchet: Forward Secrecy Mechanism](#12-hash-ratchet-forward-secrecy-mechanism)
+13. [Sending a Message: Complete Step-by-Step Flow](#13-sending-a-message-complete-step-by-step-flow)
+14. [Receiving a Message: Complete Step-by-Step Flow](#14-receiving-a-message-complete-step-by-step-flow)
+15. [Wire Packet Format: Byte-Level Breakdown](#15-wire-packet-format-byte-level-breakdown)
+16. [Encrypted Storage: How Messages Rest On Disk](#16-encrypted-storage-how-messages-rest-on-disk)
+17. [Message Expiry: Cryptographic Self-Destruction](#17-message-expiry-cryptographic-self-destruction)
+18. [Peer Disconnect: Automatic Session Destruction](#18-peer-disconnect-automatic-session-destruction)
+19. [Auto-Logout: Screen Off, Back, Home, Minimize](#19-auto-logout-screen-off-back-home-minimize)
 20. [Per-Chat Screenshot Blocking](#20-per-chat-screenshot-blocking)
-21. [Encrypted Voice Calls — Full Protocol](#21-encrypted-voice-calls--full-protocol)
-22. [Background Operation — Doze, Reconnect, Services](#22-background-operation--doze-reconnect-services)
-23. [Blind Relay Server — Internal Architecture](#23-blind-relay-server--internal-architecture)
+21. [Encrypted Voice Calls: Full Protocol](#21-encrypted-voice-calls-full-protocol)
+22. [Background Operation: Doze, Reconnect, Services](#22-background-operation-doze-reconnect-services)
+23. [Blind Relay Server: Internal Architecture](#23-blind-relay-server-internal-architecture)
 24. [Server REST API Reference](#24-server-rest-api-reference)
-25. [Dependency Injection — How Hilt Wires Everything](#25-dependency-injection--how-hilt-wires-everything)
-26. [Database Schema — Tables, Migrations, Indexes](#26-database-schema--tables-migrations-indexes)
+25. [Dependency Injection: How Hilt Wires Everything](#25-dependency-injection-how-hilt-wires-everything)
+26. [Database Schema: Tables, Migrations, Indexes](#26-database-schema-tables-migrations-indexes)
 27. [All Source Files Explained](#27-all-source-files-explained)
 28. [Complete Data Flow: Alice Sends Bob a Message](#28-complete-data-flow-alice-sends-bob-a-message)
 29. [Threat Model and Security Analysis](#29-threat-model-and-security-analysis)
@@ -64,9 +64,9 @@ Identity is a locally generated Ed25519 keypair — nothing else.
 
 Cryptika is a fully open-source, self-hostable secure messenger for Android. It is designed around one core principle: **the relay server must never be trusted**.
 
-Even if the relay server is completely compromised — captured by an adversary, subpoenaed, or running malicious code — it cannot read any message content, discover who is talking to whom (beyond connection metadata), or forge messages. Every security property holds under full server compromise.
+Even if the relay server is completely compromised, captured by an adversary, subpoenaed, or running malicious code, it cannot read any message content, discover who is talking to whom (beyond connection metadata), or forge messages. Every security property holds under full server compromise.
 
-The server is **blind**: it stores nothing to disk, writes no logs, and purges all in-memory state automatically. After the first message is sent, the user's server-side credentials are burned — the server forgets they ever existed.
+The server is **blind**: it stores nothing to disk, writes no logs, and purges all in-memory state automatically. After the first message is sent, the user's server-side credentials are burned; the server forgets they ever existed.
 
 ### The core design decisions
 
@@ -76,12 +76,12 @@ The server is **blind**: it stores nothing to disk, writes no logs, and purges a
 | Identity = Ed25519 keypair | Your identity is mathematically provable, never stored centrally, and exists only on your device. |
 | Custom in-app keyboard | System keyboards can log keystrokes. Cryptika blocks the system IME entirely and provides its own secure keyboard. |
 | Ephemeral sessions | All chat sessions are time-limited. When the session ends, all data is cryptographically erased from both devices. |
-| 5-phase credential burn | Server credentials are burned after the first message — the server forgets your identity entirely. |
+| 5-phase credential burn | Server credentials are burned after the first message; the server forgets your identity entirely. |
 | Blind relay server | No logs, no database, no disk writes. All state is in-memory and auto-purged. |
-| Random display names | When two users connect, both see random pseudonyms — real usernames are never shared over the wire. |
+| Random display names | When two users connect, both see random pseudonyms; real usernames are never shared over the wire. |
 | Hash ratchet per session | Each message uses a unique key derived by a one-way SHA-256 chain, providing forward secrecy. |
 | Per-message Keystore keys | Even with root access and the SQLite database, messages are unreadable without hardware-backed Keystore keys. |
-| Auto-destruct on any exit | Screen off, back button, home button, minimize — any form of leaving the app triggers full wipe and logout. |
+| Auto-destruct on any exit | Screen off, back button, home button, minimize; any form of leaving the app triggers full wipe and logout. |
 | Peer disconnect wipe | When one user's connection drops, both sides are wiped instantly. |
 | 3-second ephemeral default | Chat messages self-destruct in 3 seconds by default. |
 
@@ -136,7 +136,7 @@ EncryptedSharedPreferences: cryptika_auth_prefs  (AES-256-SIV + AES-256-GCM)
   - contactToken                       (HMAC-SHA256 derived token)
   - username                           (public username entered by user)
   - tokenExpiresAt                     (JWT expiry timestamp)
-  - credentialsBurned                  (boolean — true after first message sent)
+  - credentialsBurned                  (boolean: true after first message sent)
 
 SharedPreferences: cryptika_identity_prefs
   - identity_public_key_base64         (plaintext, it's public)
@@ -149,7 +149,7 @@ SQLCipher database: cryptika.db  (AES-256 encrypted, passphrase from Keystore)
 
 ---
 
-## 3. How The App Starts — First Launch Flow
+## 3. How The App Starts: First Launch Flow
 
 ### Application class: CryptikaApp.kt
 
@@ -215,7 +215,7 @@ HOME screen
 
 ---
 
-## 4. Passwordless Entry — No Accounts, No Passwords
+## 4. Passwordless Entry: No Accounts, No Passwords
 
 **There are no passwords anywhere in Cryptika.**
 
@@ -250,14 +250,14 @@ User types username via SecureKeyboard
 
 ### Auth screen UI
 
-- Username field is `readOnly = true` — input only through the custom SecureKeyboard
+- Username field is `readOnly = true`; input only through the custom SecureKeyboard
 - Single "Enter" button (no register/login split)
 - Subtitle: "No passwords. No accounts. Just a public username."
 - `windowSoftInputMode="stateAlwaysHidden"` in AndroidManifest prevents system keyboard
 
 ---
 
-## 5. Custom Secure Keyboard — System IME Blocked
+## 5. Custom Secure Keyboard: System IME Blocked
 
 **File: `presentation/ui/components/SecureKeyboard.kt`**
 
@@ -292,7 +292,7 @@ Every text field in the app uses this pattern:
 ```kotlin
 OutlinedTextField(
     value = text,
-    onValueChange = { /* no-op — handled by SecureKeyboard callbacks */ },
+    onValueChange = { /* no-op: handled by SecureKeyboard callbacks */ },
     readOnly = true,   // ← blocks system IME from opening
     ...
 )
@@ -302,20 +302,20 @@ Combined with `android:windowSoftInputMode="stateAlwaysHidden|adjustResize"` in 
 
 ### Where it's used
 
-- **AuthScreen** — username entry
-- **ContactDiscoveryScreen** — target username entry + contact name
-- **ChatScreen** — message composition
-- **QrScanAndSettingsScreens** — settings input fields
+- **AuthScreen**: username entry
+- **ContactDiscoveryScreen**: target username entry + contact name
+- **ChatScreen**: message composition
+- **QrScanAndSettingsScreens**: settings input fields
 
 ---
 
-## 6. Identity System — Ed25519 Deep Dive
+## 6. Identity System: Ed25519 Deep Dive
 
 **File: `domain/crypto/IdentityKeyManager.kt`**
 
 ### Why Ed25519
 
-Ed25519 signatures are deterministic — no random nonce per signing operation. This eliminates the vulnerability class that gave us the PlayStation 3 hack and Bitcoin vanity address attacks. Ed25519 has 32-byte keys and 64-byte signatures — compact, fast, well-audited.
+Ed25519 signatures are deterministic, with no random nonce per signing operation. This eliminates the vulnerability class that gave us the PlayStation 3 hack and Bitcoin vanity address attacks. Ed25519 has 32-byte keys and 64-byte signatures: compact, fast, and well-audited.
 
 ### Key generation
 
@@ -353,7 +353,7 @@ Both users verify fingerprints out-of-band during the contact setup dialog to co
 
 ---
 
-## 7. Contact Discovery — Username-Based Ephemeral Pairing
+## 7. Contact Discovery: Username-Based Ephemeral Pairing
 
 **Files: `AuthScreens.kt`, `AuthViewModel.kt`, `AuthRepositoryImpl.kt`, `EphemeralSessionManager.kt`**
 
@@ -383,7 +383,7 @@ ContactDiscoveryScreen:                          ContactDiscoveryScreen:
   |     2. Store pending request                    |
   |     3. Return { status: "request_sent" }        +-- GET /api/v1/contact/requests
   |        (always same response, even if             → Shows: PendingRequestCard with
-  |         "bob" doesn't exist — anti-enumeration)     "User_a3f8b2c1" + Accept/Reject
+  |         "bob" doesn't exist, anti-enumeration)     "User_a3f8b2c1" + Accept/Reject
   |
   |                                                  Bob taps "Accept"
   |                                                  |
@@ -425,7 +425,7 @@ ContactDiscoveryScreen:                          ContactDiscoveryScreen:
 
 ---
 
-## 8. Ephemeral Sessions — 5-Phase Credential Architecture
+## 8. Ephemeral Sessions: 5-Phase Credential Architecture
 
 **File: `EphemeralSessionManager.kt`**
 
@@ -434,17 +434,17 @@ Every chat in Cryptika is an ephemeral session with a fixed lifetime (default: 3
 ### The 5 phases
 
 ```
-PHASE 1 — ENTRY
+PHASE 1: ENTRY
   User enters username → POST /api/v1/auth/enter
   Server creates in-memory user record with 30-min TTL.
   User record auto-purges after TTL expires.
 
-PHASE 2 — CONTACT DISCOVERY & SESSION CREATION
+PHASE 2: CONTACT DISCOVERY & SESSION CREATION
   POST /api/v1/contact/request → POST /api/v1/contact/accept
   Server creates ephemeral session with 30-min TTL.
   Max 5 active sessions per user.
 
-PHASE 3 — SESSION JOIN & HANDSHAKE
+PHASE 3: SESSION JOIN & HANDSHAKE
   Both users call EphemeralSessionManager.joinSession():
     1. Save peer as ephemeral contact in local DB
     2. Create WebSocket connected to the session room
@@ -452,7 +452,7 @@ PHASE 3 — SESSION JOIN & HANDSHAKE
     4. Perform X25519 DH handshake → derive session key
     5. Create HashRatchet for forward secrecy
 
-PHASE 4 — CREDENTIAL BURN
+PHASE 4: CREDENTIAL BURN
   After the FIRST message is sent:
     triggerBurnOnFirstMessage()
       → POST /api/v1/auth/burn
@@ -460,7 +460,7 @@ PHASE 4 — CREDENTIAL BURN
       → AuthStore marks credentialsBurned = true
   The server now has NO record the user ever existed.
 
-PHASE 5 — SESSION DESTRUCTION (Cryptographic Erasure)
+PHASE 5: SESSION DESTRUCTION (Cryptographic Erasure)
   Triggered by: session expiry, peer disconnect, WS drop, screen off,
                 back/home/minimize, or manual exit.
   EphemeralSessionManager.destroySession():
@@ -499,7 +499,7 @@ The server retains only the session UUID and WebSocket routing. It no longer kno
 
 ---
 
-## 9. Adding a Contact — QR Exchange Flow
+## 9. Adding a Contact: QR Exchange Flow
 
 ### What happens when Alice scans Bob's QR code
 
@@ -541,7 +541,7 @@ Both sides compute the same ID because the hashes are sorted lexicographically.
 
 ---
 
-## 10. Networking Layer — WebSocket Architecture
+## 10. Networking Layer: WebSocket Architecture
 
 ### The three-tier networking stack
 
@@ -608,7 +608,7 @@ Uses coroutine `delay()` which works in Android Doze mode (backed by `ScheduledE
 
 ---
 
-## 11. Cryptographic Handshake — X25519 DH Step by Step
+## 11. Cryptographic Handshake: X25519 DH Step by Step
 
 **Files: `HandshakeManager.kt`, `SessionKeyManager.kt`**
 
@@ -652,18 +652,18 @@ STEP 5: Derive session key
 
 ### Why fresh ephemeral keys every time?
 
-An attacker who records traffic and later compromises one key cannot decrypt past sessions. Fresh ephemeral keys mean each session derives a fresh K0 — previous sessions remain secure.
+An attacker who records traffic and later compromises one key cannot decrypt past sessions. Fresh ephemeral keys mean each session derives a fresh K0; previous sessions remain secure.
 
 ---
 
-## 12. Hash Ratchet — Forward Secrecy Mechanism
+## 12. Hash Ratchet: Forward Secrecy Mechanism
 
 **File: `domain/crypto/HashRatchet.kt`**
 
 ### The chain
 
 ```
-K0  (root — never used for encryption, only for seeding)
+K0  (root; never used for encryption, only for seeding)
  |
 SHA-256
  |
@@ -680,7 +680,7 @@ K3  → encrypt message #3  → K2.fill(0)    // K2 destroyed
 ...
 ```
 
-At any point, a snapshot of memory shows only the current ratchet key. Past keys are gone — SHA-256 is not invertible.
+At any point, a snapshot of memory shows only the current ratchet key. Past keys are gone. SHA-256 is not invertible.
 
 ### Two separate ratchets
 
@@ -712,7 +712,7 @@ Limits: max 50 lookahead entries, 30s TTL per entry
 
 ---
 
-## 13. Sending a Message — Complete Step-by-Step Flow
+## 13. Sending a Message: Complete Step-by-Step Flow
 
 ### User taps Send in the chat
 
@@ -741,11 +741,11 @@ ChatViewModel.sendMessage()
 
 ### Ephemeral session default: 3-second self-destruct
 
-For ephemeral sessions, `selectedExpirySeconds = 3` — messages self-destruct after 3 seconds by default.
+For ephemeral sessions, `selectedExpirySeconds = 3`; messages self-destruct after 3 seconds by default.
 
 ---
 
-## 14. Receiving a Message — Complete Step-by-Step Flow
+## 14. Receiving a Message: Complete Step-by-Step Flow
 
 ```
 WebSocket receives binary frame
@@ -773,7 +773,7 @@ WebSocket receives binary frame
 
 ---
 
-## 15. Wire Packet Format — Byte-Level Breakdown
+## 15. Wire Packet Format: Byte-Level Breakdown
 
 ### Message packet
 
@@ -826,20 +826,20 @@ Offset   Length   Field
 ------   ------   -----
 0        1        0x03 (magic = audio frame)
 1        4        sequence_number (big-endian Int32)
-5        variable ChaCha20-Poly1305(PCM frame) — encrypted audio + 16-byte tag
+5        variable ChaCha20-Poly1305(PCM frame): encrypted audio + 16-byte tag
 ```
 
 ---
 
-## 16. Encrypted Storage — How Messages Rest On Disk
+## 16. Encrypted Storage: How Messages Rest On Disk
 
 ### Double encryption at rest
 
 Messages are encrypted twice:
 
-**Layer 1 — SQLCipher**: The entire database is AES-256 encrypted. The passphrase is stored in Android Keystore.
+**Layer 1: SQLCipher**: The entire database is AES-256 encrypted. The passphrase is stored in Android Keystore.
 
-**Layer 2 — Per-message Keystore keys**: Each message is additionally encrypted with its own AES-256-GCM key stored in Android Keystore (hardware-backed, non-exportable).
+**Layer 2: Per-message Keystore keys**: Each message is additionally encrypted with its own AES-256-GCM key stored in Android Keystore (hardware-backed, non-exportable).
 
 ```
 On saveMessage():
@@ -861,12 +861,12 @@ On getMessage():
 | Attack | SQLCipher alone | SQLCipher + Keystore |
 |--------|----------------|---------------------|
 | Copy .db file off device | Blocked by SQLCipher | Blocked by both |
-| Root device + read DB | Possible if key found | Blocked — Keystore keys non-exportable |
+| Root device + read DB | Possible if key found | Blocked: Keystore keys non-exportable |
 | Delete one message securely | Must overwrite row | Delete Keystore key → permanent garbage |
 
 ---
 
-## 17. Message Expiry — Cryptographic Self-Destruction
+## 17. Message Expiry: Cryptographic Self-Destruction
 
 ### Three-step cryptographic destruction
 
@@ -888,13 +888,13 @@ Step 3: Delete the row
 
 ### Expiry timing
 
-1. **WorkManager** — `MessageExpiryWorker` runs every 15 minutes for background expiry
-2. **ChatViewModel timer** — when chat is open, schedules destruction at exact expiry time for real-time self-destruct
+1. **WorkManager**: `MessageExpiryWorker` runs every 15 minutes for background expiry
+2. **ChatViewModel timer**: when chat is open, schedules destruction at exact expiry time for real-time self-destruct
 3. **Default for ephemeral sessions: 3 seconds**
 
 ---
 
-## 18. Peer Disconnect — Automatic Session Destruction
+## 18. Peer Disconnect: Automatic Session Destruction
 
 When one user's connection drops (screen off, internet lost, app closed), the other user is notified and both sessions are destroyed.
 
@@ -924,7 +924,7 @@ EphemeralSessionManager receives PEER_DISCONNECTED:
   +-- destroySession()  ← cryptographic erasure
   |
   +-- ChatViewModel reacts:
-        emit PeerDisconnected → show snackbar "Peer disconnected — session destroyed"
+        emit PeerDisconnected → show snackbar "Peer disconnected: session destroyed"
         delay(1500ms)
         emit ForceLogout → navigate to AUTH
 ```
@@ -948,14 +948,14 @@ is RelayEvent.Error -> {
 
 ---
 
-## 19. Auto-Logout — Screen Off, Back, Home, Minimize
+## 19. Auto-Logout: Screen Off, Back, Home, Minimize
 
 Cryptika enforces that the user must re-enter their username every time they return to the app. Any form of leaving the app triggers a full wipe.
 
 ### Screen-off wipe
 
 ```kotlin
-// MainActivity — BroadcastReceiver for ACTION_SCREEN_OFF
+// MainActivity: BroadcastReceiver for ACTION_SCREEN_OFF
 private val screenOffReceiver = object : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         if (intent?.action == Intent.ACTION_SCREEN_OFF) {
@@ -977,7 +977,7 @@ private val screenOffReceiver = object : BroadcastReceiver() {
 ### Back / Home / Minimize wipe
 
 ```kotlin
-// MainActivity.onStop() — fires when activity is no longer visible
+// MainActivity.onStop(): fires when activity is no longer visible
 override fun onStop() {
     super.onStop()
     if (!isChangingConfigurations) {  // skip during screen rotation
@@ -1029,7 +1029,7 @@ DisposableEffect(Unit) {
 
 ---
 
-## 21. Encrypted Voice Calls — Full Protocol
+## 21. Encrypted Voice Calls: Full Protocol
 
 **Files: `CallManager.kt`, `CallModels.kt`, `ViewModels.kt` (CallViewModel), `CallScreen.kt`**
 
@@ -1095,7 +1095,7 @@ Bob sends frame #1:   nonce = SHA-256(calleeEncKey | 1)[0..12]
 callerEncKey ≠ calleeEncKey → nonces always different
 ```
 
-Without this, both sides using the same sequence number under the same key would produce nonce collision — catastrophic for stream ciphers.
+Without this, both sides using the same sequence number under the same key would produce nonce collision, which is catastrophic for stream ciphers.
 
 ### Foreground service
 
@@ -1103,7 +1103,7 @@ Without this, both sides using the same sequence number under the same key would
 
 ---
 
-## 22. Background Operation — Doze, Reconnect, Services
+## 22. Background Operation: Doze, Reconnect, Services
 
 ### Foreground services
 
@@ -1141,7 +1141,7 @@ connectivityManager.registerDefaultNetworkCallback(object : NetworkCallback() {
 
 ---
 
-## 23. Blind Relay Server — Internal Architecture
+## 23. Blind Relay Server: Internal Architecture
 
 **File: `server/index.js`**
 
@@ -1184,7 +1184,7 @@ setInterval(() => {
 ### Server startup message
 
 ```
-Server is BLIND — no passwords, no logs, only ciphertext relay
+Server is BLIND: no passwords, no logs, only ciphertext relay
 ```
 
 ---
@@ -1208,16 +1208,16 @@ Server is BLIND — no passwords, no logs, only ciphertext relay
 
 ### Rate limiting
 
-- `POST /api/v1/auth/enter` — 10 per IP per minute
-- `POST /api/v1/contact/request` — 10 per IP per minute, 20 per user per day
+- `POST /api/v1/auth/enter`: 10 per IP per minute
+- `POST /api/v1/contact/request`: 10 per IP per minute, 20 per user per day
 
 ---
 
-## 25. Dependency Injection — How Hilt Wires Everything
+## 25. Dependency Injection: How Hilt Wires Everything
 
 **File: `di/AppModule.kt`**
 
-### Singleton scope — one instance for the entire app
+### Singleton scope: one instance for the entire app
 
 ```
 AppModule provides:
@@ -1245,7 +1245,7 @@ class ChatViewModel @Inject constructor(
 
 ---
 
-## 26. Database Schema — Tables, Migrations, Indexes
+## 26. Database Schema: Tables, Migrations, Indexes
 
 **File: `data/local/db/AppDatabase.kt`**
 
@@ -1320,9 +1320,9 @@ CREATE TABLE local_identity (
 
 | File | Purpose |
 |------|---------|
-| `di/AppModule.kt` | Hilt `@Module` — provides all singletons. |
+| `di/AppModule.kt` | Hilt `@Module`: provides all singletons. |
 
-### Domain — crypto
+### Domain: crypto
 
 | File | Purpose |
 |------|---------|
@@ -1335,29 +1335,29 @@ CREATE TABLE local_identity (
 | `domain/crypto/MessageProcessor.kt` | Full encrypt/decrypt pipeline (sign→encrypt→send / verify→decrypt). |
 | `domain/crypto/IdentityHash.kt` | SHA-256 identity hash computation. |
 
-### Domain — models
+### Domain: models
 
 | File | Purpose |
 |------|---------|
 | `domain/model/DomainModels.kt` | `Contact`, `Message`, `Conversation`, `MessageState`, `ConnectionState`, `EphemeralSessionState`, etc. |
 | `domain/model/CallModels.kt` | `CallState` sealed class, `CallSignalType` enum, `IncomingCallData`. |
 
-### Domain — repository interfaces
+### Domain: repository interfaces
 
 | File | Purpose |
 |------|---------|
 | `domain/repository/AuthRepository.kt` | Auth interface: enter, burn, send/accept/reject request. |
 | `domain/repository/Repositories.kt` | `ContactRepository`, `MessageRepository`, `IdentityRepository`, `ConversationRepository`. |
 
-### Data — local
+### Data: local
 
 | File | Purpose |
 |------|---------|
-| `data/local/AuthStore.kt` | EncryptedSharedPreferences — JWT, contactToken, username storage. |
+| `data/local/AuthStore.kt` | EncryptedSharedPreferences: JWT, contactToken, username storage. |
 | `data/local/db/AppDatabase.kt` | Room + SQLCipher DB; entities, DAOs, migrations. |
 | `data/local/keystore/KeystoreManager.kt` | Android Keystore operations: per-message encryption, DB passphrase. |
 
-### Data — remote
+### Data: remote
 
 | File | Purpose |
 |------|---------|
@@ -1370,21 +1370,21 @@ CREATE TABLE local_identity (
 | `data/remote/ServerConfig.kt` | Server URL configuration singleton. |
 | `data/remote/websocket/RelayWebSocketClient.kt` | OkHttp WebSocket wrapper; relay envelope framing; exponential backoff. |
 
-### Data — repository
+### Data: repository
 
 | File | Purpose |
 |------|---------|
 | `data/repository/AuthRepositoryImpl.kt` | Auth + contact API implementation; credential burn logic. |
 | `data/repository/RepositoryImpl.kt` | Contact, message, conversation, identity repositories; per-message encryption/tamper-check. |
 
-### Presentation — UI components
+### Presentation: UI components
 
 | File | Purpose |
 |------|---------|
 | `presentation/ui/components/SecureKeyboard.kt` | Custom in-app keyboard (LOWER/UPPER/SYMBOLS); blocks system IME. |
 | `presentation/ui/components/SecureInputField.kt` | Input field companion; intercepts press to toggle keyboard without system IME. |
 
-### Presentation — screens
+### Presentation: screens
 
 | File | Screens |
 |------|---------|
@@ -1393,9 +1393,9 @@ CREATE TABLE local_identity (
 | `presentation/ui/screens/ChatScreen.kt` | Chat UI: message list, secure keyboard input, message bubbles, ephemeral countdown, connection state indicator, per-chat FLAG_SECURE. |
 | `presentation/ui/screens/CallScreen.kt` | Voice call UI: caller info, state display, mute/speaker/hangup. |
 | `presentation/ui/screens/QrScanAndSettingsScreens.kt` | `QrDisplayScreen`, `QrScanScreen`, `ContactConfirmScreen`, `SettingsScreen`. |
-| `presentation/ui/theme/Theme.kt` | `CryptikaTheme` — Material 3 dark-mode-optimized theme. |
+| `presentation/ui/theme/Theme.kt` | `CryptikaTheme`: Material 3 dark-mode-optimized theme. |
 
-### Presentation — ViewModels
+### Presentation: ViewModels
 
 | ViewModel | Class | Purpose |
 |-----------|-------|---------|
@@ -1412,13 +1412,13 @@ CREATE TABLE local_identity (
 
 | File | Purpose |
 |------|---------|
-| `worker/MessageExpiryWorker.kt` | WorkManager periodic task (15 min) — background message expiry. |
+| `worker/MessageExpiryWorker.kt` | WorkManager periodic task (15 min): background message expiry. |
 
 ### Server
 
 | File | Purpose |
 |------|---------|
-| `server/index.js` | Complete blind relay server — REST API + WebSocket relay. Single file. |
+| `server/index.js` | Complete blind relay server: REST API + WebSocket relay. Single file. |
 | `server/package.json` | Node.js dependencies (express, ws, tweetnacl, jsonwebtoken, etc.). |
 | `server/Dockerfile` | Docker build: node:20-alpine, production, port 8443, healthcheck. |
 | `server/DOCKER.md` | Full deployment guide. |
@@ -1488,7 +1488,7 @@ BOB'S DEVICE
 | Traffic analysis | Binary WebSocket frames; session UUIDs are random. |
 | Message replay | Timestamp + monotonic counter verification on every message. |
 | Message tampering | Every message is Ed25519 signed by the sender's identity key. |
-| Ratchet key compromise | SHA-256 hash ratchet — compromising Kn reveals nothing about K1..Kn-1. |
+| Ratchet key compromise | SHA-256 hash ratchet: compromising Kn reveals nothing about K1..Kn-1. |
 | Device seizure | Per-message Keystore keys (hardware-backed, non-exportable). Auto-wipe on screen off. |
 | Keystroke logging | Custom SecureKeyboard; system IME completely blocked. |
 | Screenshot capture | FLAG_SECURE applied per-chat; blocks screenshots, screen recording, and recent-apps preview. |
@@ -1515,8 +1515,8 @@ BOB'S DEVICE
 | `INTERNET` | WebSocket connections to relay server |
 | `ACCESS_NETWORK_STATE` | Detect connectivity changes for reconnection |
 | `CAMERA` | QR code scanning (CameraX) |
-| `WAKE_LOCK` | WorkManager — keep CPU awake for expiry worker |
-| `RECEIVE_BOOT_COMPLETED` | WorkManager — reschedule after reboot |
+| `WAKE_LOCK` | WorkManager: keep CPU awake for expiry worker |
+| `RECEIVE_BOOT_COMPLETED` | WorkManager: reschedule after reboot |
 | `VIBRATE` | Haptic feedback on SecureKeyboard |
 | `FOREGROUND_SERVICE` | Background WebSocket persistence |
 | `FOREGROUND_SERVICE_REMOTE_MESSAGING` | Messaging foreground service type |
@@ -1533,7 +1533,7 @@ android:windowSoftInputMode="stateAlwaysHidden|adjustResize"
 android:screenOrientation="portrait"
 ```
 
-`stateAlwaysHidden` prevents the system keyboard from ever appearing — all input goes through the SecureKeyboard.
+`stateAlwaysHidden` prevents the system keyboard from ever appearing; all input goes through the SecureKeyboard.
 
 ---
 
@@ -1588,7 +1588,7 @@ android:screenOrientation="portrait"
 ```bash
 # Clone the repository
 git clone <repo-url>
-cd HackSecureMessenger
+cd Cryptika
 
 # Build debug APK
 ./gradlew assembleDebug
@@ -1610,9 +1610,9 @@ node index.js
 | Variable | Required | Purpose |
 |----------|----------|---------|
 | `PORT` | No | Server port (default: 8443) |
-| `HMAC_SECRET_HEX` | Yes | 64-char hex — HMAC key for contact tokens |
-| `JWT_SECRET_HEX` | Yes | 64-char hex — JWT signing secret |
-| `SERVER_PRIVATE_KEY_HEX` | Yes | 64-char hex — Ed25519 private key for session tickets |
+| `HMAC_SECRET_HEX` | Yes | 64-char hex: HMAC key for contact tokens |
+| `JWT_SECRET_HEX` | Yes | 64-char hex: JWT signing secret |
+| `SERVER_PRIVATE_KEY_HEX` | Yes | 64-char hex: Ed25519 private key for session tickets |
 
 ### Configuring the Android app
 
@@ -1700,6 +1700,34 @@ Ephemeral sessions default to **3-second message expiry**. You can change the ti
 
 ### "Peer disconnected" notification
 
-This appears when your chat partner's connection drops (screen off, internet lost, app closed). Both sessions are wiped. This is by design — ephemeral sessions don't survive disconnection.
+This appears when your chat partner's connection drops (screen off, internet lost, app closed). Both sessions are wiped. This is by design; ephemeral sessions don't survive disconnection.
 
 ---
+
+## License
+
+Cryptika is released under the **MIT License**.
+
+```
+MIT License
+
+Copyright (c) 2024 Cryptika
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
