@@ -19,6 +19,11 @@
 @rem
 @rem  Gradle startup script for Windows
 @rem
+@rem  Cryptika Messenger
+@rem  Use: gradlew.bat assembleDebug   -- build debug APK
+@rem       gradlew.bat assembleRelease -- build release APK
+@rem       gradlew.bat test            -- run unit tests
+@rem
 @rem ##########################################################################
 
 @rem Set local scope for the variables with windows NT shell

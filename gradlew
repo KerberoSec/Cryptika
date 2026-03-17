@@ -28,6 +28,11 @@
 #   (2) You may have to change the PATH to get to a POSIX-compliant shell
 #       and make sure JAVA_HOME is set to a valid Java 6 (or higher) installation.
 #
+#   Cryptika Messenger
+#   Use: ./gradlew assembleDebug   — build debug APK
+#        ./gradlew assembleRelease — build release APK
+#        ./gradlew test            — run unit tests
+#
 ##############################################################################
 
 # Attempt to set APP_HOME

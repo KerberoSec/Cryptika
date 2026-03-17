@@ -1,3 +1,18 @@
+# Cryptika Relay Server — Docker Compose
+# ----------------------------------------
+# Spins up the blind relay server that routes encrypted packets between clients.
+# The server never inspects message content — it only routes ciphertext.
+#
+# Usage:
+#   docker-compose up -d        # start in background
+#   docker-compose logs -f      # follow logs
+#   docker-compose down         # stop and remove containers
+#
+# To persist the server Ed25519 signing keypair across restarts, set:
+#   SERVER_PRIVATE_KEY_HEX=<64-char hex>
+#   HMAC_SECRET_HEX=<64-char hex>
+#   JWT_SECRET_HEX=<64-char hex>
+
 version: '3.8'
 
 services:
