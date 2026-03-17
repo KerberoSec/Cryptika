@@ -1,0 +1,48 @@
+# Gradle
+.gradle/
+build/
+**/build/
+
+# Android / IntelliJ
+*.iml
+.idea/
+local.properties
+*.class
+*.dex
+
+# APK / AAB outputs
+*.apk
+*.aab
+*.ap_
+
+# ProGuard
+/app/proguard/
+/app/test-proguard/
+
+# Log files
+*.log
+
+# Test artifacts / screenshots
+*.png
+*.xml
+add_contact_*.xml
+after_*.xml
+after_type.png
+
+# Secrets / environment
+*.env
+local.properties
+google-services.json
+keystore.jks
+*.keystore
+*.p12
+
+# Node / server
+server/node_modules/
+server/package-lock.json
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db

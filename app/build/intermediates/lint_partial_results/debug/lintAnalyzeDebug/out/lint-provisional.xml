@@ -7,13 +7,13 @@
         message="">
         <fix-data minSdk="29-∞" requiresApi="30-∞"/>
         <location
-            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/remote/CallForegroundService.kt"
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/remote/CallForegroundService.kt"
             line="82"
             column="25"
-            startOffset="3314"
+            startOffset="3249"
             endLine="82"
             endColumn="71"
-            endOffset="3360"/>
+            endOffset="3295"/>
         <map>
             <entry
                 name="message"
@@ -37,13 +37,13 @@
         message="When targeting Android 13 or higher, posting a permission requires holding the `POST_NOTIFICATIONS` permission">
         <fix-data missing="android.permission.POST_NOTIFICATIONS"/>
         <location
-            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/remote/BackgroundConnectionManager.kt"
-            line="571"
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/remote/BackgroundConnectionManager.kt"
+            line="594"
             column="9"
-            startOffset="25073"
-            endLine="571"
+            startOffset="25396"
+            endLine="594"
             endColumn="53"
-            endOffset="25117"/>
+            endOffset="25440"/>
     </incident>
 
     <incident
@@ -59,12 +59,12 @@
             value="fullSensor"/>
         <location
             file="${:app*debug*MAIN*sourceProvider*0*manifest*0}"
-            line="52"
+            line="53"
             column="13"
-            startOffset="2423"
-            endLine="52"
+            startOffset="2491"
+            endLine="53"
             endColumn="49"
-            endOffset="2459"/>
+            endOffset="2527"/>
         <map>
             <condition library="false"/>
         </map>

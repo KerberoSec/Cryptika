@@ -2,6 +2,7 @@ package com.cryptika.messenger.presentation.viewmodel;
 
 import com.cryptika.messenger.data.remote.EphemeralSessionManager;
 import com.cryptika.messenger.domain.repository.AuthRepository;
+import com.cryptika.messenger.domain.repository.ContactRepository;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
 import dagger.internal.QualifierMetadata;
@@ -28,25 +29,30 @@ public final class ContactDiscoveryViewModel_Factory implements Factory<ContactD
 
   private final Provider<EphemeralSessionManager> ephemeralSessionManagerProvider;
 
+  private final Provider<ContactRepository> contactRepositoryProvider;
+
   public ContactDiscoveryViewModel_Factory(Provider<AuthRepository> authRepositoryProvider,
-      Provider<EphemeralSessionManager> ephemeralSessionManagerProvider) {
+      Provider<EphemeralSessionManager> ephemeralSessionManagerProvider,
+      Provider<ContactRepository> contactRepositoryProvider) {
     this.authRepositoryProvider = authRepositoryProvider;
     this.ephemeralSessionManagerProvider = ephemeralSessionManagerProvider;
+    this.contactRepositoryProvider = contactRepositoryProvider;
   }
 
   @Override
   public ContactDiscoveryViewModel get() {
-    return newInstance(authRepositoryProvider.get(), ephemeralSessionManagerProvider.get());
+    return newInstance(authRepositoryProvider.get(), ephemeralSessionManagerProvider.get(), contactRepositoryProvider.get());
   }
 
   public static ContactDiscoveryViewModel_Factory create(
       Provider<AuthRepository> authRepositoryProvider,
-      Provider<EphemeralSessionManager> ephemeralSessionManagerProvider) {
-    return new ContactDiscoveryViewModel_Factory(authRepositoryProvider, ephemeralSessionManagerProvider);
+      Provider<EphemeralSessionManager> ephemeralSessionManagerProvider,
+      Provider<ContactRepository> contactRepositoryProvider) {
+    return new ContactDiscoveryViewModel_Factory(authRepositoryProvider, ephemeralSessionManagerProvider, contactRepositoryProvider);
   }
 
   public static ContactDiscoveryViewModel newInstance(AuthRepository authRepository,
-      EphemeralSessionManager ephemeralSessionManager) {
-    return new ContactDiscoveryViewModel(authRepository, ephemeralSessionManager);
+      EphemeralSessionManager ephemeralSessionManager, ContactRepository contactRepository) {
+    return new ContactDiscoveryViewModel(authRepository, ephemeralSessionManager, contactRepository);
   }
 }

@@ -1,19 +1,31 @@
 [
     {
-        "merged": "com.cryptika.messenger.app-debug-77:/drawable_ic_launcher_background.xml.flat",
-        "source": "com.cryptika.messenger.app-main-79:/drawable/ic_launcher_background.xml"
+        "merged": "C:\\Users\\arung\\.gradle\\daemon\\8.13\\com.cryptika.messenger.app-debug-77:\\drawable_ic_launcher_background.xml.flat",
+        "source": "C:\\Users\\arung\\.gradle\\daemon\\8.13\\com.cryptika.messenger.app-main-79:\\drawable\\ic_launcher_background.xml"
     },
     {
-        "merged": "com.cryptika.messenger.app-debug-77:/mipmap-anydpi-v26_ic_launcher.xml.flat",
-        "source": "com.cryptika.messenger.app-main-79:/mipmap-anydpi-v26/ic_launcher.xml"
+        "merged": "C:\\Users\\arung\\.gradle\\daemon\\8.13\\com.cryptika.messenger.app-debug-77:\\mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "C:\\Users\\arung\\.gradle\\daemon\\8.13\\com.cryptika.messenger.app-main-79:\\mipmap-anydpi-v26\\ic_launcher_round.xml"
     },
     {
-        "merged": "com.cryptika.messenger.app-debug-77:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
-        "source": "com.cryptika.messenger.app-main-79:/mipmap-anydpi-v26/ic_launcher_round.xml"
+        "merged": "C:\\Users\\arung\\.gradle\\daemon\\8.13\\com.cryptika.messenger.app-debug-77:\\drawable_ic_launcher_foreground.xml.flat",
+        "source": "C:\\Users\\arung\\.gradle\\daemon\\8.13\\com.cryptika.messenger.app-main-79:\\drawable\\ic_launcher_foreground.xml"
     },
     {
-        "merged": "com.cryptika.messenger.app-debug-77:/drawable_ic_launcher_foreground.xml.flat",
-        "source": "com.cryptika.messenger.app-main-79:/drawable/ic_launcher_foreground.xml"
+        "merged": "C:\\Users\\arung\\.gradle\\daemon\\8.13\\com.cryptika.messenger.app-debug-77:\\xml_data_extraction_rules.xml.flat",
+        "source": "C:\\Users\\arung\\.gradle\\daemon\\8.13\\com.cryptika.messenger.app-main-79:\\xml\\data_extraction_rules.xml"
+    },
+    {
+        "merged": "C:\\Users\\arung\\.gradle\\daemon\\8.13\\com.cryptika.messenger.app-debug-77:\\mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "C:\\Users\\arung\\.gradle\\daemon\\8.13\\com.cryptika.messenger.app-main-79:\\mipmap-anydpi-v26\\ic_launcher.xml"
+    },
+    {
+        "merged": "com.cryptika.messenger.app-debug-77:/xml_network_security_config.xml.flat",
+        "source": "com.cryptika.messenger.app-debug-78:/xml/network_security_config.xml"
+    },
+    {
+        "merged": "C:\\Users\\arung\\.gradle\\daemon\\8.13\\com.cryptika.messenger.app-debug-77:\\xml_network_security_config.xml.flat",
+        "source": "C:\\Users\\arung\\.gradle\\daemon\\8.13\\com.cryptika.messenger.app-main-79:\\xml\\network_security_config.xml"
     },
     {
         "merged": "com.cryptika.messenger.app-debug-77:/xml_data_extraction_rules.xml.flat",

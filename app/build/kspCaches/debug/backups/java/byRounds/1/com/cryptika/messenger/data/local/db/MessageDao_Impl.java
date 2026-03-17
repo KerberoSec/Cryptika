@@ -41,6 +41,8 @@ public final class MessageDao_Impl implements MessageDao {
 
   private final SharedSQLiteStatement __preparedStmtOfDeleteConversationMessages;
 
+  private final SharedSQLiteStatement __preparedStmtOfDeleteAllMessages;
+
   private final SharedSQLiteStatement __preparedStmtOfUpdateMessageState;
 
   public MessageDao_Impl(@NonNull final RoomDatabase __db) {
@@ -98,6 +100,14 @@ public final class MessageDao_Impl implements MessageDao {
       @NonNull
       public String createQuery() {
         final String _query = "DELETE FROM messages WHERE conversationId = ?";
+        return _query;
+      }
+    };
+    this.__preparedStmtOfDeleteAllMessages = new SharedSQLiteStatement(__db) {
+      @Override
+      @NonNull
+      public String createQuery() {
+        final String _query = "DELETE FROM messages";
         return _query;
       }
     };
@@ -202,6 +212,29 @@ public final class MessageDao_Impl implements MessageDao {
           }
         } finally {
           __preparedStmtOfDeleteConversationMessages.release(_stmt);
+        }
+      }
+    }, $completion);
+  }
+
+  @Override
+  public Object deleteAllMessages(final Continuation<? super Unit> $completion) {
+    return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
+      @Override
+      @NonNull
+      public Unit call() throws Exception {
+        final SupportSQLiteStatement _stmt = __preparedStmtOfDeleteAllMessages.acquire();
+        try {
+          __db.beginTransaction();
+          try {
+            _stmt.executeUpdateDelete();
+            __db.setTransactionSuccessful();
+            return Unit.INSTANCE;
+          } finally {
+            __db.endTransaction();
+          }
+        } finally {
+          __preparedStmtOfDeleteAllMessages.release(_stmt);
         }
       }
     }, $completion);
@@ -624,6 +657,32 @@ public final class MessageDao_Impl implements MessageDao {
             final String _tmpMessageState;
             _tmpMessageState = _cursor.getString(_cursorIndexOfMessageState);
             _item = new MessageEntity(_tmpId,_tmpConversationId,_tmpSenderIdHex,_tmpCiphertextBlob,_tmpStorageKeyAlias,_tmpStorageHashHex,_tmpHeaderJson,_tmpTimestampMs,_tmpCounter,_tmpExpiryMs,_tmpIsDecryptable,_tmpIsOutgoing,_tmpMessageType,_tmpMessageState);
+            _result.add(_item);
+          }
+          return _result;
+        } finally {
+          _cursor.close();
+          _statement.release();
+        }
+      }
+    }, $completion);
+  }
+
+  @Override
+  public Object getAllStorageKeyAliases(final Continuation<? super List<String>> $completion) {
+    final String _sql = "SELECT storageKeyAlias FROM messages";
+    final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 0);
+    final CancellationSignal _cancellationSignal = DBUtil.createCancellationSignal();
+    return CoroutinesRoom.execute(__db, false, _cancellationSignal, new Callable<List<String>>() {
+      @Override
+      @NonNull
+      public List<String> call() throws Exception {
+        final Cursor _cursor = DBUtil.query(__db, _statement, false, null);
+        try {
+          final List<String> _result = new ArrayList<String>(_cursor.getCount());
+          while (_cursor.moveToNext()) {
+            final String _item;
+            _item = _cursor.getString(0);
             _result.add(_item);
           }
           return _result;

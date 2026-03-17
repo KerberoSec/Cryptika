@@ -14,7 +14,7 @@ import java.security.MessageDigest;
  * Send:
  *  plaintext → header → nonce derivation → AEAD encrypt → Ed25519 sign → wire packet
  *
- * Receive (strict order — any step failure rejects message):
+ * Receive (strict order: any step failure rejects message):
  *  1. Parse wire packet
  *  2. Verify Ed25519 signature
  *  3. Verify timestamp (±5 min)
@@ -56,7 +56,7 @@ public final class MessageProcessor {
     }
     
     /**
-     * Zeroize all crypto material — called during cryptographic erasure.
+     * Zeroize all crypto material: called during cryptographic erasure.
      */
     public final void zeroize() {
     }
@@ -79,7 +79,7 @@ public final class MessageProcessor {
     /**
      * Receives, verifies, and decrypts a wire packet.
      *
-     * Strict validation order — any failure throws CryptoError and rejects message.
+     * Strict validation order: any failure throws CryptoError and rejects message.
      *
      * @return Pair of (decrypted plaintext, MessageHeader)
      * @throws CryptoError on any validation failure

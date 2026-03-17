@@ -68,10 +68,10 @@ com.cryptika.messenger.app-jetified-datastore-preferences-1.0.0-66 C:\Users\arun
 com.cryptika.messenger.app-jetified-lifecycle-viewmodel-ktx-2.7.0-67 C:\Users\arung\.gradle\caches\8.13\transforms\fb2ba04871a4672a404798a70e34e2a0\transformed\jetified-lifecycle-viewmodel-ktx-2.7.0\res
 com.cryptika.messenger.app-jetified-ui-tooling-preview-release-68 C:\Users\arung\.gradle\caches\8.13\transforms\fd37d7aa17d7866a62cd4e834795e1f1\transformed\jetified-ui-tooling-preview-release\res
 com.cryptika.messenger.app-jetified-android-database-sqlcipher-4.5.4-69 C:\Users\arung\.gradle\caches\8.13\transforms\ffb651704125d7564d35434eddff371f\transformed\jetified-android-database-sqlcipher-4.5.4\res
-com.cryptika.messenger.app-resValues-70 E:\MY HARD W0RK\NITH\HackSecureMessenger\app\build\generated\res\resValues\release
-com.cryptika.messenger.app-packageReleaseResources-71 E:\MY HARD W0RK\NITH\HackSecureMessenger\app\build\intermediates\incremental\release\packageReleaseResources\merged.dir
-com.cryptika.messenger.app-packageReleaseResources-72 E:\MY HARD W0RK\NITH\HackSecureMessenger\app\build\intermediates\incremental\release\packageReleaseResources\stripped.dir
-com.cryptika.messenger.app-merged-not-compiled-resources-73 E:\MY HARD W0RK\NITH\HackSecureMessenger\app\build\intermediates\merged-not-compiled-resources\release
-com.cryptika.messenger.app-release-74 E:\MY HARD W0RK\NITH\HackSecureMessenger\app\build\intermediates\merged_res\release\mergeReleaseResources
-com.cryptika.messenger.app-main-75 E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\main\res
-com.cryptika.messenger.app-release-76 E:\MY HARD W0RK\NITH\HackSecureMessenger\app\src\release\res
+com.cryptika.messenger.app-resValues-70 E:\MY HARD W0RK\NITH\Cryptika\app\build\generated\res\resValues\release
+com.cryptika.messenger.app-packageReleaseResources-71 E:\MY HARD W0RK\NITH\Cryptika\app\build\intermediates\incremental\release\packageReleaseResources\merged.dir
+com.cryptika.messenger.app-packageReleaseResources-72 E:\MY HARD W0RK\NITH\Cryptika\app\build\intermediates\incremental\release\packageReleaseResources\stripped.dir
+com.cryptika.messenger.app-merged-not-compiled-resources-73 E:\MY HARD W0RK\NITH\Cryptika\app\build\intermediates\merged-not-compiled-resources\release
+com.cryptika.messenger.app-release-74 E:\MY HARD W0RK\NITH\Cryptika\app\build\intermediates\merged_res\release\mergeReleaseResources
+com.cryptika.messenger.app-main-75 E:\MY HARD W0RK\NITH\Cryptika\app\src\main\res
+com.cryptika.messenger.app-release-76 E:\MY HARD W0RK\NITH\Cryptika\app\src\release\res

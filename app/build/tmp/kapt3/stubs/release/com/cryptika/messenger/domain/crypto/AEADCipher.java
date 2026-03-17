@@ -11,8 +11,8 @@ import java.security.MessageDigest;
  * AEAD encryption using ChaCha20-Poly1305.
  *
  * Key: 32 bytes (ratchet key Kₙ)
- * Nonce: 12 bytes (derived deterministically — no randomness)
- * Additional Data: header_hash (32 bytes) — binds header to ciphertext
+ * Nonce: 12 bytes (derived deterministically, no randomness)
+ * Additional Data: header_hash (32 bytes): binds header to ciphertext
  * Output: ciphertext + 16-byte Poly1305 tag
  *
  * Deterministic nonce prevents nonce reuse which would be catastrophic for ChaCha20.
@@ -35,7 +35,7 @@ public final class AEADCipher {
      * @param plaintext message bytes
      * @param key 32-byte ratchet key
      * @param nonce 12-byte deterministic nonce
-     * @param additionalData header_hash (32 bytes) — authenticated but not encrypted
+     * @param additionalData header_hash (32 bytes): authenticated but not encrypted
      * @return ciphertext || 16-byte Poly1305 tag
      */
     @org.jetbrains.annotations.NotNull()
@@ -65,7 +65,7 @@ public final class AEADCipher {
      * Derives a deterministic 12-byte nonce.
      * nonce = SHA-256(ratchetKey ∥ counter_bytes)[0:12]
      *
-     * This is deterministic — given the same key and counter, always produces same nonce.
+     * This is deterministic: given the same key and counter, always produces same nonce.
      * Since each key is used exactly ONCE, nonce uniqueness is guaranteed.
      */
     @org.jetbrains.annotations.NotNull()

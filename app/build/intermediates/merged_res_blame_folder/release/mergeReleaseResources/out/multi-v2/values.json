@@ -112,6 +112,25 @@
                     }
                 },
                 {
+                    "source": "E:\\MY HARD W0RK\\NITH\\Cryptika\\app\\src\\main\\res\\values\\themes.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "5",
+                        "endColumns": "12",
+                        "endOffsets": "301"
+                    },
+                    "to": {
+                        "startLines": "1851",
+                        "startColumns": "4",
+                        "startOffsets": "123073",
+                        "endLines": "1854",
+                        "endColumns": "12",
+                        "endOffsets": "123319"
+                    }
+                },
+                {
                     "source": "C:\\Users\\arung\\.gradle\\caches\\8.13\\transforms\\4b5803a442c2a8b0261a6fbd4b06bd30\\transformed\\jetified-foundation-release\\res\\values\\values.xml",
                     "from": {
                         "startLines": "2,3",
@@ -181,25 +200,6 @@
                         "endLines": "268,2076,3004,3007",
                         "endColumns": "52,24,24,24",
                         "endOffsets": "17390,136044,167222,167337"
-                    }
-                },
-                {
-                    "source": "E:\\MY HARD W0RK\\NITH\\HackSecureMessenger\\app\\src\\main\\res\\values\\themes.xml",
-                    "from": {
-                        "startLines": "2",
-                        "startColumns": "4",
-                        "startOffsets": "55",
-                        "endLines": "5",
-                        "endColumns": "12",
-                        "endOffsets": "301"
-                    },
-                    "to": {
-                        "startLines": "1851",
-                        "startColumns": "4",
-                        "startOffsets": "123073",
-                        "endLines": "1854",
-                        "endColumns": "12",
-                        "endOffsets": "123319"
                     }
                 },
                 {

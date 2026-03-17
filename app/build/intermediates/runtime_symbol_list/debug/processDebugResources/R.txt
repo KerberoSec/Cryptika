@@ -1982,3 +1982,4 @@ int styleable zxing_finder_zxing_viewfinder_mask 4
 int[] styleable zxing_view { 0x7f030138 }
 int styleable zxing_view_zxing_scanner_layout 0
 int xml data_extraction_rules 0x7f110000
+int xml network_security_config 0x7f110001

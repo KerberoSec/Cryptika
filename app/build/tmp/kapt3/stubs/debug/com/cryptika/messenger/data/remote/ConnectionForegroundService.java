@@ -16,7 +16,7 @@ import com.cryptika.messenger.R;
  * Android does not kill the process while [BackgroundConnectionManager] keeps WebSocket
  * connections alive for all conversations.
  *
- * Does NOT extend HiltAndroidApp — no Hilt injection needed; we just keep the process alive.
+ * Does NOT extend HiltAndroidApp: no Hilt injection needed; we just keep the process alive.
  * All real work is performed inside [BackgroundConnectionManager] which lives in the
  * application-scope coroutine.
  *

@@ -177,9 +177,9 @@ document.getElementById(id).style.display = 'none';
 <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
   <header class="mdl-layout__header">
     <div class="mdl-layout__header-row">
-      <span class="mdl-layout-title">Lint Report: 61 warnings and 3 hints</span>
+      <span class="mdl-layout-title">Lint Report: 1 error, 62 warnings and 4 hints</span>
       <div class="mdl-layout-spacer"></div>
-      <nav class="mdl-navigation mdl-layout--large-screen-only">Check performed at Fri Mar 13 10:23:26 IST 2026 by AGP (8.11.2)</nav>
+      <nav class="mdl-navigation mdl-layout--large-screen-only">Check performed at Sat Mar 14 11:25:20 IST 2026 by AGP (8.11.2)</nav>
     </div>
   </header>
   <div class="mdl-layout__drawer">
@@ -188,6 +188,7 @@ document.getElementById(id).style.display = 'none';
       <a class="mdl-navigation__link" href="#overview"><i class="material-icons">dashboard</i>Overview</a>
       <a class="mdl-navigation__link" href="#InlinedApi"><i class="material-icons warning-icon">warning</i>Using inlined constants on older versions (1)</a>
       <a class="mdl-navigation__link" href="#OldTargetApi"><i class="material-icons warning-icon">warning</i>Target SDK attribute is not targeting latest version (1)</a>
+      <a class="mdl-navigation__link" href="#NetworkSecurityConfig"><i class="material-icons error-icon">error</i>Valid Network Security Config File (1)</a>
       <a class="mdl-navigation__link" href="#AndroidGradlePluginVersion"><i class="material-icons warning-icon">warning</i>Obsolete Android Gradle Plugin Version (1)</a>
       <a class="mdl-navigation__link" href="#GradleDependency"><i class="material-icons warning-icon">warning</i>Obsolete Gradle Dependency (22)</a>
       <a class="mdl-navigation__link" href="#LockedOrientationActivity"><i class="material-icons warning-icon">warning</i>Incompatible screenOrientation value (1)</a>
@@ -195,9 +196,9 @@ document.getElementById(id).style.display = 'none';
       <a class="mdl-navigation__link" href="#Aligned16KB"><i class="material-icons warning-icon">warning</i>Native library dependency not 16 KB aligned (3)</a>
       <a class="mdl-navigation__link" href="#DiscouragedApi"><i class="material-icons warning-icon">warning</i>Using discouraged APIs (1)</a>
       <a class="mdl-navigation__link" href="#ObsoleteSdkInt"><i class="material-icons warning-icon">warning</i>Obsolete SDK_INT Version Check (6)</a>
-      <a class="mdl-navigation__link" href="#AutoboxingStateCreation"><i class="material-icons warning-icon">warning</i><code>State&lt;T></code> will autobox values assigned to this state. Use a specialized state type instead. (3)</a>
+      <a class="mdl-navigation__link" href="#AutoboxingStateCreation"><i class="material-icons warning-icon">warning</i><code>State&lt;T></code> will autobox values assigned to this state. Use a specialized state type instead. (4)</a>
       <a class="mdl-navigation__link" href="#MonochromeLauncherIcon"><i class="material-icons warning-icon">warning</i>Monochrome icon is not defined (2)</a>
-      <a class="mdl-navigation__link" href="#UseKtx"><i class="material-icons warning-icon">warning</i>Use KTX extension function (14)</a>
+      <a class="mdl-navigation__link" href="#UseKtx"><i class="material-icons warning-icon">warning</i>Use KTX extension function (15)</a>
     </nav>
   </div>
   <main class="mdl-layout__content">
@@ -218,6 +219,9 @@ document.getElementById(id).style.display = 'none';
 <tr>
 <td class="countColumn">1</td><td class="issueColumn"><i class="material-icons warning-icon">warning</i>
 <a href="#OldTargetApi">OldTargetApi</a>: Target SDK attribute is not targeting latest version</td></tr>
+<tr>
+<td class="countColumn">1</td><td class="issueColumn"><i class="material-icons error-icon">error</i>
+<a href="#NetworkSecurityConfig">NetworkSecurityConfig</a>: Valid Network Security Config File</td></tr>
 <tr>
 <td class="countColumn">1</td><td class="issueColumn"><i class="material-icons warning-icon">warning</i>
 <a href="#AndroidGradlePluginVersion">AndroidGradlePluginVersion</a>: Obsolete Android Gradle Plugin Version</td></tr>
@@ -242,7 +246,7 @@ document.getElementById(id).style.display = 'none';
 <td class="countColumn">6</td><td class="issueColumn"><i class="material-icons warning-icon">warning</i>
 <a href="#ObsoleteSdkInt">ObsoleteSdkInt</a>: Obsolete SDK_INT Version Check</td></tr>
 <tr>
-<td class="countColumn">3</td><td class="issueColumn"><i class="material-icons warning-icon">warning</i>
+<td class="countColumn">4</td><td class="issueColumn"><i class="material-icons warning-icon">warning</i>
 <a href="#AutoboxingStateCreation">AutoboxingStateCreation</a>: <code>State&lt;T></code> will autobox values assigned to this state. Use a specialized state type instead.</td></tr>
 <tr><td class="countColumn"></td><td class="categoryColumn"><a href="#Usability:Icons">Usability:Icons</a>
 </td></tr>
@@ -252,7 +256,7 @@ document.getElementById(id).style.display = 'none';
 <tr><td class="countColumn"></td><td class="categoryColumn"><a href="#Productivity">Productivity</a>
 </td></tr>
 <tr>
-<td class="countColumn">14</td><td class="issueColumn"><i class="material-icons warning-icon">warning</i>
+<td class="countColumn">15</td><td class="issueColumn"><i class="material-icons warning-icon">warning</i>
 <a href="#UseKtx">UseKtx</a>: Use KTX extension function</td></tr>
 <tr><td></td><td class="categoryColumn"><a href="#ExtraIssues">Included Additional Checks (75)</a>
 </td></tr>
@@ -275,7 +279,7 @@ Dismiss</button>            </div>
               <div class="mdl-card__supporting-text">
 <div class="issue">
 <div class="warningslist">
-<span class="location"><a href="../../src/main/java/com/hacksecure/messenger/data/remote/CallForegroundService.kt">../../src/main/java/com/hacksecure/messenger/data/remote/CallForegroundService.kt</a>:82</span>: <span class="message">Field requires API level 30 (current min is 29): <code>android.content.pm.ServiceInfo#FOREGROUND_SERVICE_TYPE_MICROPHONE</code></span><br /><pre class="errorlines">
+<span class="location"><a href="../../src/main/java/com/cryptika/messenger/data/remote/CallForegroundService.kt">../../src/main/java/com/cryptika/messenger/data/remote/CallForegroundService.kt</a>:82</span>: <span class="message">Field requires API level 30 (current min is 29): <code>android.content.pm.ServiceInfo#FOREGROUND_SERVICE_TYPE_MICROPHONE</code></span><br /><pre class="errorlines">
 <span class="lineno">  79 </span>                    startForeground(
 <span class="lineno">  80 </span>                        NOTIFICATION_ID,
 <span class="lineno">  81 </span>                        notification,
@@ -366,6 +370,62 @@ To suppress this error, use the issue id "OldTargetApi" as explained in the <a h
 Explain</button><button class="mdl-button mdl-js-button mdl-js-ripple-effect" id="OldTargetApiCardLink" onclick="hideid('OldTargetApiCard');">
 Dismiss</button>            </div>
             </div>
+          </section><a name="NetworkSecurityConfig"></a>
+<section class="section--center mdl-grid mdl-grid--no-spacing mdl-shadow--2dp" id="NetworkSecurityConfigCard" style="display: block;">
+            <div class="mdl-card mdl-cell mdl-cell--12-col">
+  <div class="mdl-card__title">
+    <h2 class="mdl-card__title-text">Valid Network Security Config File</h2>
+  </div>
+              <div class="mdl-card__supporting-text">
+<div class="issue">
+<div class="warningslist">
+<span class="location"><a href="../../src/debug/res/xml/network_security_config.xml">../../src/debug/res/xml/network_security_config.xml</a>:25</span>: <span class="message">Expecting at most 1 <code>&lt;debug-overrides></code></span><br /><pre class="errorlines">
+<span class="lineno"> 22 </span>    <span class="tag">&lt;/domain-config></span>
+<span class="lineno"> 23 </span>
+<span class="lineno"> 24 </span>    <span class="comment">&lt;!-- Trust user-installed certs (Charles Proxy, Burp, mitmproxy) in debug --></span>
+<span class="caretline"><span class="lineno"> 25 </span>    <span class="tag">&lt;</span><span class="error"><span class="tag">debug-overrides</span></span><span class="tag">></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 26 </span>        <span class="tag">&lt;trust-anchors></span>
+<span class="lineno"> 27 </span>            <span class="tag">&lt;certificates</span><span class="attribute"> src</span>=<span class="value">"system"</span>/>
+<span class="lineno"> 28 </span>            <span class="tag">&lt;certificates</span><span class="attribute"> src</span>=<span class="value">"user"</span>/>
+</pre>
+
+<ul><span class="location"><a href="../../src/main/res/xml/network_security_config.xml">../../src/main/res/xml/network_security_config.xml</a>:30</span>: <span class="message">Already declared here</span><br /><pre class="errorlines">
+<span class="lineno"> 27 </span>    <span class="tag">&lt;/base-config></span>
+<span class="lineno"> 28 </span>
+<span class="lineno"> 29 </span>    <span class="comment">&lt;!-- Debug builds override this entire file via src/debug/res/xml/ --></span>
+<span class="caretline"><span class="lineno"> 30 </span>    <span class="error"><span class="tag">&lt;debug-overrides></span></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 31 </span>        <span class="tag">&lt;trust-anchors></span>
+<span class="lineno"> 32 </span>            <span class="tag">&lt;certificates</span><span class="attribute"> src</span>=<span class="value">"system"</span>/>
+<span class="lineno"> 33 </span>            <span class="tag">&lt;certificates</span><span class="attribute"> src</span>=<span class="value">"user"</span>/>
+</pre>
+</ul></div>
+<div class="metadata"><div class="explanation" id="explanationNetworkSecurityConfig" style="display: none;">
+Ensures that a <code>&lt;network-security-config></code> file, which is pointed to by an <code>android:networkSecurityConfig</code> attribute in the manifest file, is valid<br/><div class="moreinfo">More info: <a href="https://developer.android.com/preview/features/security-config.html">https://developer.android.com/preview/features/security-config.html</a>
+</div>Note: This issue has an associated quickfix operation in Android Studio and IntelliJ IDEA.<br>
+To suppress this error, use the issue id "NetworkSecurityConfig" as explained in the <a href="#SuppressInfo">Suppressing Warnings and Errors</a> section.<br/>
+<br/></div>
+</div>
+</div>
+<div class="chips">
+<span class="mdl-chip">
+    <span class="mdl-chip__text">NetworkSecurityConfig</span>
+</span>
+<span class="mdl-chip">
+    <span class="mdl-chip__text">Correctness</span>
+</span>
+<span class="mdl-chip">
+    <span class="mdl-chip__text">Fatal</span>
+</span>
+<span class="mdl-chip">
+    <span class="mdl-chip__text">Priority 5/10</span>
+</span>
+</div>
+              </div>
+              <div class="mdl-card__actions mdl-card--border">
+<button class="mdl-button mdl-js-button mdl-js-ripple-effect" id="explanationNetworkSecurityConfigLink" onclick="reveal('explanationNetworkSecurityConfig');">
+Explain</button><button class="mdl-button mdl-js-button mdl-js-ripple-effect" id="NetworkSecurityConfigCardLink" onclick="hideid('NetworkSecurityConfigCard');">
+Dismiss</button>            </div>
+            </div>
           </section><a name="AndroidGradlePluginVersion"></a>
 <section class="section--center mdl-grid mdl-grid--no-spacing mdl-shadow--2dp" id="AndroidGradlePluginVersionCard" style="display: block;">
             <div class="mdl-card mdl-cell mdl-cell--12-col">
@@ -430,211 +490,211 @@ Dismiss</button>            </div>
 <span class="lineno">  18 </span>    setProperty("archivesBaseName", "Cryptika")
 </pre>
 
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:82</span>: <span class="message">A newer version of androidx.security:security-crypto than 1.1.0-alpha06 is available: 1.1.0</span><br /><pre class="errorlines">
-<span class="lineno">  79 </span>    implementation("org.bouncycastle:bcprov-jdk15on:1.70")
-<span class="lineno">  80 </span>
-<span class="lineno">  81 </span>    // ── Secure Storage ───────────────────────────────────────────────────────
-<span class="caretline"><span class="lineno">  82 </span>    implementation(<span class="warning">"androidx.security:security-crypto:1.1.0-alpha06"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno">  83 </span>
-<span class="lineno">  84 </span>    // ── Compose BOM ──────────────────────────────────────────────────────────
-<span class="lineno">  85 </span>    implementation(platform("androidx.compose:compose-bom:2024.02.00"))
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:87</span>: <span class="message">A newer version of androidx.security:security-crypto than 1.1.0-alpha06 is available: 1.1.0</span><br /><pre class="errorlines">
+<span class="lineno">  84 </span>    implementation("org.bouncycastle:bcprov-jdk15on:1.70")
+<span class="lineno">  85 </span>
+<span class="lineno">  86 </span>    // Secure Storage
+<span class="caretline"><span class="lineno">  87 </span>    implementation(<span class="warning">"androidx.security:security-crypto:1.1.0-alpha06"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno">  88 </span>
+<span class="lineno">  89 </span>    // Compose BOM
+<span class="lineno">  90 </span>    implementation(platform("androidx.compose:compose-bom:2024.02.00"))
 </pre>
 
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:85</span>: <span class="message">A newer version of androidx.compose:compose-bom than 2024.02.00 is available: 2026.03.00</span><br /><pre class="errorlines">
-<span class="lineno">  82 </span>    implementation("androidx.security:security-crypto:1.1.0-alpha06")
-<span class="lineno">  83 </span>
-<span class="lineno">  84 </span>    // ── Compose BOM ──────────────────────────────────────────────────────────
-<span class="caretline"><span class="lineno">  85 </span>    implementation(<span class="warning">platform("androidx.compose:compose-bom:2024.02.00")</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno">  86 </span>    implementation("androidx.compose.ui:ui")
-<span class="lineno">  87 </span>    implementation("androidx.compose.material3:material3")
-<span class="lineno">  88 </span>    implementation("androidx.compose.ui:ui-tooling-preview")
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:90</span>: <span class="message">A newer version of androidx.compose:compose-bom than 2024.02.00 is available: 2026.03.00</span><br /><pre class="errorlines">
+<span class="lineno">  87 </span>    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+<span class="lineno">  88 </span>
+<span class="lineno">  89 </span>    // Compose BOM
+<span class="caretline"><span class="lineno">  90 </span>    implementation(<span class="warning">platform("androidx.compose:compose-bom:2024.02.00")</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno">  91 </span>    implementation("androidx.compose.ui:ui")
+<span class="lineno">  92 </span>    implementation("androidx.compose.material3:material3")
+<span class="lineno">  93 </span>    implementation("androidx.compose.ui:ui-tooling-preview")
 </pre>
 
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:90</span>: <span class="message">A newer version of androidx.activity:activity-compose than 1.8.2 is available: 1.13.0</span><br /><pre class="errorlines">
-<span class="lineno">  87 </span>    implementation("androidx.compose.material3:material3")
-<span class="lineno">  88 </span>    implementation("androidx.compose.ui:ui-tooling-preview")
-<span class="lineno">  89 </span>    implementation("androidx.compose.material:material-icons-extended")
-<span class="caretline"><span class="lineno">  90 </span>    implementation(<span class="warning">"androidx.activity:activity-compose:1.8.2"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno">  91 </span>    implementation("androidx.navigation:navigation-compose:2.7.7")
-<span class="lineno">  92 </span>    debugImplementation("androidx.compose.ui:ui-tooling")
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:95</span>: <span class="message">A newer version of androidx.activity:activity-compose than 1.8.2 is available: 1.13.0</span><br /><pre class="errorlines">
+<span class="lineno">  92 </span>    implementation("androidx.compose.material3:material3")
+<span class="lineno">  93 </span>    implementation("androidx.compose.ui:ui-tooling-preview")
+<span class="lineno">  94 </span>    implementation("androidx.compose.material:material-icons-extended")
+<span class="caretline"><span class="lineno">  95 </span>    implementation(<span class="warning">"androidx.activity:activity-compose:1.8.2"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno">  96 </span>    implementation("androidx.navigation:navigation-compose:2.7.7")
+<span class="lineno">  97 </span>    debugImplementation("androidx.compose.ui:ui-tooling")
 </pre>
 
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:91</span>: <span class="message">A newer version of androidx.navigation:navigation-compose than 2.7.7 is available: 2.9.7</span><br /><pre class="errorlines">
-<span class="lineno">  88 </span>    implementation("androidx.compose.ui:ui-tooling-preview")
-<span class="lineno">  89 </span>    implementation("androidx.compose.material:material-icons-extended")
-<span class="lineno">  90 </span>    implementation("androidx.activity:activity-compose:1.8.2")
-<span class="caretline"><span class="lineno">  91 </span>    implementation(<span class="warning">"androidx.navigation:navigation-compose:2.7.7"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno">  92 </span>    debugImplementation("androidx.compose.ui:ui-tooling")
-<span class="lineno">  93 </span>
-<span class="lineno">  94 </span>    // ── Hilt DI ──────────────────────────────────────────────────────────────
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:96</span>: <span class="message">A newer version of androidx.navigation:navigation-compose than 2.7.7 is available: 2.9.7</span><br /><pre class="errorlines">
+<span class="lineno">  93 </span>    implementation("androidx.compose.ui:ui-tooling-preview")
+<span class="lineno">  94 </span>    implementation("androidx.compose.material:material-icons-extended")
+<span class="lineno">  95 </span>    implementation("androidx.activity:activity-compose:1.8.2")
+<span class="caretline"><span class="lineno">  96 </span>    implementation(<span class="warning">"androidx.navigation:navigation-compose:2.7.7"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno">  97 </span>    debugImplementation("androidx.compose.ui:ui-tooling")
+<span class="lineno">  98 </span>
+<span class="lineno">  99 </span>    // Hilt DI
 </pre>
 
 <button class="mdl-button mdl-js-button mdl-button--primary" id="GradleDependencyDivLink" onclick="reveal('GradleDependencyDiv');" />+ 17 More Occurrences...</button>
 <div id="GradleDependencyDiv" style="display: none">
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:96</span>: <span class="message">A newer version of androidx.hilt:hilt-navigation-compose than 1.2.0 is available: 1.3.0</span><br /><pre class="errorlines">
-<span class="lineno">  93 </span>
-<span class="lineno">  94 </span>    // ── Hilt DI ──────────────────────────────────────────────────────────────
-<span class="lineno">  95 </span>    implementation("com.google.dagger:hilt-android:2.51")
-<span class="caretline"><span class="lineno">  96 </span>    implementation(<span class="warning">"androidx.hilt:hilt-navigation-compose:1.2.0"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno">  97 </span>    implementation("androidx.hilt:hilt-work:1.2.0")
-<span class="lineno">  98 </span>    kapt("com.google.dagger:hilt-android-compiler:2.51")
-<span class="lineno">  99 </span>    kapt("androidx.hilt:hilt-compiler:1.2.0")
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:101</span>: <span class="message">A newer version of androidx.hilt:hilt-navigation-compose than 1.2.0 is available: 1.3.0</span><br /><pre class="errorlines">
+<span class="lineno">  98 </span>
+<span class="lineno">  99 </span>    // Hilt DI
+<span class="lineno"> 100 </span>    implementation("com.google.dagger:hilt-android:2.51")
+<span class="caretline"><span class="lineno"> 101 </span>    implementation(<span class="warning">"androidx.hilt:hilt-navigation-compose:1.2.0"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 102 </span>    implementation("androidx.hilt:hilt-work:1.2.0")
+<span class="lineno"> 103 </span>    kapt("com.google.dagger:hilt-android-compiler:2.51")
+<span class="lineno"> 104 </span>    kapt("androidx.hilt:hilt-compiler:1.2.0")
 </pre>
 
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:97</span>: <span class="message">A newer version of androidx.hilt:hilt-work than 1.2.0 is available: 1.3.0</span><br /><pre class="errorlines">
-<span class="lineno">  94 </span>    // ── Hilt DI ──────────────────────────────────────────────────────────────
-<span class="lineno">  95 </span>    implementation("com.google.dagger:hilt-android:2.51")
-<span class="lineno">  96 </span>    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
-<span class="caretline"><span class="lineno">  97 </span>    implementation(<span class="warning">"androidx.hilt:hilt-work:1.2.0"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno">  98 </span>    kapt("com.google.dagger:hilt-android-compiler:2.51")
-<span class="lineno">  99 </span>    kapt("androidx.hilt:hilt-compiler:1.2.0")
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:102</span>: <span class="message">A newer version of androidx.hilt:hilt-work than 1.2.0 is available: 1.3.0</span><br /><pre class="errorlines">
+<span class="lineno">  99 </span>    // Hilt DI
+<span class="lineno"> 100 </span>    implementation("com.google.dagger:hilt-android:2.51")
+<span class="lineno"> 101 </span>    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+<span class="caretline"><span class="lineno"> 102 </span>    implementation(<span class="warning">"androidx.hilt:hilt-work:1.2.0"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 103 </span>    kapt("com.google.dagger:hilt-android-compiler:2.51")
+<span class="lineno"> 104 </span>    kapt("androidx.hilt:hilt-compiler:1.2.0")
 </pre>
 
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:99</span>: <span class="message">A newer version of androidx.hilt:hilt-compiler than 1.2.0 is available: 1.3.0</span><br /><pre class="errorlines">
-<span class="lineno">  96 </span>    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
-<span class="lineno">  97 </span>    implementation("androidx.hilt:hilt-work:1.2.0")
-<span class="lineno">  98 </span>    kapt("com.google.dagger:hilt-android-compiler:2.51")
-<span class="caretline"><span class="lineno">  99 </span>    kapt(<span class="warning">"androidx.hilt:hilt-compiler:1.2.0"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 100 </span>
-<span class="lineno"> 101 </span>    // ── Room + SQLCipher ─────────────────────────────────────────────────────
-<span class="lineno"> 102 </span>    implementation("androidx.room:room-runtime:2.6.1")
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:104</span>: <span class="message">A newer version of androidx.hilt:hilt-compiler than 1.2.0 is available: 1.3.0</span><br /><pre class="errorlines">
+<span class="lineno"> 101 </span>    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+<span class="lineno"> 102 </span>    implementation("androidx.hilt:hilt-work:1.2.0")
+<span class="lineno"> 103 </span>    kapt("com.google.dagger:hilt-android-compiler:2.51")
+<span class="caretline"><span class="lineno"> 104 </span>    kapt(<span class="warning">"androidx.hilt:hilt-compiler:1.2.0"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 105 </span>
+<span class="lineno"> 106 </span>    // Room + SQLCipher
+<span class="lineno"> 107 </span>    implementation("androidx.room:room-runtime:2.6.1")
 </pre>
 
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:102</span>: <span class="message">A newer version of androidx.room:room-runtime than 2.6.1 is available: 2.8.4</span><br /><pre class="errorlines">
-<span class="lineno">  99 </span>    kapt("androidx.hilt:hilt-compiler:1.2.0")
-<span class="lineno"> 100 </span>
-<span class="lineno"> 101 </span>    // ── Room + SQLCipher ─────────────────────────────────────────────────────
-<span class="caretline"><span class="lineno"> 102 </span>    implementation(<span class="warning">"androidx.room:room-runtime:2.6.1"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 103 </span>    implementation("androidx.room:room-ktx:2.6.1")
-<span class="lineno"> 104 </span>    ksp("androidx.room:room-compiler:2.6.1")
-<span class="lineno"> 105 </span>    implementation("net.zetetic:android-database-sqlcipher:4.5.4")
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:107</span>: <span class="message">A newer version of androidx.room:room-runtime than 2.6.1 is available: 2.8.4</span><br /><pre class="errorlines">
+<span class="lineno"> 104 </span>    kapt("androidx.hilt:hilt-compiler:1.2.0")
+<span class="lineno"> 105 </span>
+<span class="lineno"> 106 </span>    // Room + SQLCipher
+<span class="caretline"><span class="lineno"> 107 </span>    implementation(<span class="warning">"androidx.room:room-runtime:2.6.1"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 108 </span>    implementation("androidx.room:room-ktx:2.6.1")
+<span class="lineno"> 109 </span>    ksp("androidx.room:room-compiler:2.6.1")
+<span class="lineno"> 110 </span>    implementation("net.zetetic:android-database-sqlcipher:4.5.4")
 </pre>
 
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:103</span>: <span class="message">A newer version of androidx.room:room-ktx than 2.6.1 is available: 2.8.4</span><br /><pre class="errorlines">
-<span class="lineno"> 100 </span>
-<span class="lineno"> 101 </span>    // ── Room + SQLCipher ─────────────────────────────────────────────────────
-<span class="lineno"> 102 </span>    implementation("androidx.room:room-runtime:2.6.1")
-<span class="caretline"><span class="lineno"> 103 </span>    implementation(<span class="warning">"androidx.room:room-ktx:2.6.1"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 104 </span>    ksp("androidx.room:room-compiler:2.6.1")
-<span class="lineno"> 105 </span>    implementation("net.zetetic:android-database-sqlcipher:4.5.4")
-<span class="lineno"> 106 </span>    implementation("androidx.sqlite:sqlite-ktx:2.4.0")
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:108</span>: <span class="message">A newer version of androidx.room:room-ktx than 2.6.1 is available: 2.8.4</span><br /><pre class="errorlines">
+<span class="lineno"> 105 </span>
+<span class="lineno"> 106 </span>    // Room + SQLCipher
+<span class="lineno"> 107 </span>    implementation("androidx.room:room-runtime:2.6.1")
+<span class="caretline"><span class="lineno"> 108 </span>    implementation(<span class="warning">"androidx.room:room-ktx:2.6.1"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 109 </span>    ksp("androidx.room:room-compiler:2.6.1")
+<span class="lineno"> 110 </span>    implementation("net.zetetic:android-database-sqlcipher:4.5.4")
+<span class="lineno"> 111 </span>    implementation("androidx.sqlite:sqlite-ktx:2.4.0")
 </pre>
 
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:104</span>: <span class="message">A newer version of androidx.room:room-compiler than 2.6.1 is available: 2.8.4</span><br /><pre class="errorlines">
-<span class="lineno"> 101 </span>    // ── Room + SQLCipher ─────────────────────────────────────────────────────
-<span class="lineno"> 102 </span>    implementation("androidx.room:room-runtime:2.6.1")
-<span class="lineno"> 103 </span>    implementation("androidx.room:room-ktx:2.6.1")
-<span class="caretline"><span class="lineno"> 104 </span>    ksp(<span class="warning">"androidx.room:room-compiler:2.6.1"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 105 </span>    implementation("net.zetetic:android-database-sqlcipher:4.5.4")
-<span class="lineno"> 106 </span>    implementation("androidx.sqlite:sqlite-ktx:2.4.0")
-<span class="lineno"> 107 </span>    // ── Networking ───────────────────────────────────────────────────────────
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:109</span>: <span class="message">A newer version of androidx.room:room-compiler than 2.6.1 is available: 2.8.4</span><br /><pre class="errorlines">
+<span class="lineno"> 106 </span>    // Room + SQLCipher
+<span class="lineno"> 107 </span>    implementation("androidx.room:room-runtime:2.6.1")
+<span class="lineno"> 108 </span>    implementation("androidx.room:room-ktx:2.6.1")
+<span class="caretline"><span class="lineno"> 109 </span>    ksp(<span class="warning">"androidx.room:room-compiler:2.6.1"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 110 </span>    implementation("net.zetetic:android-database-sqlcipher:4.5.4")
+<span class="lineno"> 111 </span>    implementation("androidx.sqlite:sqlite-ktx:2.4.0")
+<span class="lineno"> 112 </span>    // Networking
 </pre>
 
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:106</span>: <span class="message">A newer version of androidx.sqlite:sqlite-ktx than 2.4.0 is available: 2.6.2</span><br /><pre class="errorlines">
-<span class="lineno"> 103 </span>    implementation("androidx.room:room-ktx:2.6.1")
-<span class="lineno"> 104 </span>    ksp("androidx.room:room-compiler:2.6.1")
-<span class="lineno"> 105 </span>    implementation("net.zetetic:android-database-sqlcipher:4.5.4")
-<span class="caretline"><span class="lineno"> 106 </span>    implementation(<span class="warning">"androidx.sqlite:sqlite-ktx:2.4.0"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 107 </span>    // ── Networking ───────────────────────────────────────────────────────────
-<span class="lineno"> 108 </span>    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-<span class="lineno"> 109 </span>    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:111</span>: <span class="message">A newer version of androidx.sqlite:sqlite-ktx than 2.4.0 is available: 2.6.2</span><br /><pre class="errorlines">
+<span class="lineno"> 108 </span>    implementation("androidx.room:room-ktx:2.6.1")
+<span class="lineno"> 109 </span>    ksp("androidx.room:room-compiler:2.6.1")
+<span class="lineno"> 110 </span>    implementation("net.zetetic:android-database-sqlcipher:4.5.4")
+<span class="caretline"><span class="lineno"> 111 </span>    implementation(<span class="warning">"androidx.sqlite:sqlite-ktx:2.4.0"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 112 </span>    // Networking
+<span class="lineno"> 113 </span>    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+<span class="lineno"> 114 </span>    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 </pre>
 
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:121</span>: <span class="message">A newer version of androidx.work:work-runtime-ktx than 2.9.0 is available: 2.11.1</span><br /><pre class="errorlines">
-<span class="lineno"> 118 </span>    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
-<span class="lineno"> 119 </span>
-<span class="lineno"> 120 </span>    // ── WorkManager ──────────────────────────────────────────────────────────
-<span class="caretline"><span class="lineno"> 121 </span>    implementation(<span class="warning">"androidx.work:work-runtime-ktx:2.9.0"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 122 </span>
-<span class="lineno"> 123 </span>    // ── Coroutines ───────────────────────────────────────────────────────────
-<span class="lineno"> 124 </span>    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:126</span>: <span class="message">A newer version of androidx.work:work-runtime-ktx than 2.9.0 is available: 2.11.1</span><br /><pre class="errorlines">
+<span class="lineno"> 123 </span>    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+<span class="lineno"> 124 </span>
+<span class="lineno"> 125 </span>    // WorkManager
+<span class="caretline"><span class="lineno"> 126 </span>    implementation(<span class="warning">"androidx.work:work-runtime-ktx:2.9.0"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 127 </span>
+<span class="lineno"> 128 </span>    // Coroutines
+<span class="lineno"> 129 </span>    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 </pre>
 
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:127</span>: <span class="message">A newer version of androidx.lifecycle:lifecycle-viewmodel-compose than 2.7.0 is available: 2.10.0</span><br /><pre class="errorlines">
-<span class="lineno"> 124 </span>    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-<span class="lineno"> 125 </span>
-<span class="lineno"> 126 </span>    // ── Lifecycle ────────────────────────────────────────────────────────────
-<span class="caretline"><span class="lineno"> 127 </span>    implementation(<span class="warning">"androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 128 </span>    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
-<span class="lineno"> 129 </span>    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
-</pre>
-
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:128</span>: <span class="message">A newer version of androidx.lifecycle:lifecycle-runtime-ktx than 2.7.0 is available: 2.10.0</span><br /><pre class="errorlines">
-<span class="lineno"> 125 </span>
-<span class="lineno"> 126 </span>    // ── Lifecycle ────────────────────────────────────────────────────────────
-<span class="lineno"> 127 </span>    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
-<span class="caretline"><span class="lineno"> 128 </span>    implementation(<span class="warning">"androidx.lifecycle:lifecycle-runtime-ktx:2.7.0"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 129 </span>    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:132</span>: <span class="message">A newer version of androidx.lifecycle:lifecycle-viewmodel-compose than 2.7.0 is available: 2.10.0</span><br /><pre class="errorlines">
+<span class="lineno"> 129 </span>    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 <span class="lineno"> 130 </span>
-<span class="lineno"> 131 </span>    // ── DataStore ────────────────────────────────────────────────────────────
+<span class="lineno"> 131 </span>    // Lifecycle
+<span class="caretline"><span class="lineno"> 132 </span>    implementation(<span class="warning">"androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 133 </span>    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+<span class="lineno"> 134 </span>    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
 </pre>
 
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:129</span>: <span class="message">A newer version of androidx.lifecycle:lifecycle-runtime-compose than 2.7.0 is available: 2.10.0</span><br /><pre class="errorlines">
-<span class="lineno"> 126 </span>    // ── Lifecycle ────────────────────────────────────────────────────────────
-<span class="lineno"> 127 </span>    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
-<span class="lineno"> 128 </span>    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
-<span class="caretline"><span class="lineno"> 129 </span>    implementation(<span class="warning">"androidx.lifecycle:lifecycle-runtime-compose:2.7.0"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:133</span>: <span class="message">A newer version of androidx.lifecycle:lifecycle-runtime-ktx than 2.7.0 is available: 2.10.0</span><br /><pre class="errorlines">
 <span class="lineno"> 130 </span>
-<span class="lineno"> 131 </span>    // ── DataStore ────────────────────────────────────────────────────────────
-<span class="lineno"> 132 </span>    implementation("androidx.datastore:datastore-preferences:1.0.0")
+<span class="lineno"> 131 </span>    // Lifecycle
+<span class="lineno"> 132 </span>    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+<span class="caretline"><span class="lineno"> 133 </span>    implementation(<span class="warning">"androidx.lifecycle:lifecycle-runtime-ktx:2.7.0"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 134 </span>    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
+<span class="lineno"> 135 </span>
+<span class="lineno"> 136 </span>    // DataStore
 </pre>
 
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:132</span>: <span class="message">A newer version of androidx.datastore:datastore-preferences than 1.0.0 is available: 1.2.1</span><br /><pre class="errorlines">
-<span class="lineno"> 129 </span>    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
-<span class="lineno"> 130 </span>
-<span class="lineno"> 131 </span>    // ── DataStore ────────────────────────────────────────────────────────────
-<span class="caretline"><span class="lineno"> 132 </span>    implementation(<span class="warning">"androidx.datastore:datastore-preferences:1.0.0"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 133 </span>
-<span class="lineno"> 134 </span>    // ── Camera (QR scanning) ─────────────────────────────────────────────────
-<span class="lineno"> 135 </span>    implementation("androidx.camera:camera-camera2:1.3.1")
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:134</span>: <span class="message">A newer version of androidx.lifecycle:lifecycle-runtime-compose than 2.7.0 is available: 2.10.0</span><br /><pre class="errorlines">
+<span class="lineno"> 131 </span>    // Lifecycle
+<span class="lineno"> 132 </span>    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+<span class="lineno"> 133 </span>    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+<span class="caretline"><span class="lineno"> 134 </span>    implementation(<span class="warning">"androidx.lifecycle:lifecycle-runtime-compose:2.7.0"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 135 </span>
+<span class="lineno"> 136 </span>    // DataStore
+<span class="lineno"> 137 </span>    implementation("androidx.datastore:datastore-preferences:1.0.0")
 </pre>
 
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:135</span>: <span class="message">A newer version of androidx.camera:camera-camera2 than 1.3.1 is available: 1.5.3</span><br /><pre class="errorlines">
-<span class="lineno"> 132 </span>    implementation("androidx.datastore:datastore-preferences:1.0.0")
-<span class="lineno"> 133 </span>
-<span class="lineno"> 134 </span>    // ── Camera (QR scanning) ─────────────────────────────────────────────────
-<span class="caretline"><span class="lineno"> 135 </span>    implementation(<span class="warning">"androidx.camera:camera-camera2:1.3.1"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 136 </span>    implementation("androidx.camera:camera-lifecycle:1.3.1")
-<span class="lineno"> 137 </span>    implementation("androidx.camera:camera-view:1.3.1")
-</pre>
-
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:136</span>: <span class="message">A newer version of androidx.camera:camera-lifecycle than 1.3.1 is available: 1.5.3</span><br /><pre class="errorlines">
-<span class="lineno"> 133 </span>
-<span class="lineno"> 134 </span>    // ── Camera (QR scanning) ─────────────────────────────────────────────────
-<span class="lineno"> 135 </span>    implementation("androidx.camera:camera-camera2:1.3.1")
-<span class="caretline"><span class="lineno"> 136 </span>    implementation(<span class="warning">"androidx.camera:camera-lifecycle:1.3.1"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 137 </span>    implementation("androidx.camera:camera-view:1.3.1")
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:137</span>: <span class="message">A newer version of androidx.datastore:datastore-preferences than 1.0.0 is available: 1.2.1</span><br /><pre class="errorlines">
+<span class="lineno"> 134 </span>    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
+<span class="lineno"> 135 </span>
+<span class="lineno"> 136 </span>    // DataStore
+<span class="caretline"><span class="lineno"> 137 </span>    implementation(<span class="warning">"androidx.datastore:datastore-preferences:1.0.0"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
 <span class="lineno"> 138 </span>
-<span class="lineno"> 139 </span>    // ── Testing ──────────────────────────────────────────────────────────────
+<span class="lineno"> 139 </span>    // Camera (QR scanning)
+<span class="lineno"> 140 </span>    implementation("androidx.camera:camera-camera2:1.3.1")
 </pre>
 
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:137</span>: <span class="message">A newer version of androidx.camera:camera-view than 1.3.1 is available: 1.5.3</span><br /><pre class="errorlines">
-<span class="lineno"> 134 </span>    // ── Camera (QR scanning) ─────────────────────────────────────────────────
-<span class="lineno"> 135 </span>    implementation("androidx.camera:camera-camera2:1.3.1")
-<span class="lineno"> 136 </span>    implementation("androidx.camera:camera-lifecycle:1.3.1")
-<span class="caretline"><span class="lineno"> 137 </span>    implementation(<span class="warning">"androidx.camera:camera-view:1.3.1"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:140</span>: <span class="message">A newer version of androidx.camera:camera-camera2 than 1.3.1 is available: 1.5.3</span><br /><pre class="errorlines">
+<span class="lineno"> 137 </span>    implementation("androidx.datastore:datastore-preferences:1.0.0")
 <span class="lineno"> 138 </span>
-<span class="lineno"> 139 </span>    // ── Testing ──────────────────────────────────────────────────────────────
-<span class="lineno"> 140 </span>    testImplementation("junit:junit:4.13.2")
+<span class="lineno"> 139 </span>    // Camera (QR scanning)
+<span class="caretline"><span class="lineno"> 140 </span>    implementation(<span class="warning">"androidx.camera:camera-camera2:1.3.1"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 141 </span>    implementation("androidx.camera:camera-lifecycle:1.3.1")
+<span class="lineno"> 142 </span>    implementation("androidx.camera:camera-view:1.3.1")
 </pre>
 
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:143</span>: <span class="message">A newer version of androidx.test.ext:junit than 1.1.5 is available: 1.3.0</span><br /><pre class="errorlines">
-<span class="lineno"> 140 </span>    testImplementation("junit:junit:4.13.2")
-<span class="lineno"> 141 </span>    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
-<span class="lineno"> 142 </span>    testImplementation("io.mockk:mockk:1.13.9")
-<span class="caretline"><span class="lineno"> 143 </span>    androidTestImplementation(<span class="warning">"androidx.test.ext:junit:1.1.5"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 144 </span>    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-<span class="lineno"> 145 </span>}
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:141</span>: <span class="message">A newer version of androidx.camera:camera-lifecycle than 1.3.1 is available: 1.5.3</span><br /><pre class="errorlines">
+<span class="lineno"> 138 </span>
+<span class="lineno"> 139 </span>    // Camera (QR scanning)
+<span class="lineno"> 140 </span>    implementation("androidx.camera:camera-camera2:1.3.1")
+<span class="caretline"><span class="lineno"> 141 </span>    implementation(<span class="warning">"androidx.camera:camera-lifecycle:1.3.1"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 142 </span>    implementation("androidx.camera:camera-view:1.3.1")
+<span class="lineno"> 143 </span>
+<span class="lineno"> 144 </span>    // Testing
 </pre>
 
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:144</span>: <span class="message">A newer version of androidx.test.espresso:espresso-core than 3.5.1 is available: 3.7.0</span><br /><pre class="errorlines">
-<span class="lineno"> 141 </span>    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
-<span class="lineno"> 142 </span>    testImplementation("io.mockk:mockk:1.13.9")
-<span class="lineno"> 143 </span>    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-<span class="caretline"><span class="lineno"> 144 </span>    androidTestImplementation(<span class="warning">"androidx.test.espresso:espresso-core:3.5.1"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 145 </span>}
-<span class="lineno"> 146 </span>
-<span class="lineno"> 147 </span>kapt { correctErrorTypes = true }
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:142</span>: <span class="message">A newer version of androidx.camera:camera-view than 1.3.1 is available: 1.5.3</span><br /><pre class="errorlines">
+<span class="lineno"> 139 </span>    // Camera (QR scanning)
+<span class="lineno"> 140 </span>    implementation("androidx.camera:camera-camera2:1.3.1")
+<span class="lineno"> 141 </span>    implementation("androidx.camera:camera-lifecycle:1.3.1")
+<span class="caretline"><span class="lineno"> 142 </span>    implementation(<span class="warning">"androidx.camera:camera-view:1.3.1"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 143 </span>
+<span class="lineno"> 144 </span>    // Testing
+<span class="lineno"> 145 </span>    testImplementation("junit:junit:4.13.2")
+</pre>
+
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:148</span>: <span class="message">A newer version of androidx.test.ext:junit than 1.1.5 is available: 1.3.0</span><br /><pre class="errorlines">
+<span class="lineno"> 145 </span>    testImplementation("junit:junit:4.13.2")
+<span class="lineno"> 146 </span>    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+<span class="lineno"> 147 </span>    testImplementation("io.mockk:mockk:1.13.9")
+<span class="caretline"><span class="lineno"> 148 </span>    androidTestImplementation(<span class="warning">"androidx.test.ext:junit:1.1.5"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 149 </span>    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+<span class="lineno"> 150 </span>}
+</pre>
+
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:149</span>: <span class="message">A newer version of androidx.test.espresso:espresso-core than 3.5.1 is available: 3.7.0</span><br /><pre class="errorlines">
+<span class="lineno"> 146 </span>    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+<span class="lineno"> 147 </span>    testImplementation("io.mockk:mockk:1.13.9")
+<span class="lineno"> 148 </span>    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+<span class="caretline"><span class="lineno"> 149 </span>    androidTestImplementation(<span class="warning">"androidx.test.espresso:espresso-core:3.5.1"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 150 </span>}
+<span class="lineno"> 151 </span>
+<span class="lineno"> 152 </span>kapt { correctErrorTypes = true }
 </pre>
 
 </div>
@@ -674,14 +734,14 @@ Dismiss</button>            </div>
               <div class="mdl-card__supporting-text">
 <div class="issue">
 <div class="warningslist">
-<span class="location"><a href="../../src/main/AndroidManifest.xml">../../src/main/AndroidManifest.xml</a>:52</span>: <span class="message">Expecting <code>android:screenOrientation="unspecified"</code> or <code>"fullSensor"</code> for this activity so the user can use the application in any orientation and provide a great experience on Chrome OS devices</span><br /><pre class="errorlines">
-<span class="lineno"> 49 </span><span class="attribute">            </span><span class="prefix">android:</span><span class="attribute">name</span>=<span class="value">".MainActivity"</span>
-<span class="lineno"> 50 </span>            <span class="prefix">android:</span><span class="attribute">exported</span>=<span class="value">"true"</span>
-<span class="lineno"> 51 </span>            <span class="prefix">android:</span><span class="attribute">windowSoftInputMode</span>=<span class="value">"stateAlwaysHidden|adjustResize"</span>
-<span class="caretline"><span class="lineno"> 52 </span>            <span class="warning"><span class="prefix">android:</span><span class="attribute">screenOrientation</span>=<span class="value">"portrait"</span></span>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 53 </span>            <span class="tag">&lt;intent-filter></span>
-<span class="lineno"> 54 </span>                <span class="tag">&lt;action</span><span class="attribute"> </span><span class="prefix">android:</span><span class="attribute">name</span>=<span class="value">"android.intent.action.MAIN"</span>/>
-<span class="lineno"> 55 </span>                <span class="tag">&lt;category</span><span class="attribute"> </span><span class="prefix">android:</span><span class="attribute">name</span>=<span class="value">"android.intent.category.LAUNCHER"</span>/>
+<span class="location"><a href="../../src/main/AndroidManifest.xml">../../src/main/AndroidManifest.xml</a>:53</span>: <span class="message">Expecting <code>android:screenOrientation="unspecified"</code> or <code>"fullSensor"</code> for this activity so the user can use the application in any orientation and provide a great experience on Chrome OS devices</span><br /><pre class="errorlines">
+<span class="lineno"> 50 </span><span class="attribute">            </span><span class="prefix">android:</span><span class="attribute">name</span>=<span class="value">".MainActivity"</span>
+<span class="lineno"> 51 </span>            <span class="prefix">android:</span><span class="attribute">exported</span>=<span class="value">"true"</span>
+<span class="lineno"> 52 </span>            <span class="prefix">android:</span><span class="attribute">windowSoftInputMode</span>=<span class="value">"stateAlwaysHidden|adjustResize"</span>
+<span class="caretline"><span class="lineno"> 53 </span>            <span class="warning"><span class="prefix">android:</span><span class="attribute">screenOrientation</span>=<span class="value">"portrait"</span></span>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 54 </span>            <span class="tag">&lt;intent-filter></span>
+<span class="lineno"> 55 </span>                <span class="tag">&lt;action</span><span class="attribute"> </span><span class="prefix">android:</span><span class="attribute">name</span>=<span class="value">"android.intent.action.MAIN"</span>/>
+<span class="lineno"> 56 </span>                <span class="tag">&lt;category</span><span class="attribute"> </span><span class="prefix">android:</span><span class="attribute">name</span>=<span class="value">"android.intent.category.LAUNCHER"</span>/>
 </pre>
 
 </div>
@@ -721,95 +781,95 @@ Dismiss</button>            </div>
               <div class="mdl-card__supporting-text">
 <div class="issue">
 <div class="warningslist">
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:95</span>: <span class="message">A newer version of com.google.dagger:hilt-android than 2.51 is available: 2.59.2</span><br /><pre class="errorlines">
-<span class="lineno">  92 </span>    debugImplementation("androidx.compose.ui:ui-tooling")
-<span class="lineno">  93 </span>
-<span class="lineno">  94 </span>    // ── Hilt DI ──────────────────────────────────────────────────────────────
-<span class="caretline"><span class="lineno">  95 </span>    implementation(<span class="warning">"com.google.dagger:hilt-android:2.51"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno">  96 </span>    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
-<span class="lineno">  97 </span>    implementation("androidx.hilt:hilt-work:1.2.0")
-<span class="lineno">  98 </span>    kapt("com.google.dagger:hilt-android-compiler:2.51")
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:100</span>: <span class="message">A newer version of com.google.dagger:hilt-android than 2.51 is available: 2.59.2</span><br /><pre class="errorlines">
+<span class="lineno">  97 </span>    debugImplementation("androidx.compose.ui:ui-tooling")
+<span class="lineno">  98 </span>
+<span class="lineno">  99 </span>    // Hilt DI
+<span class="caretline"><span class="lineno"> 100 </span>    implementation(<span class="warning">"com.google.dagger:hilt-android:2.51"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 101 </span>    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+<span class="lineno"> 102 </span>    implementation("androidx.hilt:hilt-work:1.2.0")
+<span class="lineno"> 103 </span>    kapt("com.google.dagger:hilt-android-compiler:2.51")
 </pre>
 
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:98</span>: <span class="message">A newer version of com.google.dagger:hilt-android-compiler than 2.51 is available: 2.59.2</span><br /><pre class="errorlines">
-<span class="lineno">  95 </span>    implementation("com.google.dagger:hilt-android:2.51")
-<span class="lineno">  96 </span>    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
-<span class="lineno">  97 </span>    implementation("androidx.hilt:hilt-work:1.2.0")
-<span class="caretline"><span class="lineno">  98 </span>    kapt(<span class="warning">"com.google.dagger:hilt-android-compiler:2.51"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno">  99 </span>    kapt("androidx.hilt:hilt-compiler:1.2.0")
-<span class="lineno"> 100 </span>
-<span class="lineno"> 101 </span>    // ── Room + SQLCipher ─────────────────────────────────────────────────────
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:103</span>: <span class="message">A newer version of com.google.dagger:hilt-android-compiler than 2.51 is available: 2.59.2</span><br /><pre class="errorlines">
+<span class="lineno"> 100 </span>    implementation("com.google.dagger:hilt-android:2.51")
+<span class="lineno"> 101 </span>    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+<span class="lineno"> 102 </span>    implementation("androidx.hilt:hilt-work:1.2.0")
+<span class="caretline"><span class="lineno"> 103 </span>    kapt(<span class="warning">"com.google.dagger:hilt-android-compiler:2.51"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 104 </span>    kapt("androidx.hilt:hilt-compiler:1.2.0")
+<span class="lineno"> 105 </span>
+<span class="lineno"> 106 </span>    // Room + SQLCipher
 </pre>
 
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:108</span>: <span class="message">A newer version of com.squareup.okhttp3:okhttp than 4.12.0 is available: 5.3.2</span><br /><pre class="errorlines">
-<span class="lineno"> 105 </span>    implementation("net.zetetic:android-database-sqlcipher:4.5.4")
-<span class="lineno"> 106 </span>    implementation("androidx.sqlite:sqlite-ktx:2.4.0")
-<span class="lineno"> 107 </span>    // ── Networking ───────────────────────────────────────────────────────────
-<span class="caretline"><span class="lineno"> 108 </span>    implementation(<span class="warning">"com.squareup.okhttp3:okhttp:4.12.0"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 109 </span>    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-<span class="lineno"> 110 </span>    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-<span class="lineno"> 111 </span>    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:113</span>: <span class="message">A newer version of com.squareup.okhttp3:okhttp than 4.12.0 is available: 5.3.2</span><br /><pre class="errorlines">
+<span class="lineno"> 110 </span>    implementation("net.zetetic:android-database-sqlcipher:4.5.4")
+<span class="lineno"> 111 </span>    implementation("androidx.sqlite:sqlite-ktx:2.4.0")
+<span class="lineno"> 112 </span>    // Networking
+<span class="caretline"><span class="lineno"> 113 </span>    implementation(<span class="warning">"com.squareup.okhttp3:okhttp:4.12.0"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 114 </span>    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+<span class="lineno"> 115 </span>    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+<span class="lineno"> 116 </span>    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 </pre>
 
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:109</span>: <span class="message">A newer version of com.squareup.okhttp3:logging-interceptor than 4.12.0 is available: 5.3.2</span><br /><pre class="errorlines">
-<span class="lineno"> 106 </span>    implementation("androidx.sqlite:sqlite-ktx:2.4.0")
-<span class="lineno"> 107 </span>    // ── Networking ───────────────────────────────────────────────────────────
-<span class="lineno"> 108 </span>    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-<span class="caretline"><span class="lineno"> 109 </span>    implementation(<span class="warning">"com.squareup.okhttp3:logging-interceptor:4.12.0"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 110 </span>    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-<span class="lineno"> 111 </span>    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:114</span>: <span class="message">A newer version of com.squareup.okhttp3:logging-interceptor than 4.12.0 is available: 5.3.2</span><br /><pre class="errorlines">
+<span class="lineno"> 111 </span>    implementation("androidx.sqlite:sqlite-ktx:2.4.0")
+<span class="lineno"> 112 </span>    // Networking
+<span class="lineno"> 113 </span>    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+<span class="caretline"><span class="lineno"> 114 </span>    implementation(<span class="warning">"com.squareup.okhttp3:logging-interceptor:4.12.0"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 115 </span>    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+<span class="lineno"> 116 </span>    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 </pre>
 
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:110</span>: <span class="message">A newer version of com.squareup.retrofit2:retrofit than 2.9.0 is available: 3.0.0</span><br /><pre class="errorlines">
-<span class="lineno"> 107 </span>    // ── Networking ───────────────────────────────────────────────────────────
-<span class="lineno"> 108 </span>    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-<span class="lineno"> 109 </span>    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-<span class="caretline"><span class="lineno"> 110 </span>    implementation(<span class="warning">"com.squareup.retrofit2:retrofit:2.9.0"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 111 </span>    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-<span class="lineno"> 112 </span>
-<span class="lineno"> 113 </span>    // ── WebRTC ───────────────────────────────────────────────────────────────
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:115</span>: <span class="message">A newer version of com.squareup.retrofit2:retrofit than 2.9.0 is available: 3.0.0</span><br /><pre class="errorlines">
+<span class="lineno"> 112 </span>    // Networking
+<span class="lineno"> 113 </span>    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+<span class="lineno"> 114 </span>    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+<span class="caretline"><span class="lineno"> 115 </span>    implementation(<span class="warning">"com.squareup.retrofit2:retrofit:2.9.0"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 116 </span>    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+<span class="lineno"> 117 </span>
+<span class="lineno"> 118 </span>    // WebRTC
 </pre>
 
 <button class="mdl-button mdl-js-button mdl-button--primary" id="NewerVersionAvailableDivLink" onclick="reveal('NewerVersionAvailableDiv');" />+ 4 More Occurrences...</button>
 <div id="NewerVersionAvailableDiv" style="display: none">
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:111</span>: <span class="message">A newer version of com.squareup.retrofit2:converter-gson than 2.9.0 is available: 3.0.0</span><br /><pre class="errorlines">
-<span class="lineno"> 108 </span>    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-<span class="lineno"> 109 </span>    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-<span class="lineno"> 110 </span>    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-<span class="caretline"><span class="lineno"> 111 </span>    implementation(<span class="warning">"com.squareup.retrofit2:converter-gson:2.9.0"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 112 </span>
-<span class="lineno"> 113 </span>    // ── WebRTC ───────────────────────────────────────────────────────────────
-<span class="lineno"> 114 </span>    // Note: org.webrtc:google-webrtc is included via direct AAR if needed
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:116</span>: <span class="message">A newer version of com.squareup.retrofit2:converter-gson than 2.9.0 is available: 3.0.0</span><br /><pre class="errorlines">
+<span class="lineno"> 113 </span>    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+<span class="lineno"> 114 </span>    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+<span class="lineno"> 115 </span>    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+<span class="caretline"><span class="lineno"> 116 </span>    implementation(<span class="warning">"com.squareup.retrofit2:converter-gson:2.9.0"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 117 </span>
+<span class="lineno"> 118 </span>    // WebRTC
+<span class="lineno"> 119 </span>    // Note: org.webrtc:google-webrtc is included via direct AAR if needed
 </pre>
 
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:124</span>: <span class="message">A newer version of org.jetbrains.kotlinx:kotlinx-coroutines-android than 1.7.3 is available: 1.10.2</span><br /><pre class="errorlines">
-<span class="lineno"> 121 </span>    implementation("androidx.work:work-runtime-ktx:2.9.0")
-<span class="lineno"> 122 </span>
-<span class="lineno"> 123 </span>    // ── Coroutines ───────────────────────────────────────────────────────────
-<span class="caretline"><span class="lineno"> 124 </span>    implementation(<span class="warning">"org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 125 </span>
-<span class="lineno"> 126 </span>    // ── Lifecycle ────────────────────────────────────────────────────────────
-<span class="lineno"> 127 </span>    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:129</span>: <span class="message">A newer version of org.jetbrains.kotlinx:kotlinx-coroutines-android than 1.7.3 is available: 1.10.2</span><br /><pre class="errorlines">
+<span class="lineno"> 126 </span>    implementation("androidx.work:work-runtime-ktx:2.9.0")
+<span class="lineno"> 127 </span>
+<span class="lineno"> 128 </span>    // Coroutines
+<span class="caretline"><span class="lineno"> 129 </span>    implementation(<span class="warning">"org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 130 </span>
+<span class="lineno"> 131 </span>    // Lifecycle
+<span class="lineno"> 132 </span>    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
 </pre>
 
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:141</span>: <span class="message">A newer version of org.jetbrains.kotlinx:kotlinx-coroutines-test than 1.7.3 is available: 1.10.2</span><br /><pre class="errorlines">
-<span class="lineno"> 138 </span>
-<span class="lineno"> 139 </span>    // ── Testing ──────────────────────────────────────────────────────────────
-<span class="lineno"> 140 </span>    testImplementation("junit:junit:4.13.2")
-<span class="caretline"><span class="lineno"> 141 </span>    testImplementation(<span class="warning">"org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 142 </span>    testImplementation("io.mockk:mockk:1.13.9")
-<span class="lineno"> 143 </span>    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-<span class="lineno"> 144 </span>    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:146</span>: <span class="message">A newer version of org.jetbrains.kotlinx:kotlinx-coroutines-test than 1.7.3 is available: 1.10.2</span><br /><pre class="errorlines">
+<span class="lineno"> 143 </span>
+<span class="lineno"> 144 </span>    // Testing
+<span class="lineno"> 145 </span>    testImplementation("junit:junit:4.13.2")
+<span class="caretline"><span class="lineno"> 146 </span>    testImplementation(<span class="warning">"org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 147 </span>    testImplementation("io.mockk:mockk:1.13.9")
+<span class="lineno"> 148 </span>    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+<span class="lineno"> 149 </span>    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 </pre>
 
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:142</span>: <span class="message">A newer version of io.mockk:mockk than 1.13.9 is available: 1.14.9</span><br /><pre class="errorlines">
-<span class="lineno"> 139 </span>    // ── Testing ──────────────────────────────────────────────────────────────
-<span class="lineno"> 140 </span>    testImplementation("junit:junit:4.13.2")
-<span class="lineno"> 141 </span>    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
-<span class="caretline"><span class="lineno"> 142 </span>    testImplementation(<span class="warning">"io.mockk:mockk:1.13.9"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 143 </span>    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-<span class="lineno"> 144 </span>    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-<span class="lineno"> 145 </span>}
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:147</span>: <span class="message">A newer version of io.mockk:mockk than 1.13.9 is available: 1.14.9</span><br /><pre class="errorlines">
+<span class="lineno"> 144 </span>    // Testing
+<span class="lineno"> 145 </span>    testImplementation("junit:junit:4.13.2")
+<span class="lineno"> 146 </span>    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+<span class="caretline"><span class="lineno"> 147 </span>    testImplementation(<span class="warning">"io.mockk:mockk:1.13.9"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 148 </span>    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+<span class="lineno"> 149 </span>    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+<span class="lineno"> 150 </span>}
 </pre>
 
 </div>
@@ -849,14 +909,14 @@ Dismiss</button>            </div>
               <div class="mdl-card__supporting-text">
 <div class="issue">
 <div class="warningslist">
-<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:105</span>: <span class="message">The native library <code>arm64-v8a/libsqlcipher.so</code> (from <code>net.zetetic:android-database-sqlcipher:4.5.4</code>) is not 16 KB aligned</span><br /><pre class="errorlines">
-<span class="lineno"> 102 </span>    implementation("androidx.room:room-runtime:2.6.1")
-<span class="lineno"> 103 </span>    implementation("androidx.room:room-ktx:2.6.1")
-<span class="lineno"> 104 </span>    ksp("androidx.room:room-compiler:2.6.1")
-<span class="caretline"><span class="lineno"> 105 </span>    implementation(<span class="warning">"net.zetetic:android-database-sqlcipher:4.5.4"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 106 </span>    implementation("androidx.sqlite:sqlite-ktx:2.4.0")
-<span class="lineno"> 107 </span>    // ── Networking ───────────────────────────────────────────────────────────
-<span class="lineno"> 108 </span>    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+<span class="location"><a href="../../build.gradle.kts">../../build.gradle.kts</a>:110</span>: <span class="message">The native library <code>arm64-v8a/libsqlcipher.so</code> (from <code>net.zetetic:android-database-sqlcipher:4.5.4</code>) is not 16 KB aligned</span><br /><pre class="errorlines">
+<span class="lineno"> 107 </span>    implementation("androidx.room:room-runtime:2.6.1")
+<span class="lineno"> 108 </span>    implementation("androidx.room:room-ktx:2.6.1")
+<span class="lineno"> 109 </span>    ksp("androidx.room:room-compiler:2.6.1")
+<span class="caretline"><span class="lineno"> 110 </span>    implementation(<span class="warning">"net.zetetic:android-database-sqlcipher:4.5.4"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 111 </span>    implementation("androidx.sqlite:sqlite-ktx:2.4.0")
+<span class="lineno"> 112 </span>    // Networking
+<span class="lineno"> 113 </span>    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 </pre>
 
 <span class="location"><a href="file:///C:/Users/arung/.gradle/caches/8.13/transforms/ffb651704125d7564d35434eddff371f/transformed/jetified-android-database-sqlcipher-4.5.4/jni/arm64-v8a/libsqlcipher.so">C:\Users\arung\.gradle\caches\8.13\transforms\ffb651704125d7564d35434eddff371f\transformed\jetified-android-database-sqlcipher-4.5.4\jni\arm64-v8a\libsqlcipher.so</a></span>: <span class="message">The native library <code>arm64-v8a/libsqlcipher.so</code> (from <code>net.zetetic:android-database-sqlcipher:4.5.4</code>) is not 16 KB aligned</span><br />
@@ -905,14 +965,14 @@ Dismiss</button>            </div>
               <div class="mdl-card__supporting-text">
 <div class="issue">
 <div class="warningslist">
-<span class="location"><a href="../../src/main/AndroidManifest.xml">../../src/main/AndroidManifest.xml</a>:52</span>: <span class="message">Fixed screen orientations will be ignored in most cases, starting from Android 16. Android is moving toward a model where apps are expected to adapt to various orientations, display sizes, and aspect ratios.</span><br /><pre class="errorlines">
-<span class="lineno"> 49 </span><span class="attribute">            </span><span class="prefix">android:</span><span class="attribute">name</span>=<span class="value">".MainActivity"</span>
-<span class="lineno"> 50 </span>            <span class="prefix">android:</span><span class="attribute">exported</span>=<span class="value">"true"</span>
-<span class="lineno"> 51 </span>            <span class="prefix">android:</span><span class="attribute">windowSoftInputMode</span>=<span class="value">"stateAlwaysHidden|adjustResize"</span>
-<span class="caretline"><span class="lineno"> 52 </span>            <span class="warning"><span class="prefix">android:</span><span class="attribute">screenOrientation</span>=<span class="value">"portrait"</span></span>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 53 </span>            <span class="tag">&lt;intent-filter></span>
-<span class="lineno"> 54 </span>                <span class="tag">&lt;action</span><span class="attribute"> </span><span class="prefix">android:</span><span class="attribute">name</span>=<span class="value">"android.intent.action.MAIN"</span>/>
-<span class="lineno"> 55 </span>                <span class="tag">&lt;category</span><span class="attribute"> </span><span class="prefix">android:</span><span class="attribute">name</span>=<span class="value">"android.intent.category.LAUNCHER"</span>/>
+<span class="location"><a href="../../src/main/AndroidManifest.xml">../../src/main/AndroidManifest.xml</a>:53</span>: <span class="message">Fixed screen orientations will be ignored in most cases, starting from Android 16. Android is moving toward a model where apps are expected to adapt to various orientations, display sizes, and aspect ratios.</span><br /><pre class="errorlines">
+<span class="lineno"> 50 </span><span class="attribute">            </span><span class="prefix">android:</span><span class="attribute">name</span>=<span class="value">".MainActivity"</span>
+<span class="lineno"> 51 </span>            <span class="prefix">android:</span><span class="attribute">exported</span>=<span class="value">"true"</span>
+<span class="lineno"> 52 </span>            <span class="prefix">android:</span><span class="attribute">windowSoftInputMode</span>=<span class="value">"stateAlwaysHidden|adjustResize"</span>
+<span class="caretline"><span class="lineno"> 53 </span>            <span class="warning"><span class="prefix">android:</span><span class="attribute">screenOrientation</span>=<span class="value">"portrait"</span></span>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 54 </span>            <span class="tag">&lt;intent-filter></span>
+<span class="lineno"> 55 </span>                <span class="tag">&lt;action</span><span class="attribute"> </span><span class="prefix">android:</span><span class="attribute">name</span>=<span class="value">"android.intent.action.MAIN"</span>/>
+<span class="lineno"> 56 </span>                <span class="tag">&lt;category</span><span class="attribute"> </span><span class="prefix">android:</span><span class="attribute">name</span>=<span class="value">"android.intent.category.LAUNCHER"</span>/>
 </pre>
 
 </div>
@@ -952,17 +1012,17 @@ Dismiss</button>            </div>
               <div class="mdl-card__supporting-text">
 <div class="issue">
 <div class="warningslist">
-<span class="location"><a href="../../src/main/java/com/hacksecure/messenger/data/remote/BackgroundConnectionManager.kt">../../src/main/java/com/hacksecure/messenger/data/remote/BackgroundConnectionManager.kt</a>:526</span>: <span class="message">Unnecessary; <code>SDK_INT</code> is always >= 26</span><br /><pre class="errorlines">
-<span class="lineno"> 523 </span>    <span class="comment">// ── Unread message notifications ──────────────────────────────────────────</span>
-<span class="lineno"> 524 </span>
-<span class="lineno"> 525 </span>    private <span class="keyword">fun</span> ensureMessageChannel() {
-<span class="caretline"><span class="lineno"> 526 </span>        <span class="keyword">if</span> (<span class="warning">Build.VERSION.SDK_INT >= Build.VERSION_CODES.O</span>) {&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 527 </span>            <span class="keyword">val</span> nm = context.getSystemService(NotificationManager::<span class="keyword">class</span>.java)
-<span class="lineno"> 528 </span>            <span class="keyword">if</span> (nm.getNotificationChannel(MSG_CHANNEL_ID) != <span class="keyword">null</span>) <span class="keyword">return</span>
-<span class="lineno"> 529 </span>            <span class="keyword">val</span> channel = NotificationChannel(
+<span class="location"><a href="../../src/main/java/com/cryptika/messenger/data/remote/BackgroundConnectionManager.kt">../../src/main/java/com/cryptika/messenger/data/remote/BackgroundConnectionManager.kt</a>:549</span>: <span class="message">Unnecessary; <code>SDK_INT</code> is always >= 26</span><br /><pre class="errorlines">
+<span class="lineno"> 546 </span>    <span class="comment">// Unread message notifications</span>
+<span class="lineno"> 547 </span>
+<span class="lineno"> 548 </span>    private <span class="keyword">fun</span> ensureMessageChannel() {
+<span class="caretline"><span class="lineno"> 549 </span>        <span class="keyword">if</span> (<span class="warning">Build.VERSION.SDK_INT >= Build.VERSION_CODES.O</span>) {&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 550 </span>            <span class="keyword">val</span> nm = context.getSystemService(NotificationManager::<span class="keyword">class</span>.java)
+<span class="lineno"> 551 </span>            <span class="keyword">if</span> (nm.getNotificationChannel(MSG_CHANNEL_ID) != <span class="keyword">null</span>) <span class="keyword">return</span>
+<span class="lineno"> 552 </span>            <span class="keyword">val</span> channel = NotificationChannel(
 </pre>
 
-<span class="location"><a href="../../src/main/java/com/hacksecure/messenger/data/remote/CallForegroundService.kt">../../src/main/java/com/hacksecure/messenger/data/remote/CallForegroundService.kt</a>:46</span>: <span class="message">Unnecessary; <code>SDK_INT</code> is always >= 26</span><br /><pre class="errorlines">
+<span class="location"><a href="../../src/main/java/com/cryptika/messenger/data/remote/CallForegroundService.kt">../../src/main/java/com/cryptika/messenger/data/remote/CallForegroundService.kt</a>:46</span>: <span class="message">Unnecessary; <code>SDK_INT</code> is always >= 26</span><br /><pre class="errorlines">
 <span class="lineno">  43 </span>                action = ACTION_START
 <span class="lineno">  44 </span>                putExtra(EXTRA_CONTACT_NAME, contactName)
 <span class="lineno">  45 </span>            }
@@ -972,8 +1032,8 @@ Dismiss</button>            </div>
 <span class="lineno">  49 </span>                context.startService(intent)
 </pre>
 
-<span class="location"><a href="../../src/main/java/com/hacksecure/messenger/data/remote/CallForegroundService.kt">../../src/main/java/com/hacksecure/messenger/data/remote/CallForegroundService.kt</a>:104</span>: <span class="message">Unnecessary; <code>SDK_INT</code> is always >= 26</span><br /><pre class="errorlines">
-<span class="lineno"> 101 </span>    <span class="comment">// ── Notification ─────────────────────────────────────────────────────────</span>
+<span class="location"><a href="../../src/main/java/com/cryptika/messenger/data/remote/CallForegroundService.kt">../../src/main/java/com/cryptika/messenger/data/remote/CallForegroundService.kt</a>:104</span>: <span class="message">Unnecessary; <code>SDK_INT</code> is always >= 26</span><br /><pre class="errorlines">
+<span class="lineno"> 101 </span>    <span class="comment">// Notification</span>
 <span class="lineno"> 102 </span>
 <span class="lineno"> 103 </span>    private <span class="keyword">fun</span> createChannel() {
 <span class="caretline"><span class="lineno"> 104 </span>        <span class="keyword">if</span> (<span class="warning">Build.VERSION.SDK_INT >= Build.VERSION_CODES.O</span>) {&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
@@ -982,7 +1042,7 @@ Dismiss</button>            </div>
 <span class="lineno"> 107 </span>                <span class="string">"Voice Calls"</span>,
 </pre>
 
-<span class="location"><a href="../../src/main/java/com/hacksecure/messenger/data/remote/ConnectionForegroundService.kt">../../src/main/java/com/hacksecure/messenger/data/remote/ConnectionForegroundService.kt</a>:38</span>: <span class="message">Unnecessary; <code>SDK_INT</code> is always >= 26</span><br /><pre class="errorlines">
+<span class="location"><a href="../../src/main/java/com/cryptika/messenger/data/remote/ConnectionForegroundService.kt">../../src/main/java/com/cryptika/messenger/data/remote/ConnectionForegroundService.kt</a>:38</span>: <span class="message">Unnecessary; <code>SDK_INT</code> is always >= 26</span><br /><pre class="errorlines">
 <span class="lineno"> 35 </span>
 <span class="lineno"> 36 </span>        <span class="keyword">fun</span> start(context: Context) {
 <span class="lineno"> 37 </span>            <span class="keyword">val</span> intent = Intent(context, ConnectionForegroundService::<span class="keyword">class</span>.java)
@@ -992,8 +1052,8 @@ Dismiss</button>            </div>
 <span class="lineno"> 41 </span>                context.startService(intent)
 </pre>
 
-<span class="location"><a href="../../src/main/java/com/hacksecure/messenger/data/remote/ConnectionForegroundService.kt">../../src/main/java/com/hacksecure/messenger/data/remote/ConnectionForegroundService.kt</a>:66</span>: <span class="message">Unnecessary; <code>SDK_INT</code> is always >= 26</span><br /><pre class="errorlines">
-<span class="lineno"> 63 </span>    <span class="comment">// ── Notification ─────────────────────────────────────────────────────────</span>
+<span class="location"><a href="../../src/main/java/com/cryptika/messenger/data/remote/ConnectionForegroundService.kt">../../src/main/java/com/cryptika/messenger/data/remote/ConnectionForegroundService.kt</a>:66</span>: <span class="message">Unnecessary; <code>SDK_INT</code> is always >= 26</span><br /><pre class="errorlines">
+<span class="lineno"> 63 </span>    <span class="comment">// Notification</span>
 <span class="lineno"> 64 </span>
 <span class="lineno"> 65 </span>    private <span class="keyword">fun</span> createNotificationChannel() {
 <span class="caretline"><span class="lineno"> 66 </span>        <span class="keyword">if</span> (<span class="warning">Build.VERSION.SDK_INT >= Build.VERSION_CODES.O</span>) {&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
@@ -1041,34 +1101,43 @@ Dismiss</button>            </div>
               <div class="mdl-card__supporting-text">
 <div class="issue">
 <div class="warningslist">
-<span class="location"><a href="../../src/main/java/com/hacksecure/messenger/presentation/ui/screens/ChatScreen.kt">../../src/main/java/com/hacksecure/messenger/presentation/ui/screens/ChatScreen.kt</a>:516</span>: <span class="message">Prefer <code>mutableLongStateOf</code> instead of <code>mutableStateOf</code></span><br /><pre class="errorlines">
-<span class="lineno"> 513 </span>  <span class="comment">// Expiry countdown</span>
-<span class="lineno"> 514 </span>  message.expiryDeadlineMs?.let { deadline ->
-<span class="lineno"> 515 </span>      <span class="keyword">val</span> remaining = remember(deadline) {
-<span class="caretline"><span class="lineno"> 516 </span>          <span class="warning">mutableStateOf</span>(((deadline - System.currentTimeMillis()) / <span class="number">1000</span>).coerceAtLeast(<span class="number">0</span>))</span>
-<span class="lineno"> 517 </span>      }
-<span class="lineno"> 518 </span>      LaunchedEffect(deadline) {
-<span class="lineno"> 519 </span>          <span class="keyword">while</span> (remaining.value > <span class="number">0</span>) {
+<span class="location"><a href="../../src/main/java/com/cryptika/messenger/presentation/ui/screens/ChatScreen.kt">../../src/main/java/com/cryptika/messenger/presentation/ui/screens/ChatScreen.kt</a>:518</span>: <span class="message">Prefer <code>mutableLongStateOf</code> instead of <code>mutableStateOf</code></span><br /><pre class="errorlines">
+<span class="lineno"> 515 </span>  <span class="comment">// Expiry countdown</span>
+<span class="lineno"> 516 </span>  message.expiryDeadlineMs?.let { deadline ->
+<span class="lineno"> 517 </span>      <span class="keyword">val</span> remaining = remember(deadline) {
+<span class="caretline"><span class="lineno"> 518 </span>          <span class="warning">mutableStateOf</span>(((deadline - System.currentTimeMillis()) / <span class="number">1000</span>).coerceAtLeast(<span class="number">0</span>))</span>
+<span class="lineno"> 519 </span>      }
+<span class="lineno"> 520 </span>      LaunchedEffect(deadline) {
+<span class="lineno"> 521 </span>          <span class="keyword">while</span> (remaining.value > <span class="number">0</span>) {
 </pre>
 
-<span class="location"><a href="../../src/main/java/com/hacksecure/messenger/presentation/ui/components/SecureKeyboard.kt">../../src/main/java/com/hacksecure/messenger/presentation/ui/components/SecureKeyboard.kt</a>:66</span>: <span class="message">Prefer <code>mutableLongStateOf</code> instead of <code>mutableStateOf</code></span><br /><pre class="errorlines">
-<span class="lineno">  63 </span>    <span class="keyword">val</span> haptic = LocalHapticFeedback.current
-<span class="lineno">  64 </span>    <span class="keyword">var</span> mode by remember { mutableStateOf(KeyboardMode.LETTERS) }
-<span class="lineno">  65 </span>    <span class="keyword">var</span> shiftState by remember { mutableStateOf(ShiftState.OFF) }
-<span class="caretline"><span class="lineno">  66 </span>    <span class="keyword">var</span> lastShiftTap by remember { <span class="warning">mutableStateOf</span>(<span class="number">0L</span>) }&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno">  67 </span>
-<span class="lineno">  68 </span>    <span class="keyword">val</span> tap: () -> Unit = {
-<span class="lineno">  69 </span>        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+<span class="location"><a href="../../src/main/java/com/cryptika/messenger/presentation/ui/components/SecureKeyboard.kt">../../src/main/java/com/cryptika/messenger/presentation/ui/components/SecureKeyboard.kt</a>:270</span>: <span class="message">Prefer <code>mutableLongStateOf</code> instead of <code>mutableStateOf</code></span><br /><pre class="errorlines">
+<span class="lineno">  267 </span>
+<span class="lineno">  268 </span>    <span class="keyword">var</span> mode       by remember { mutableStateOf(KeyboardMode.LETTERS) }
+<span class="lineno">  269 </span>    <span class="keyword">var</span> shiftState by remember { mutableStateOf(ShiftState.OFF)       }
+<span class="caretline"><span class="lineno">  270 </span>    <span class="keyword">var</span> lastShift  by remember { <span class="warning">mutableStateOf</span>(<span class="number">0L</span>)                   }&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno">  271 </span>    <span class="keyword">var</span> language   by remember { mutableStateOf(KeyboardLanguage.ENGLISH) }
+<span class="lineno">  272 </span>    <span class="keyword">var</span> showPicker by remember { mutableStateOf(<span class="keyword">false</span>) }
 </pre>
 
-<span class="location"><a href="../../src/main/java/com/hacksecure/messenger/presentation/ui/components/SecureKeyboard.kt">../../src/main/java/com/hacksecure/messenger/presentation/ui/components/SecureKeyboard.kt</a>:419</span>: <span class="message">Prefer <code>mutableIntStateOf</code> instead of <code>mutableStateOf</code></span><br /><pre class="errorlines">
-<span class="lineno"> 416 </span>    onDone: () -> Unit
-<span class="lineno"> 417 </span>) {
-<span class="lineno"> 418 </span>    <span class="keyword">val</span> icons = remember { emojiData.map { it.first } }
-<span class="caretline"><span class="lineno"> 419 </span>    <span class="keyword">var</span> selectedIndex by remember { <span class="warning">mutableStateOf</span>(<span class="number">0</span>) }&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 420 </span>    <span class="keyword">val</span> emojis = remember(selectedIndex) { emojiData[selectedIndex].second }
-<span class="lineno"> 421 </span>
-<span class="lineno"> 422 </span>    Column(modifier = Modifier.fillMaxWidth()) {
+<span class="location"><a href="../../src/main/java/com/cryptika/messenger/presentation/ui/components/SecureKeyboard.kt">../../src/main/java/com/cryptika/messenger/presentation/ui/components/SecureKeyboard.kt</a>:606</span>: <span class="message">Prefer <code>mutableIntStateOf</code> instead of <code>mutableStateOf</code></span><br /><pre class="errorlines">
+<span class="lineno">  603 </span>    onSpace: () -> Unit,
+<span class="lineno">  604 </span>    onDone: () -> Unit
+<span class="lineno">  605 </span>) {
+<span class="caretline"><span class="lineno">  606 </span>    <span class="keyword">var</span> page by remember { <span class="warning">mutableStateOf</span>(<span class="number">1</span>) }&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno">  607 </span>
+<span class="lineno">  608 </span>    <span class="keyword">val</span> (row1, row2, row3) = <span class="keyword">if</span> (page == <span class="number">1</span>) Triple(
+<span class="lineno">  609 </span>        listOf(<span class="string">"1"</span>, <span class="string">"2"</span>, <span class="string">"3"</span>, <span class="string">"4"</span>, <span class="string">"5"</span>, <span class="string">"6"</span>, <span class="string">"7"</span>, <span class="string">"8"</span>, <span class="string">"9"</span>, <span class="string">"0"</span>),
+</pre>
+
+<span class="location"><a href="../../src/main/java/com/cryptika/messenger/presentation/ui/components/SecureKeyboard.kt">../../src/main/java/com/cryptika/messenger/presentation/ui/components/SecureKeyboard.kt</a>:781</span>: <span class="message">Prefer <code>mutableIntStateOf</code> instead of <code>mutableStateOf</code></span><br /><pre class="errorlines">
+<span class="lineno">  778 </span>    onDone: () -> Unit
+<span class="lineno">  779 </span>) {
+<span class="lineno">  780 </span>    <span class="keyword">val</span> icons = remember { emojiData.map { it.first } }
+<span class="caretline"><span class="lineno">  781 </span>    <span class="keyword">var</span> selectedIndex by remember { <span class="warning">mutableStateOf</span>(<span class="number">0</span>) }&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno">  782 </span>    <span class="keyword">val</span> emojis = remember(selectedIndex) { emojiData[selectedIndex].second }
+<span class="lineno">  783 </span>
+<span class="lineno">  784 </span>    Column(modifier = Modifier.fillMaxWidth()) {
 </pre>
 
 </div>
@@ -1171,7 +1240,7 @@ Dismiss</button>            </div>
               <div class="mdl-card__supporting-text">
 <div class="issue">
 <div class="warningslist">
-<span class="location"><a href="../../src/main/java/com/hacksecure/messenger/data/local/AuthStore.kt">../../src/main/java/com/hacksecure/messenger/data/local/AuthStore.kt</a>:35</span>: <span class="message">Use the KTX extension function <code>SharedPreferences.edit</code> instead?</span><br /><pre class="errorlines">
+<span class="location"><a href="../../src/main/java/com/cryptika/messenger/data/local/AuthStore.kt">../../src/main/java/com/cryptika/messenger/data/local/AuthStore.kt</a>:35</span>: <span class="message">Use the KTX extension function <code>SharedPreferences.edit</code> instead?</span><br /><pre class="errorlines">
 <span class="lineno"> 32 </span>
 <span class="lineno"> 33 </span>    <span class="keyword">var</span> jwtToken: String?
 <span class="lineno"> 34 </span>        get() = prefs.getString(KEY_JWT, <span class="keyword">null</span>)
@@ -1181,7 +1250,7 @@ Dismiss</button>            </div>
 <span class="lineno"> 38 </span>        get() = prefs.getString(KEY_CONTACT_TOKEN, <span class="keyword">null</span>)
 </pre>
 
-<span class="location"><a href="../../src/main/java/com/hacksecure/messenger/data/local/AuthStore.kt">../../src/main/java/com/hacksecure/messenger/data/local/AuthStore.kt</a>:39</span>: <span class="message">Use the KTX extension function <code>SharedPreferences.edit</code> instead?</span><br /><pre class="errorlines">
+<span class="location"><a href="../../src/main/java/com/cryptika/messenger/data/local/AuthStore.kt">../../src/main/java/com/cryptika/messenger/data/local/AuthStore.kt</a>:39</span>: <span class="message">Use the KTX extension function <code>SharedPreferences.edit</code> instead?</span><br /><pre class="errorlines">
 <span class="lineno"> 36 </span>
 <span class="lineno"> 37 </span>    <span class="keyword">var</span> contactToken: String?
 <span class="lineno"> 38 </span>        get() = prefs.getString(KEY_CONTACT_TOKEN, <span class="keyword">null</span>)
@@ -1191,7 +1260,7 @@ Dismiss</button>            </div>
 <span class="lineno"> 42 </span>        get() = prefs.getString(KEY_USERNAME, <span class="keyword">null</span>)
 </pre>
 
-<span class="location"><a href="../../src/main/java/com/hacksecure/messenger/data/local/AuthStore.kt">../../src/main/java/com/hacksecure/messenger/data/local/AuthStore.kt</a>:43</span>: <span class="message">Use the KTX extension function <code>SharedPreferences.edit</code> instead?</span><br /><pre class="errorlines">
+<span class="location"><a href="../../src/main/java/com/cryptika/messenger/data/local/AuthStore.kt">../../src/main/java/com/cryptika/messenger/data/local/AuthStore.kt</a>:43</span>: <span class="message">Use the KTX extension function <code>SharedPreferences.edit</code> instead?</span><br /><pre class="errorlines">
 <span class="lineno"> 40 </span>
 <span class="lineno"> 41 </span>    <span class="keyword">var</span> username: String?
 <span class="lineno"> 42 </span>        get() = prefs.getString(KEY_USERNAME, <span class="keyword">null</span>)
@@ -1201,7 +1270,7 @@ Dismiss</button>            </div>
 <span class="lineno"> 46 </span>        get() = prefs.getLong(KEY_EXPIRES_AT, <span class="number">0</span>)
 </pre>
 
-<span class="location"><a href="../../src/main/java/com/hacksecure/messenger/data/local/AuthStore.kt">../../src/main/java/com/hacksecure/messenger/data/local/AuthStore.kt</a>:47</span>: <span class="message">Use the KTX extension function <code>SharedPreferences.edit</code> instead?</span><br /><pre class="errorlines">
+<span class="location"><a href="../../src/main/java/com/cryptika/messenger/data/local/AuthStore.kt">../../src/main/java/com/cryptika/messenger/data/local/AuthStore.kt</a>:47</span>: <span class="message">Use the KTX extension function <code>SharedPreferences.edit</code> instead?</span><br /><pre class="errorlines">
 <span class="lineno"> 44 </span>
 <span class="lineno"> 45 </span>    <span class="keyword">var</span> tokenExpiresAt: Long
 <span class="lineno"> 46 </span>        get() = prefs.getLong(KEY_EXPIRES_AT, <span class="number">0</span>)
@@ -1211,7 +1280,7 @@ Dismiss</button>            </div>
 <span class="lineno"> 50 </span>        get() = prefs.getBoolean(KEY_CREDENTIALS_BURNED, <span class="keyword">false</span>)
 </pre>
 
-<span class="location"><a href="../../src/main/java/com/hacksecure/messenger/data/local/AuthStore.kt">../../src/main/java/com/hacksecure/messenger/data/local/AuthStore.kt</a>:51</span>: <span class="message">Use the KTX extension function <code>SharedPreferences.edit</code> instead?</span><br /><pre class="errorlines">
+<span class="location"><a href="../../src/main/java/com/cryptika/messenger/data/local/AuthStore.kt">../../src/main/java/com/cryptika/messenger/data/local/AuthStore.kt</a>:51</span>: <span class="message">Use the KTX extension function <code>SharedPreferences.edit</code> instead?</span><br /><pre class="errorlines">
 <span class="lineno"> 48 </span>
 <span class="lineno"> 49 </span>    <span class="keyword">var</span> credentialsBurned: Boolean
 <span class="lineno"> 50 </span>        get() = prefs.getBoolean(KEY_CREDENTIALS_BURNED, <span class="keyword">false</span>)
@@ -1221,9 +1290,9 @@ Dismiss</button>            </div>
 <span class="lineno"> 54 </span>        get() {
 </pre>
 
-<button class="mdl-button mdl-js-button mdl-button--primary" id="UseKtxDivLink" onclick="reveal('UseKtxDiv');" />+ 9 More Occurrences...</button>
+<button class="mdl-button mdl-js-button mdl-button--primary" id="UseKtxDivLink" onclick="reveal('UseKtxDiv');" />+ 10 More Occurrences...</button>
 <div id="UseKtxDiv" style="display: none">
-<span class="location"><a href="../../src/main/java/com/hacksecure/messenger/data/local/AuthStore.kt">../../src/main/java/com/hacksecure/messenger/data/local/AuthStore.kt</a>:60</span>: <span class="message">Use the KTX extension function <code>SharedPreferences.edit</code> instead?</span><br /><pre class="errorlines">
+<span class="location"><a href="../../src/main/java/com/cryptika/messenger/data/local/AuthStore.kt">../../src/main/java/com/cryptika/messenger/data/local/AuthStore.kt</a>:60</span>: <span class="message">Use the KTX extension function <code>SharedPreferences.edit</code> instead?</span><br /><pre class="errorlines">
 <span class="lineno"> 57 </span>        }
 <span class="lineno"> 58 </span>
 <span class="lineno"> 59 </span>    <span class="keyword">fun</span> clear() {
@@ -1233,7 +1302,7 @@ Dismiss</button>            </div>
 <span class="lineno"> 63 </span>    companion <span class="keyword">object</span> {
 </pre>
 
-<span class="location"><a href="../../src/main/java/com/hacksecure/messenger/domain/crypto/IdentityKeyManager.kt">../../src/main/java/com/hacksecure/messenger/domain/crypto/IdentityKeyManager.kt</a>:84</span>: <span class="message">Use the KTX extension function <code>SharedPreferences.edit</code> instead?</span><br /><pre class="errorlines">
+<span class="location"><a href="../../src/main/java/com/cryptika/messenger/domain/crypto/IdentityKeyManager.kt">../../src/main/java/com/cryptika/messenger/domain/crypto/IdentityKeyManager.kt</a>:84</span>: <span class="message">Use the KTX extension function <code>SharedPreferences.edit</code> instead?</span><br /><pre class="errorlines">
 <span class="lineno">  81 </span>        <span class="comment">// privateParams.destroy()  // Method not available in BouncyCastle 1.70</span>
 <span class="lineno">  82 </span>
 <span class="lineno">  83 </span>        <span class="keyword">val</span> now = System.currentTimeMillis()
@@ -1243,7 +1312,7 @@ Dismiss</button>            </div>
 <span class="lineno">  87 </span>            .putString(KEY_IV, iv.toBase64())
 </pre>
 
-<span class="location"><a href="../../src/main/java/com/hacksecure/messenger/domain/crypto/IdentityKeyManager.kt">../../src/main/java/com/hacksecure/messenger/domain/crypto/IdentityKeyManager.kt</a>:124</span>: <span class="message">Use the KTX extension function <code>SharedPreferences.edit</code> instead?</span><br /><pre class="errorlines">
+<span class="location"><a href="../../src/main/java/com/cryptika/messenger/domain/crypto/IdentityKeyManager.kt">../../src/main/java/com/cryptika/messenger/domain/crypto/IdentityKeyManager.kt</a>:124</span>: <span class="message">Use the KTX extension function <code>SharedPreferences.edit</code> instead?</span><br /><pre class="errorlines">
 <span class="lineno"> 121 </span>
 <span class="lineno"> 122 </span>    <span class="javadoc">/** Deletes the identity keypair (used when regenerating identity) */</span>
 <span class="lineno"> 123 </span>    <span class="keyword">fun</span> deleteIdentity() {
@@ -1253,62 +1322,71 @@ Dismiss</button>            </div>
 <span class="lineno"> 127 </span>            <span class="keyword">if</span> (keyStore.containsAlias(KEYSTORE_ALIAS)) {
 </pre>
 
-<span class="location"><a href="../../src/main/java/com/hacksecure/messenger/data/local/keystore/KeystoreManager.kt">../../src/main/java/com/hacksecure/messenger/data/local/keystore/KeystoreManager.kt</a>:52</span>: <span class="message">Use the KTX extension function <code>SharedPreferences.edit</code> instead?</span><br /><pre class="errorlines">
-<span class="lineno">  49 </span>        <span class="keyword">val</span> passphrase = ByteArray(<span class="number">32</span>).also { SecureRandom().nextBytes(it) }
-<span class="lineno">  50 </span>        <span class="keyword">val</span> (encrypted, iv) = encrypt(DB_PASSPHRASE_KEY_ALIAS, passphrase)
-<span class="lineno">  51 </span>
-<span class="caretline"><span class="lineno">  52 </span>        <span class="warning">prefs.edit()</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno">  53 </span>            .putString(<span class="string">"db_passphrase_enc"</span>, encrypted.toBase64())
-<span class="lineno">  54 </span>            .putString(<span class="string">"db_passphrase_iv"</span>, iv.toBase64())
-<span class="lineno">  55 </span>            .apply()
+<span class="location"><a href="../../src/main/java/com/cryptika/messenger/data/local/keystore/KeystoreManager.kt">../../src/main/java/com/cryptika/messenger/data/local/keystore/KeystoreManager.kt</a>:50</span>: <span class="message">Use the KTX extension function <code>SharedPreferences.edit</code> instead?</span><br /><pre class="errorlines">
+<span class="lineno">  47 </span>        <span class="keyword">val</span> passphrase = ByteArray(<span class="number">32</span>).also { SecureRandom().nextBytes(it) }
+<span class="lineno">  48 </span>        <span class="keyword">val</span> (encrypted, iv) = encrypt(DB_PASSPHRASE_KEY_ALIAS, passphrase)
+<span class="lineno">  49 </span>
+<span class="caretline"><span class="lineno">  50 </span>        <span class="warning">prefs.edit()</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno">  51 </span>            .putString(<span class="string">"db_passphrase_enc"</span>, encrypted.toBase64())
+<span class="lineno">  52 </span>            .putString(<span class="string">"db_passphrase_iv"</span>, iv.toBase64())
+<span class="lineno">  53 </span>            .apply()
 </pre>
 
-<span class="location"><a href="../../src/main/java/com/hacksecure/messenger/data/remote/ServerConfig.kt">../../src/main/java/com/hacksecure/messenger/data/remote/ServerConfig.kt</a>:29</span>: <span class="message">Use the KTX extension function <code>SharedPreferences.edit</code> instead?</span><br /><pre class="errorlines">
-<span class="lineno"> 26 </span>  <span class="javadoc">/** WebSocket base URL — e.g. "ws://10.0.2.2:8443" or "ws://192.168.1.10:8443" */</span>
-<span class="lineno"> 27 </span>  <span class="keyword">var</span> relayBaseUrl: String
-<span class="lineno"> 28 </span>      get() = (prefs.getString(KEY_RELAY_URL, <span class="keyword">null</span>) ?: BuildConfig.RELAY_BASE_URL).trimEnd(<span class="string">'/'</span>)
-<span class="caretline"><span class="lineno"> 29 </span>      set(value) = <span class="warning">prefs.edit()</span>.putString(KEY_RELAY_URL, value.trimEnd(<span class="string">'/'</span>)).apply()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 30 </span>
-<span class="lineno"> 31 </span>  <span class="javadoc">/** HTTP base URL derived from the relay URL — e.g. "http://10.0.2.2:8443" */</span>
-<span class="lineno"> 32 </span>  <span class="keyword">val</span> apiBaseUrl: String
+<span class="location"><a href="../../src/main/java/com/cryptika/messenger/data/remote/ServerConfig.kt">../../src/main/java/com/cryptika/messenger/data/remote/ServerConfig.kt</a>:45</span>: <span class="message">Use the KTX extension function <code>SharedPreferences.edit</code> instead?</span><br /><pre class="errorlines">
+<span class="lineno"> 42 </span>             <span class="keyword">val</span> storedScheme = <span class="keyword">if</span> (stored.startsWith(<span class="string">"wss://"</span>)) <span class="string">"wss://"</span> <span class="keyword">else</span> <span class="string">"ws://"</span>
+<span class="lineno"> 43 </span>             <span class="keyword">if</span> (buildScheme != storedScheme) {
+<span class="lineno"> 44 </span>                 stored = buildScheme + stored.removePrefix(storedScheme)
+<span class="caretline"><span class="lineno"> 45 </span>                 <span class="warning">prefs.edit()</span>.putString(KEY_RELAY_URL, stored).apply()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 46 </span>             }
+<span class="lineno"> 47 </span>         }
+<span class="lineno"> 48 </span>         <span class="keyword">return</span> (stored ?: BuildConfig.RELAY_BASE_URL).trimEnd(<span class="string">'/'</span>)
 </pre>
 
-<span class="location"><a href="../../src/main/java/com/hacksecure/messenger/presentation/ui/screens/SplashAndHomeScreens.kt">../../src/main/java/com/hacksecure/messenger/presentation/ui/screens/SplashAndHomeScreens.kt</a>:427</span>: <span class="message">Use the KTX function <code>createBitmap</code> instead?</span><br /><pre class="errorlines">
-<span class="lineno"> 424 </span>      com.google.zxing.EncodeHintType.MARGIN to <span class="number">1</span>
-<span class="lineno"> 425 </span>  )
-<span class="lineno"> 426 </span>  <span class="keyword">val</span> bitMatrix = writer.encode(payload, com.google.zxing.BarcodeFormat.QR_CODE, size, size, hints)
-<span class="caretline"><span class="lineno"> 427 </span>  <span class="keyword">val</span> bmp = <span class="warning">android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)</span></span>
-<span class="lineno"> 428 </span>  <span class="keyword">for</span> (x <span class="keyword">in</span> <span class="number">0</span> until size) {
-<span class="lineno"> 429 </span>      <span class="keyword">for</span> (y <span class="keyword">in</span> <span class="number">0</span> until size) {
-<span class="lineno"> 430 </span>          bmp.setPixel(
+<span class="location"><a href="../../src/main/java/com/cryptika/messenger/data/remote/ServerConfig.kt">../../src/main/java/com/cryptika/messenger/data/remote/ServerConfig.kt</a>:51</span>: <span class="message">Use the KTX extension function <code>SharedPreferences.edit</code> instead?</span><br /><pre class="errorlines">
+<span class="lineno"> 48 </span>            <span class="keyword">return</span> (stored ?: BuildConfig.RELAY_BASE_URL).trimEnd(<span class="string">'/'</span>)
+<span class="lineno"> 49 </span>        }
+<span class="lineno"> 50 </span>        set(value) {
+<span class="caretline"><span class="lineno"> 51 </span>            <span class="warning">prefs.edit()</span>.putString(KEY_RELAY_URL, value.trimEnd(<span class="string">'/'</span>)).apply()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 52 </span>        }
+<span class="lineno"> 53 </span>
+<span class="lineno"> 54 </span>    <span class="javadoc">/** HTTP(S) base URL derived from the relay URL (ws→http, wss→https). */</span></pre>
+
+<span class="location"><a href="../../src/main/java/com/cryptika/messenger/presentation/ui/screens/SplashAndHomeScreens.kt">../../src/main/java/com/cryptika/messenger/presentation/ui/screens/SplashAndHomeScreens.kt</a>:421</span>: <span class="message">Use the KTX function <code>createBitmap</code> instead?</span><br /><pre class="errorlines">
+<span class="lineno"> 418 </span>      com.google.zxing.EncodeHintType.MARGIN to <span class="number">1</span>
+<span class="lineno"> 419 </span>  )
+<span class="lineno"> 420 </span>  <span class="keyword">val</span> bitMatrix = writer.encode(payload, com.google.zxing.BarcodeFormat.QR_CODE, size, size, hints)
+<span class="caretline"><span class="lineno"> 421 </span>  <span class="keyword">val</span> bmp = <span class="warning">android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)</span></span>
+<span class="lineno"> 422 </span>  <span class="keyword">for</span> (x <span class="keyword">in</span> <span class="number">0</span> until size) {
+<span class="lineno"> 423 </span>      <span class="keyword">for</span> (y <span class="keyword">in</span> <span class="number">0</span> until size) {
+<span class="lineno"> 424 </span>          bmp.setPixel(
 </pre>
 
-<span class="location"><a href="../../src/main/java/com/hacksecure/messenger/presentation/ui/screens/SplashAndHomeScreens.kt">../../src/main/java/com/hacksecure/messenger/presentation/ui/screens/SplashAndHomeScreens.kt</a>:430</span>: <span class="message">Use the KTX extension function <code>Bitmap.set</code> instead?</span><br /><pre class="errorlines">
-<span class="lineno"> 427 </span>  <span class="keyword">val</span> bmp = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
-<span class="lineno"> 428 </span>  <span class="keyword">for</span> (x <span class="keyword">in</span> <span class="number">0</span> until size) {
-<span class="lineno"> 429 </span>      <span class="keyword">for</span> (y <span class="keyword">in</span> <span class="number">0</span> until size) {
-<span class="caretline"><span class="lineno"> 430 </span>          <span class="warning">bmp.setPixel(</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 431 </span>              x, y,
-<span class="lineno"> 432 </span>              <span class="keyword">if</span> (bitMatrix[x, y]) android.graphics.Color.BLACK
-<span class="lineno"> 433 </span>              <span class="keyword">else</span> android.graphics.Color.WHITE
+<span class="location"><a href="../../src/main/java/com/cryptika/messenger/presentation/ui/screens/SplashAndHomeScreens.kt">../../src/main/java/com/cryptika/messenger/presentation/ui/screens/SplashAndHomeScreens.kt</a>:424</span>: <span class="message">Use the KTX extension function <code>Bitmap.set</code> instead?</span><br /><pre class="errorlines">
+<span class="lineno"> 421 </span>  <span class="keyword">val</span> bmp = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
+<span class="lineno"> 422 </span>  <span class="keyword">for</span> (x <span class="keyword">in</span> <span class="number">0</span> until size) {
+<span class="lineno"> 423 </span>      <span class="keyword">for</span> (y <span class="keyword">in</span> <span class="number">0</span> until size) {
+<span class="caretline"><span class="lineno"> 424 </span>          <span class="warning">bmp.setPixel(</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 425 </span>              x, y,
+<span class="lineno"> 426 </span>              <span class="keyword">if</span> (bitMatrix[x, y]) android.graphics.Color.BLACK
+<span class="lineno"> 427 </span>              <span class="keyword">else</span> android.graphics.Color.WHITE
 </pre>
 
-<span class="location"><a href="../../src/main/java/com/hacksecure/messenger/presentation/viewmodel/ViewModels.kt">../../src/main/java/com/hacksecure/messenger/presentation/viewmodel/ViewModels.kt</a>:1032</span>: <span class="message">Use the KTX extension function <code>SharedPreferences.edit</code> instead?</span><br /><pre class="errorlines">
-<span class="lineno"> 1029 </span><span class="javadoc">     * MainActivity reads this on onResume() and applies/clears FLAG_SECURE accordingly.
-</span><span class="lineno"> 1030 </span><span class="javadoc">     */</span>
-<span class="lineno"> 1031 </span>    <span class="keyword">fun</span> setScreenshotBlocking(enabled: Boolean) {
-<span class="caretline"><span class="lineno"> 1032 </span>        <span class="warning">prefs.edit()</span>.putBoolean(<span class="string">"screenshot_blocking"</span>, enabled).apply()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 1033 </span>        _uiState.update { it.copy(screenshotBlockingEnabled = enabled) }
-<span class="lineno"> 1034 </span>    }
+<span class="location"><a href="../../src/main/java/com/cryptika/messenger/presentation/viewmodel/ViewModels.kt">../../src/main/java/com/cryptika/messenger/presentation/viewmodel/ViewModels.kt</a>:1021</span>: <span class="message">Use the KTX extension function <code>SharedPreferences.edit</code> instead?</span><br /><pre class="errorlines">
+<span class="lineno"> 1018 </span><span class="javadoc">     * MainActivity reads this on onResume() and applies/clears FLAG_SECURE accordingly.
+</span><span class="lineno"> 1019 </span><span class="javadoc">     */</span>
+<span class="lineno"> 1020 </span>    <span class="keyword">fun</span> setScreenshotBlocking(enabled: Boolean) {
+<span class="caretline"><span class="lineno"> 1021 </span>        <span class="warning">prefs.edit()</span>.putBoolean(<span class="string">"screenshot_blocking"</span>, enabled).apply()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 1022 </span>        _uiState.update { it.copy(screenshotBlockingEnabled = enabled) }
+<span class="lineno"> 1023 </span>    }
 </pre>
 
-<span class="location"><a href="../../src/main/java/com/hacksecure/messenger/presentation/viewmodel/ViewModels.kt">../../src/main/java/com/hacksecure/messenger/presentation/viewmodel/ViewModels.kt</a>:1037</span>: <span class="message">Use the KTX extension function <code>SharedPreferences.edit</code> instead?</span><br /><pre class="errorlines">
-<span class="lineno"> 1034 </span>    }
-<span class="lineno"> 1035 </span>
-<span class="lineno"> 1036 </span>    <span class="keyword">fun</span> setDefaultExpiry(seconds: Int) {
-<span class="caretline"><span class="lineno"> 1037 </span>        <span class="warning">prefs.edit()</span>.putInt(<span class="string">"default_expiry_seconds"</span>, seconds).apply()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 1038 </span>        _uiState.update { it.copy(defaultExpirySeconds = seconds) }
-<span class="lineno"> 1039 </span>    }
+<span class="location"><a href="../../src/main/java/com/cryptika/messenger/presentation/viewmodel/ViewModels.kt">../../src/main/java/com/cryptika/messenger/presentation/viewmodel/ViewModels.kt</a>:1026</span>: <span class="message">Use the KTX extension function <code>SharedPreferences.edit</code> instead?</span><br /><pre class="errorlines">
+<span class="lineno"> 1023 </span>    }
+<span class="lineno"> 1024 </span>
+<span class="lineno"> 1025 </span>    <span class="keyword">fun</span> setDefaultExpiry(seconds: Int) {
+<span class="caretline"><span class="lineno"> 1026 </span>        <span class="warning">prefs.edit()</span>.putInt(<span class="string">"default_expiry_seconds"</span>, seconds).apply()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 1027 </span>        _uiState.update { it.copy(defaultExpirySeconds = seconds) }
+<span class="lineno"> 1028 </span>    }
 </pre>
 
 </div>

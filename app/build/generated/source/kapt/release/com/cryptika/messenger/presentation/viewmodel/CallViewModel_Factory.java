@@ -2,6 +2,7 @@ package com.cryptika.messenger.presentation.viewmodel;
 
 import com.cryptika.messenger.data.remote.BackgroundConnectionManager;
 import com.cryptika.messenger.data.remote.CallManager;
+import com.cryptika.messenger.data.remote.EphemeralSessionManager;
 import com.cryptika.messenger.domain.repository.ContactRepository;
 import com.cryptika.messenger.domain.repository.IdentityRepository;
 import dagger.internal.DaggerGenerated;
@@ -34,31 +35,37 @@ public final class CallViewModel_Factory implements Factory<CallViewModel> {
 
   private final Provider<BackgroundConnectionManager> backgroundConnectionManagerProvider;
 
+  private final Provider<EphemeralSessionManager> ephemeralSessionManagerProvider;
+
   public CallViewModel_Factory(Provider<CallManager> callManagerProvider,
       Provider<ContactRepository> contactRepositoryProvider,
       Provider<IdentityRepository> identityRepositoryProvider,
-      Provider<BackgroundConnectionManager> backgroundConnectionManagerProvider) {
+      Provider<BackgroundConnectionManager> backgroundConnectionManagerProvider,
+      Provider<EphemeralSessionManager> ephemeralSessionManagerProvider) {
     this.callManagerProvider = callManagerProvider;
     this.contactRepositoryProvider = contactRepositoryProvider;
     this.identityRepositoryProvider = identityRepositoryProvider;
     this.backgroundConnectionManagerProvider = backgroundConnectionManagerProvider;
+    this.ephemeralSessionManagerProvider = ephemeralSessionManagerProvider;
   }
 
   @Override
   public CallViewModel get() {
-    return newInstance(callManagerProvider.get(), contactRepositoryProvider.get(), identityRepositoryProvider.get(), backgroundConnectionManagerProvider.get());
+    return newInstance(callManagerProvider.get(), contactRepositoryProvider.get(), identityRepositoryProvider.get(), backgroundConnectionManagerProvider.get(), ephemeralSessionManagerProvider.get());
   }
 
   public static CallViewModel_Factory create(Provider<CallManager> callManagerProvider,
       Provider<ContactRepository> contactRepositoryProvider,
       Provider<IdentityRepository> identityRepositoryProvider,
-      Provider<BackgroundConnectionManager> backgroundConnectionManagerProvider) {
-    return new CallViewModel_Factory(callManagerProvider, contactRepositoryProvider, identityRepositoryProvider, backgroundConnectionManagerProvider);
+      Provider<BackgroundConnectionManager> backgroundConnectionManagerProvider,
+      Provider<EphemeralSessionManager> ephemeralSessionManagerProvider) {
+    return new CallViewModel_Factory(callManagerProvider, contactRepositoryProvider, identityRepositoryProvider, backgroundConnectionManagerProvider, ephemeralSessionManagerProvider);
   }
 
   public static CallViewModel newInstance(CallManager callManager,
       ContactRepository contactRepository, IdentityRepository identityRepository,
-      BackgroundConnectionManager backgroundConnectionManager) {
-    return new CallViewModel(callManager, contactRepository, identityRepository, backgroundConnectionManager);
+      BackgroundConnectionManager backgroundConnectionManager,
+      EphemeralSessionManager ephemeralSessionManager) {
+    return new CallViewModel(callManager, contactRepository, identityRepository, backgroundConnectionManager, ephemeralSessionManager);
   }
 }

@@ -17,7 +17,7 @@ public final class AppDatabaseKt {
     private static final androidx.room.migration.Migration MIGRATION_1_2 = null;
     
     /**
-     * v2 → v3: Added `storageHashHex` column — SHA-256(ciphertextBlob) stored at write time
+     * v2 → v3: Added `storageHashHex` column: SHA-256(ciphertextBlob) stored at write time
      * and recomputed on every read to detect DB corruption or tampering (PPT slide 12/13).
      * Existing messages default to '' (empty); they are treated as unverified until re-saved.
      */
@@ -34,7 +34,7 @@ public final class AppDatabaseKt {
     }
     
     /**
-     * v2 → v3: Added `storageHashHex` column — SHA-256(ciphertextBlob) stored at write time
+     * v2 → v3: Added `storageHashHex` column: SHA-256(ciphertextBlob) stored at write time
      * and recomputed on every read to detect DB corruption or tampering (PPT slide 12/13).
      * Existing messages default to '' (empty); they are treated as unverified until re-saved.
      */

@@ -40,6 +40,8 @@ public final class ConversationDao_Impl implements ConversationDao {
 
   private final SharedSQLiteStatement __preparedStmtOfIncrementUnreadCount;
 
+  private final SharedSQLiteStatement __preparedStmtOfDeleteAllConversations;
+
   public ConversationDao_Impl(@NonNull final RoomDatabase __db) {
     this.__db = __db;
     this.__insertionAdapterOfConversationEntity = new EntityInsertionAdapter<ConversationEntity>(__db) {
@@ -79,6 +81,14 @@ public final class ConversationDao_Impl implements ConversationDao {
       @NonNull
       public String createQuery() {
         final String _query = "UPDATE conversations SET unreadCount = unreadCount + 1, lastMessageAt = ? WHERE id = ?";
+        return _query;
+      }
+    };
+    this.__preparedStmtOfDeleteAllConversations = new SharedSQLiteStatement(__db) {
+      @Override
+      @NonNull
+      public String createQuery() {
+        final String _query = "DELETE FROM conversations";
         return _query;
       }
     };
@@ -176,6 +186,29 @@ public final class ConversationDao_Impl implements ConversationDao {
           }
         } finally {
           __preparedStmtOfIncrementUnreadCount.release(_stmt);
+        }
+      }
+    }, $completion);
+  }
+
+  @Override
+  public Object deleteAllConversations(final Continuation<? super Unit> $completion) {
+    return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
+      @Override
+      @NonNull
+      public Unit call() throws Exception {
+        final SupportSQLiteStatement _stmt = __preparedStmtOfDeleteAllConversations.acquire();
+        try {
+          __db.beginTransaction();
+          try {
+            _stmt.executeUpdateDelete();
+            __db.setTransactionSuccessful();
+            return Unit.INSTANCE;
+          } finally {
+            __db.endTransaction();
+          }
+        } finally {
+          __preparedStmtOfDeleteAllConversations.release(_stmt);
         }
       }
     }, $completion);

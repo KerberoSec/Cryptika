@@ -6,9 +6,9 @@ import java.security.MessageDigest;
 /**
  * Hash ratchet providing forward secrecy.
  *
- * K₀ = session_key (root — never used for encryption)
- * K₁ = SHA-256(K₀) — first message key
- * Kₙ = SHA-256(Kₙ₋₁) — subsequent keys
+ * K₀ = session_key (root, never used for encryption)
+ * K₁ = SHA-256(K₀): first message key
+ * Kₙ = SHA-256(Kₙ₋₁): subsequent keys
  *
  * Once a key is advanced past, it is ZEROIZED and UNRECOVERABLE.
  * This provides forward secrecy: compromising Kₙ reveals nothing about K₁...Kₙ₋₁.
@@ -32,7 +32,7 @@ public final class HashRatchet {
     
     /**
      * Advances the ratchet and returns the next key.
-     * Previous key is ZEROIZED immediately — it cannot be recovered.
+     * Previous key is ZEROIZED immediately: it cannot be recovered.
      */
     @org.jetbrains.annotations.NotNull()
     public final com.cryptika.messenger.domain.crypto.RatchetKey advance() {
@@ -45,7 +45,7 @@ public final class HashRatchet {
      *
      * Checks lookahead buffer first for out-of-order keys.
      * If targetCounter > currentCounter: advances ratchet, caches intermediate keys.
-     * If targetCounter <= currentCounter and not in lookahead: replay — throws ReplayDetected.
+     * If targetCounter <= currentCounter and not in lookahead: replay, throws ReplayDetected.
      */
     @org.jetbrains.annotations.NotNull()
     public final byte[] keyForCounter(long targetCounter) {

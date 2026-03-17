@@ -7,7 +7,6 @@ import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.AudioTrack;
 import android.media.MediaRecorder;
-import android.util.Log;
 import com.cryptika.messenger.domain.crypto.AEADCipher;
 import com.cryptika.messenger.domain.crypto.Ed25519Verifier;
 import com.cryptika.messenger.domain.crypto.IdentityKeyManager;
@@ -27,31 +26,31 @@ import javax.inject.Singleton;
 /**
  * Manages the complete lifecycle of an encrypted voice call.
  *
- * ── Architecture ──────────────────────────────────────────────────────────────
+ * Architecture
  * Calls use the existing relay WebSocket (same WebSocket as messaging) by prefixing
  * packets with distinct magic bytes so BackgroundConnectionManager can route them here.
  *
  * Two magic bytes are reserved:
- *  0x02 — CALL_SIGNAL : call control (OFFER / ANSWER / REJECT / HANGUP / BUSY)
- *  0x03 — AUDIO_FRAME : encrypted PCM audio sent during an active call
+ *  0x02: CALL_SIGNAL, call control (OFFER / ANSWER / REJECT / HANGUP / BUSY)
+ *  0x03: AUDIO_FRAME, encrypted PCM audio sent during an active call
  *
- * ── Signal packet format (122 bytes — fixed size) ─────────────────────────────
+ * Signal packet format (122 bytes, fixed size)
  *  [0]      0x02 magic
  *  [1]      type byte (see CallSignalType)
- *  [2..17]  call_id — 16 random bytes identifying this call instance
- *  [18..25] timestamp_ms — big-endian long: replay protection (±5 min skew)
- *  [26..57] ephemeral X25519 public key — 32 bytes (zeroed for REJECT/HANGUP/BUSY)
- *  [58..121] Ed25519 signature over SHA-256(bytes[0..57]) — 64 bytes
+ *  [2..17]  call_id: 16 random bytes identifying this call instance
+ *  [18..25] timestamp_ms: big-endian long, replay protection (±5 min skew)
+ *  [26..57] ephemeral X25519 public key: 32 bytes (zeroed for REJECT/HANGUP/BUSY)
+ *  [58..121] Ed25519 signature over SHA-256(bytes[0..57]), 64 bytes
  * Total: 1 + 1 + 16 + 8 + 32 + 64 = 122 bytes
  *
- * ── Audio frame format ────────────────────────────────────────────────────────
+ * Audio frame format
  *  [0]      0x03 magic
- *  [1..4]   sequence_number — big-endian int (replay / ordering)
- *  [5..16]  nonce — 12 bytes = SHA-256(encryptKey ∥ seqBytes)[0..11]
+ *  [1..4]   sequence_number: big-endian int (replay / ordering)
+ *  [5..16]  nonce: 12 bytes = SHA-256(encryptKey ∥ seqBytes)[0..11]
  *  [17..N]  ChaCha20-Poly1305(plaintext=pcm, key=encryptKey, nonce, ad=empty) + 16-byte tag
  *
- * ── Call key derivation ──────────────────────────────────────────────────────
- *  sharedSecret = X25519(ourEphPriv, peerEphPub)    — symmetric both sides
+ * Call key derivation
+ *  sharedSecret = X25519(ourEphPriv, peerEphPub)    -- symmetric for both sides
  *  callerEncKey = SHA-256(secret ∥ "caller_send" ∥ callIdBytes)
  *  calleeEncKey = SHA-256(secret ∥ "callee_send" ∥ callIdBytes)
  *
@@ -61,7 +60,7 @@ import javax.inject.Singleton;
  *  Using direction-specific keys ensures nonces are never reused even though
  *  both sides use the same sequence counter starting at 0.
  *
- * ── Audio parameters ──────────────────────────────────────────────────────────
+ * Audio parameters
  *  Sample rate : 16 000 Hz (narrow-band voice)
  *  Channels    : mono
  *  Encoding    : 16-bit PCM

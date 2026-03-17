@@ -20,6 +20,7 @@ com.cryptika.messenger:styleable/Capability = 0x7f100011
 com.cryptika.messenger:styleable/AppCompatTextView = 0x7f10000e
 com.cryptika.messenger:styleable/AppCompatSeekBar = 0x7f10000c
 com.cryptika.messenger:styleable/AnimatedStateListDrawableCompat = 0x7f100008
+com.cryptika.messenger:xml/network_security_config = 0x7f110001
 com.cryptika.messenger:styleable/AlertDialog = 0x7f100007
 com.cryptika.messenger:styleable/ActionMode = 0x7f100004
 com.cryptika.messenger:styleable/ActionMenuView = 0x7f100003

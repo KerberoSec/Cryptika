@@ -54,7 +54,7 @@ public final class SessionKeyManager {
      * Both A_id and B_id are bound to prevent server from swapping one participant.
      * ticketHash binds the server-authenticated session context.
      *
-     * @return 32-byte session key (K₀) — ratchet root
+     * @return 32-byte session key (K₀): ratchet root
      */
     @org.jetbrains.annotations.NotNull()
     public final byte[] deriveSessionKey(@org.jetbrains.annotations.NotNull()
@@ -76,14 +76,14 @@ public final class SessionKeyManager {
      *
      * Since both peers use their own identity hash with complementary labels,
      * A_send = SHA-256(K ∥ "SEND" ∥ A_id) == B_recv because B computes
-     * SHA-256(K ∥ "RECV" ∥ B_id)... — NO. Instead, use canonical roles:
+     * SHA-256(K ∥ "RECV" ∥ B_id)... NO. Instead, use canonical roles:
      *
      * roleA_root = SHA-256(sessionKey ∥ "A_TO_B")
      * roleB_root = SHA-256(sessionKey ∥ "B_TO_A")
      *
      * The peer with the lexicographically smaller identity hash is "A".
      *
-     * @return Pair of (sendRoot, recvRoot) — each 32 bytes
+     * @return Pair of (sendRoot, recvRoot): each 32 bytes
      */
     @org.jetbrains.annotations.NotNull()
     public final kotlin.Pair<byte[], byte[]> deriveDirectionalRoots(@org.jetbrains.annotations.NotNull()

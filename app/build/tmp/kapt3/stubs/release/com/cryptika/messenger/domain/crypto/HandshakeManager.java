@@ -13,14 +13,14 @@ import javax.inject.Singleton;
  * On receiving the peer's offer, each side derives the shared session key and the
  * encrypted conversation can begin.
  *
- * ── Handshake offer wire format (97 bytes) ──────────────────────────────────
- *  [1]    magic = 0x01  — distinguishes from WirePacket (which always starts with 0x00,
+ * Handshake offer wire format (97 bytes)
+ *  [1]    magic = 0x01: distinguishes from WirePacket (which always starts with 0x00,
  *                         since its first 4 bytes encode headerLen whose high byte is 0x00
  *                         for any realistic JSON header < 16 million bytes)
  *  [32]   ephemeral X25519 public key (generated fresh per WebSocket connection)
  *  [64]   Ed25519 signature of SHA-256(bytes[0..32])
  *
- * ── Session key derivation ───────────────────────────────────────────────────
+ * Session key derivation
  *  shared_secret = X25519(our_eph_priv, peer_eph_pub)   // symmetric: A⊗B == B⊗A
  *  (id_min, id_max) = sorted-by-hex(my_identity_hash, peer_identity_hash)
  *  session_key = SHA-256(shared_secret ‖ id_min ‖ id_max)
@@ -37,7 +37,7 @@ public final class HandshakeManager {
     private final com.cryptika.messenger.domain.crypto.SessionKeyManager sessionKeyManager = null;
     
     /**
-     * First byte of every HANDSHAKE_OFFER — cannot appear as the high byte of a
+     * First byte of every HANDSHAKE_OFFER: cannot appear as the high byte of a
      * WirePacket headerLen for any header < 16,777,216 bytes (impossible in practice).
      */
     public static final byte PACKET_TYPE = (byte)1;

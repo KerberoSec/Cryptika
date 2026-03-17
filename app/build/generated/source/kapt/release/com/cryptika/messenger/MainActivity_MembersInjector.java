@@ -1,5 +1,9 @@
 package com.cryptika.messenger;
 
+import com.cryptika.messenger.data.local.db.ContactDao;
+import com.cryptika.messenger.data.local.db.ConversationDao;
+import com.cryptika.messenger.data.local.db.MessageDao;
+import com.cryptika.messenger.data.local.keystore.KeystoreManager;
 import com.cryptika.messenger.data.remote.BackgroundConnectionManager;
 import com.cryptika.messenger.data.remote.EphemeralSessionManager;
 import com.cryptika.messenger.domain.repository.AuthRepository;
@@ -30,20 +34,36 @@ public final class MainActivity_MembersInjector implements MembersInjector<MainA
 
   private final Provider<AuthRepository> authRepositoryProvider;
 
+  private final Provider<MessageDao> messageDaoProvider;
+
+  private final Provider<ContactDao> contactDaoProvider;
+
+  private final Provider<ConversationDao> conversationDaoProvider;
+
+  private final Provider<KeystoreManager> keystoreManagerProvider;
+
   public MainActivity_MembersInjector(
       Provider<EphemeralSessionManager> ephemeralSessionManagerProvider,
       Provider<BackgroundConnectionManager> backgroundConnectionManagerProvider,
-      Provider<AuthRepository> authRepositoryProvider) {
+      Provider<AuthRepository> authRepositoryProvider, Provider<MessageDao> messageDaoProvider,
+      Provider<ContactDao> contactDaoProvider, Provider<ConversationDao> conversationDaoProvider,
+      Provider<KeystoreManager> keystoreManagerProvider) {
     this.ephemeralSessionManagerProvider = ephemeralSessionManagerProvider;
     this.backgroundConnectionManagerProvider = backgroundConnectionManagerProvider;
     this.authRepositoryProvider = authRepositoryProvider;
+    this.messageDaoProvider = messageDaoProvider;
+    this.contactDaoProvider = contactDaoProvider;
+    this.conversationDaoProvider = conversationDaoProvider;
+    this.keystoreManagerProvider = keystoreManagerProvider;
   }
 
   public static MembersInjector<MainActivity> create(
       Provider<EphemeralSessionManager> ephemeralSessionManagerProvider,
       Provider<BackgroundConnectionManager> backgroundConnectionManagerProvider,
-      Provider<AuthRepository> authRepositoryProvider) {
-    return new MainActivity_MembersInjector(ephemeralSessionManagerProvider, backgroundConnectionManagerProvider, authRepositoryProvider);
+      Provider<AuthRepository> authRepositoryProvider, Provider<MessageDao> messageDaoProvider,
+      Provider<ContactDao> contactDaoProvider, Provider<ConversationDao> conversationDaoProvider,
+      Provider<KeystoreManager> keystoreManagerProvider) {
+    return new MainActivity_MembersInjector(ephemeralSessionManagerProvider, backgroundConnectionManagerProvider, authRepositoryProvider, messageDaoProvider, contactDaoProvider, conversationDaoProvider, keystoreManagerProvider);
   }
 
   @Override
@@ -51,6 +71,10 @@ public final class MainActivity_MembersInjector implements MembersInjector<MainA
     injectEphemeralSessionManager(instance, ephemeralSessionManagerProvider.get());
     injectBackgroundConnectionManager(instance, backgroundConnectionManagerProvider.get());
     injectAuthRepository(instance, authRepositoryProvider.get());
+    injectMessageDao(instance, messageDaoProvider.get());
+    injectContactDao(instance, contactDaoProvider.get());
+    injectConversationDao(instance, conversationDaoProvider.get());
+    injectKeystoreManager(instance, keystoreManagerProvider.get());
   }
 
   @InjectedFieldSignature("com.cryptika.messenger.MainActivity.ephemeralSessionManager")
@@ -68,5 +92,25 @@ public final class MainActivity_MembersInjector implements MembersInjector<MainA
   @InjectedFieldSignature("com.cryptika.messenger.MainActivity.authRepository")
   public static void injectAuthRepository(MainActivity instance, AuthRepository authRepository) {
     instance.authRepository = authRepository;
+  }
+
+  @InjectedFieldSignature("com.cryptika.messenger.MainActivity.messageDao")
+  public static void injectMessageDao(MainActivity instance, MessageDao messageDao) {
+    instance.messageDao = messageDao;
+  }
+
+  @InjectedFieldSignature("com.cryptika.messenger.MainActivity.contactDao")
+  public static void injectContactDao(MainActivity instance, ContactDao contactDao) {
+    instance.contactDao = contactDao;
+  }
+
+  @InjectedFieldSignature("com.cryptika.messenger.MainActivity.conversationDao")
+  public static void injectConversationDao(MainActivity instance, ConversationDao conversationDao) {
+    instance.conversationDao = conversationDao;
+  }
+
+  @InjectedFieldSignature("com.cryptika.messenger.MainActivity.keystoreManager")
+  public static void injectKeystoreManager(MainActivity instance, KeystoreManager keystoreManager) {
+    instance.keystoreManager = keystoreManager;
   }
 }

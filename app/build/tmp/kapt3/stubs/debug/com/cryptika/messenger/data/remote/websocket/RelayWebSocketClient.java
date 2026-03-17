@@ -4,13 +4,12 @@ import com.cryptika.messenger.data.remote.ServerConfig;
 import kotlinx.coroutines.channels.BufferOverflow;
 import kotlinx.coroutines.flow.SharedFlow;
 import okio.ByteString;
-import android.util.Log;
 import kotlinx.coroutines.Dispatchers;
 
 /**
  * WebSocket client for the blind relay server.
  *
- * The relay only routes encrypted binary packets — it never inspects content.
+ * The relay only routes encrypted binary packets; it never inspects content.
  * Connection uses binary frames exclusively.
  *
  * Reconnect strategy: exponential backoff starting at 1s, max 30s.
@@ -21,8 +20,6 @@ public final class RelayWebSocketClient {
     private final okhttp3.OkHttpClient okHttpClient = null;
     @org.jetbrains.annotations.NotNull()
     private final com.cryptika.messenger.data.remote.ServerConfig serverConfig = null;
-    @org.jetbrains.annotations.NotNull()
-    private static final java.lang.String TAG = "RelayWebSocket";
     private static final long MAX_BACKOFF_MS = 30000L;
     private static final long INITIAL_BACKOFF_MS = 1000L;
     @org.jetbrains.annotations.NotNull()
@@ -107,7 +104,7 @@ public final class RelayWebSocketClient {
     private final void scheduleReconnect(java.lang.String conversationId, java.lang.String authToken, java.lang.String identityHash) {
     }
     
-    @kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000\u001a\n\u0002\u0018\u0002\n\u0002\u0010\u0000\n\u0002\b\u0002\n\u0002\u0010\t\n\u0002\b\u0002\n\u0002\u0010\u000e\n\u0000\b\u0086\u0003\u0018\u00002\u00020\u0001B\u0007\b\u0002\u00a2\u0006\u0002\u0010\u0002R\u000e\u0010\u0003\u001a\u00020\u0004X\u0082T\u00a2\u0006\u0002\n\u0000R\u000e\u0010\u0005\u001a\u00020\u0004X\u0082T\u00a2\u0006\u0002\n\u0000R\u000e\u0010\u0006\u001a\u00020\u0007X\u0082T\u00a2\u0006\u0002\n\u0000\u00a8\u0006\b"}, d2 = {"Lcom/cryptika/messenger/data/remote/websocket/RelayWebSocketClient$Companion;", "", "()V", "INITIAL_BACKOFF_MS", "", "MAX_BACKOFF_MS", "TAG", "", "Cryptika_debug"})
+    @kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000\u0014\n\u0002\u0018\u0002\n\u0002\u0010\u0000\n\u0002\b\u0002\n\u0002\u0010\t\n\u0002\b\u0002\b\u0086\u0003\u0018\u00002\u00020\u0001B\u0007\b\u0002\u00a2\u0006\u0002\u0010\u0002R\u000e\u0010\u0003\u001a\u00020\u0004X\u0082T\u00a2\u0006\u0002\n\u0000R\u000e\u0010\u0005\u001a\u00020\u0004X\u0082T\u00a2\u0006\u0002\n\u0000\u00a8\u0006\u0006"}, d2 = {"Lcom/cryptika/messenger/data/remote/websocket/RelayWebSocketClient$Companion;", "", "()V", "INITIAL_BACKOFF_MS", "", "MAX_BACKOFF_MS", "Cryptika_debug"})
     public static final class Companion {
         
         private Companion() {

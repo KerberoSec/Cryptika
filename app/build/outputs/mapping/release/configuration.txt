@@ -1,4 +1,4 @@
-# The proguard configuration file for the following section is E:\MY HARD W0RK\NITH\HackSecureMessenger\app\build\intermediates\aapt_proguard_file\release\processReleaseResources\aapt_rules.txt
+# The proguard configuration file for the following section is E:\MY HARD W0RK\NITH\Cryptika\app\build\intermediates\aapt_proguard_file\release\processReleaseResources\aapt_rules.txt
 -keep class androidx.camera.core.impl.MetadataHolderService { <init>(); }
 -keep class androidx.core.app.CoreComponentFactory { <init>(); }
 -keep class androidx.profileinstaller.ProfileInstallReceiver { <init>(); }
@@ -67,8 +67,8 @@
 -keep class com.journeyapps.barcodescanner.ViewfinderView { <init>(android.content.Context, android.util.AttributeSet); }
 
 
-# End of content from E:\MY HARD W0RK\NITH\HackSecureMessenger\app\build\intermediates\aapt_proguard_file\release\processReleaseResources\aapt_rules.txt
-# The proguard configuration file for the following section is E:\MY HARD W0RK\NITH\HackSecureMessenger\app\build\intermediates\default_proguard_files\global\proguard-android-optimize.txt-8.11.2
+# End of content from E:\MY HARD W0RK\NITH\Cryptika\app\build\intermediates\aapt_proguard_file\release\processReleaseResources\aapt_rules.txt
+# The proguard configuration file for the following section is E:\MY HARD W0RK\NITH\Cryptika\app\build\intermediates\default_proguard_files\global\proguard-android-optimize.txt-8.11.2
 # This is a configuration file for ProGuard.
 # http://proguard.sourceforge.net/index.html#manual/usage.html
 #
@@ -159,19 +159,19 @@
 # These classes are duplicated between android.jar and core-lambda-stubs.jar.
 -dontnote java.lang.invoke.**
 
-# End of content from E:\MY HARD W0RK\NITH\HackSecureMessenger\app\build\intermediates\default_proguard_files\global\proguard-android-optimize.txt-8.11.2
-# The proguard configuration file for the following section is E:\MY HARD W0RK\NITH\HackSecureMessenger\app\proguard-rules.pro
-# HackSecure Messenger ProGuard Rules
+# End of content from E:\MY HARD W0RK\NITH\Cryptika\app\build\intermediates\default_proguard_files\global\proguard-android-optimize.txt-8.11.2
+# The proguard configuration file for the following section is E:\MY HARD W0RK\NITH\Cryptika\app\proguard-rules.pro
+# Cryptika Messenger ProGuard Rules
 
 # Keep BouncyCastle crypto primitives
 -keep class org.bouncycastle.** { *; }
 -dontwarn org.bouncycastle.**
 
 # Keep Room entities
--keep class com.hacksecure.messenger.data.local.db.** { *; }
+-keep class com.cryptika.messenger.data.local.db.** { *; }
 
 # Keep domain models (Gson serialization)
--keep class com.hacksecure.messenger.domain.model.** { *; }
+-keep class com.cryptika.messenger.domain.model.** { *; }
 
 # Keep Hilt generated code
 -keep class * extends dagger.hilt.android.internal.managers.ActivityComponentManager { *; }
@@ -199,7 +199,7 @@
 -dontwarn com.google.errorprone.annotations.Immutable
 -dontwarn com.google.errorprone.annotations.RestrictedApi
 
-# End of content from E:\MY HARD W0RK\NITH\HackSecureMessenger\app\proguard-rules.pro
+# End of content from E:\MY HARD W0RK\NITH\Cryptika\app\proguard-rules.pro
 # The proguard configuration file for the following section is C:\Users\arung\.gradle\caches\8.13\transforms\954d13dc157e4bb2eb5ed5cef748eb5e\transformed\navigation-common-2.7.7\proguard.txt
 # Copyright (C) 2019 The Android Open Source Project
 #

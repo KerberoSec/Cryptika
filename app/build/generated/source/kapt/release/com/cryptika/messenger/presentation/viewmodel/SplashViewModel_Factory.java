@@ -1,12 +1,10 @@
 package com.cryptika.messenger.presentation.viewmodel;
 
-import com.cryptika.messenger.domain.repository.IdentityRepository;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
 import dagger.internal.QualifierMetadata;
 import dagger.internal.ScopeMetadata;
 import javax.annotation.processing.Generated;
-import javax.inject.Provider;
 
 @ScopeMetadata
 @QualifierMetadata
@@ -23,23 +21,20 @@ import javax.inject.Provider;
     "cast"
 })
 public final class SplashViewModel_Factory implements Factory<SplashViewModel> {
-  private final Provider<IdentityRepository> identityRepositoryProvider;
-
-  public SplashViewModel_Factory(Provider<IdentityRepository> identityRepositoryProvider) {
-    this.identityRepositoryProvider = identityRepositoryProvider;
-  }
-
   @Override
   public SplashViewModel get() {
-    return newInstance(identityRepositoryProvider.get());
+    return newInstance();
   }
 
-  public static SplashViewModel_Factory create(
-      Provider<IdentityRepository> identityRepositoryProvider) {
-    return new SplashViewModel_Factory(identityRepositoryProvider);
+  public static SplashViewModel_Factory create() {
+    return InstanceHolder.INSTANCE;
   }
 
-  public static SplashViewModel newInstance(IdentityRepository identityRepository) {
-    return new SplashViewModel(identityRepository);
+  public static SplashViewModel newInstance() {
+    return new SplashViewModel();
+  }
+
+  private static final class InstanceHolder {
+    private static final SplashViewModel_Factory INSTANCE = new SplashViewModel_Factory();
   }
 }

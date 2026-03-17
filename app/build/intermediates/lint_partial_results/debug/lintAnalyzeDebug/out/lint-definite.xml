@@ -14,10 +14,33 @@
             file="${:app*projectDir}/build.gradle.kts"
             line="23"
             column="9"
-            startOffset="610"
+            startOffset="608"
             endLine="23"
             endColumn="23"
-            endOffset="624"/>
+            endOffset="622"/>
+    </incident>
+
+    <incident
+        id="NetworkSecurityConfig"
+        severity="fatal"
+        message="Expecting at most 1 `&lt;debug-overrides>`">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*1}/xml/network_security_config.xml"
+            line="25"
+            column="6"
+            startOffset="991"
+            endLine="25"
+            endColumn="21"
+            endOffset="1006"/>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/xml/network_security_config.xml"
+            line="30"
+            column="5"
+            startOffset="1160"
+            endLine="35"
+            endColumn="23"
+            endOffset="1334"
+            message="Already declared here"/>
     </incident>
 
     <incident
@@ -52,10 +75,10 @@
             file="${:app*projectDir}/build.gradle.kts"
             line="15"
             column="5"
-            startOffset="424"
+            startOffset="422"
             endLine="15"
             endColumn="20"
-            endOffset="439"/>
+            endOffset="437"/>
     </incident>
 
     <incident
@@ -70,12 +93,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="82"
+            line="87"
             column="20"
-            startOffset="3050"
-            endLine="82"
+            startOffset="3367"
+            endLine="87"
             endColumn="69"
-            endOffset="3099"/>
+            endOffset="3416"/>
     </incident>
 
     <incident
@@ -90,12 +113,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="85"
+            line="90"
             column="20"
-            startOffset="3202"
-            endLine="85"
+            startOffset="3457"
+            endLine="90"
             endColumn="71"
-            endOffset="3253"/>
+            endOffset="3508"/>
     </incident>
 
     <incident
@@ -110,12 +133,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="90"
+            line="95"
             column="20"
-            startOffset="3511"
-            endLine="90"
+            startOffset="3766"
+            endLine="95"
             endColumn="62"
-            endOffset="3553"/>
+            endOffset="3808"/>
     </incident>
 
     <incident
@@ -130,12 +153,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="91"
+            line="96"
             column="20"
-            startOffset="3574"
-            endLine="91"
+            startOffset="3829"
+            endLine="96"
             endColumn="66"
-            endOffset="3620"/>
+            endOffset="3875"/>
     </incident>
 
     <incident
@@ -150,12 +173,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="96"
+            line="101"
             column="20"
-            startOffset="3839"
-            endLine="96"
+            startOffset="4028"
+            endLine="101"
             endColumn="65"
-            endOffset="3884"/>
+            endOffset="4073"/>
     </incident>
 
     <incident
@@ -170,12 +193,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="97"
+            line="102"
             column="20"
-            startOffset="3905"
-            endLine="97"
+            startOffset="4094"
+            endLine="102"
             endColumn="51"
-            endOffset="3936"/>
+            endOffset="4125"/>
     </incident>
 
     <incident
@@ -190,12 +213,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="99"
+            line="104"
             column="10"
-            startOffset="4004"
-            endLine="99"
+            startOffset="4193"
+            endLine="104"
             endColumn="45"
-            endOffset="4039"/>
+            endOffset="4228"/>
     </incident>
 
     <incident
@@ -210,12 +233,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="102"
+            line="107"
             column="20"
-            startOffset="4142"
-            endLine="102"
+            startOffset="4274"
+            endLine="107"
             endColumn="54"
-            endOffset="4176"/>
+            endOffset="4308"/>
     </incident>
 
     <incident
@@ -230,12 +253,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="103"
+            line="108"
             column="20"
-            startOffset="4197"
-            endLine="103"
+            startOffset="4329"
+            endLine="108"
             endColumn="50"
-            endOffset="4227"/>
+            endOffset="4359"/>
     </incident>
 
     <incident
@@ -250,12 +273,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="104"
+            line="109"
             column="9"
-            startOffset="4237"
-            endLine="104"
+            startOffset="4369"
+            endLine="109"
             endColumn="44"
-            endOffset="4272"/>
+            endOffset="4404"/>
     </incident>
 
     <incident
@@ -270,12 +293,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="106"
+            line="111"
             column="20"
-            startOffset="4360"
-            endLine="106"
+            startOffset="4492"
+            endLine="111"
             endColumn="54"
-            endOffset="4394"/>
+            endOffset="4526"/>
     </incident>
 
     <incident
@@ -290,12 +313,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="121"
+            line="126"
             column="20"
-            startOffset="5197"
-            endLine="121"
+            startOffset="5071"
+            endLine="126"
             endColumn="58"
-            endOffset="5235"/>
+            endOffset="5109"/>
     </incident>
 
     <incident
@@ -310,12 +333,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="127"
+            line="132"
             column="20"
-            startOffset="5497"
-            endLine="127"
+            startOffset="5244"
+            endLine="132"
             endColumn="74"
-            endOffset="5551"/>
+            endOffset="5298"/>
     </incident>
 
     <incident
@@ -330,12 +353,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="128"
+            line="133"
             column="20"
-            startOffset="5572"
-            endLine="128"
+            startOffset="5319"
+            endLine="133"
             endColumn="68"
-            endOffset="5620"/>
+            endOffset="5367"/>
     </incident>
 
     <incident
@@ -350,12 +373,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="129"
+            line="134"
             column="20"
-            startOffset="5641"
-            endLine="129"
+            startOffset="5388"
+            endLine="134"
             endColumn="72"
-            endOffset="5693"/>
+            endOffset="5440"/>
     </incident>
 
     <incident
@@ -370,12 +393,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="132"
+            line="137"
             column="20"
-            startOffset="5796"
-            endLine="132"
+            startOffset="5479"
+            endLine="137"
             endColumn="68"
-            endOffset="5844"/>
+            endOffset="5527"/>
     </incident>
 
     <incident
@@ -390,12 +413,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="135"
+            line="140"
             column="20"
-            startOffset="5947"
-            endLine="135"
+            startOffset="5577"
+            endLine="140"
             endColumn="58"
-            endOffset="5985"/>
+            endOffset="5615"/>
     </incident>
 
     <incident
@@ -410,12 +433,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="136"
+            line="141"
             column="20"
-            startOffset="6006"
-            endLine="136"
+            startOffset="5636"
+            endLine="141"
             endColumn="60"
-            endOffset="6046"/>
+            endOffset="5676"/>
     </incident>
 
     <incident
@@ -430,12 +453,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="137"
+            line="142"
             column="20"
-            startOffset="6067"
-            endLine="137"
+            startOffset="5697"
+            endLine="142"
             endColumn="55"
-            endOffset="6102"/>
+            endOffset="5732"/>
     </incident>
 
     <incident
@@ -450,12 +473,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="143"
+            line="148"
             column="31"
-            startOffset="6387"
-            endLine="143"
+            startOffset="5951"
+            endLine="148"
             endColumn="62"
-            endOffset="6418"/>
+            endOffset="5982"/>
     </incident>
 
     <incident
@@ -470,12 +493,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="144"
+            line="149"
             column="31"
-            startOffset="6450"
-            endLine="144"
+            startOffset="6014"
+            endLine="149"
             endColumn="75"
-            endOffset="6494"/>
+            endOffset="6058"/>
     </incident>
 
     <incident
@@ -490,12 +513,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="95"
+            line="100"
             column="20"
-            startOffset="3781"
-            endLine="95"
+            startOffset="3970"
+            endLine="100"
             endColumn="57"
-            endOffset="3818"/>
+            endOffset="4007"/>
     </incident>
 
     <incident
@@ -510,12 +533,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="98"
+            line="103"
             column="10"
-            startOffset="3947"
-            endLine="98"
+            startOffset="4136"
+            endLine="103"
             endColumn="56"
-            endOffset="3993"/>
+            endOffset="4182"/>
     </incident>
 
     <incident
@@ -530,12 +553,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="108"
+            line="113"
             column="20"
-            startOffset="4496"
-            endLine="108"
+            startOffset="4565"
+            endLine="113"
             endColumn="56"
-            endOffset="4532"/>
+            endOffset="4601"/>
     </incident>
 
     <incident
@@ -550,12 +573,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="109"
+            line="114"
             column="20"
-            startOffset="4553"
-            endLine="109"
+            startOffset="4622"
+            endLine="114"
             endColumn="69"
-            endOffset="4602"/>
+            endOffset="4671"/>
     </incident>
 
     <incident
@@ -570,12 +593,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="110"
+            line="115"
             column="20"
-            startOffset="4623"
-            endLine="110"
+            startOffset="4692"
+            endLine="115"
             endColumn="59"
-            endOffset="4662"/>
+            endOffset="4731"/>
     </incident>
 
     <incident
@@ -590,12 +613,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="111"
+            line="116"
             column="20"
-            startOffset="4683"
-            endLine="111"
+            startOffset="4752"
+            endLine="116"
             endColumn="65"
-            endOffset="4728"/>
+            endOffset="4797"/>
     </incident>
 
     <incident
@@ -610,12 +633,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="124"
+            line="129"
             column="20"
-            startOffset="5338"
-            endLine="124"
+            startOffset="5149"
+            endLine="129"
             endColumn="76"
-            endOffset="5394"/>
+            endOffset="5205"/>
     </incident>
 
     <incident
@@ -630,12 +653,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="141"
+            line="146"
             column="24"
-            startOffset="6254"
-            endLine="141"
+            startOffset="5818"
+            endLine="146"
             endColumn="77"
-            endOffset="6307"/>
+            endOffset="5871"/>
     </incident>
 
     <incident
@@ -650,12 +673,12 @@
             priority="0"/>
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="142"
+            line="147"
             column="24"
-            startOffset="6332"
-            endLine="142"
+            startOffset="5896"
+            endLine="147"
             endColumn="47"
-            endOffset="6355"/>
+            endOffset="5919"/>
     </incident>
 
     <incident
@@ -664,12 +687,12 @@
         message="The native library `arm64-v8a/libsqlcipher.so` (from `net.zetetic:android-database-sqlcipher:4.5.4`) is not 16 KB aligned">
         <location
             file="${:app*projectDir}/build.gradle.kts"
-            line="105"
+            line="110"
             column="20"
-            startOffset="4293"
-            endLine="105"
+            startOffset="4425"
+            endLine="110"
             endColumn="66"
-            endOffset="4339"/>
+            endOffset="4471"/>
     </incident>
 
     <incident
@@ -681,12 +704,12 @@
             url="https://developer.android.com/adaptive-apps"/>
         <location
             file="${:app*debug*MAIN*sourceProvider*0*manifest*0}"
-            line="52"
+            line="53"
             column="13"
-            startOffset="2423"
-            endLine="52"
+            startOffset="2491"
+            endLine="53"
             endColumn="49"
-            endOffset="2459"/>
+            endOffset="2527"/>
     </incident>
 
     <incident
@@ -695,13 +718,13 @@
         message="Unnecessary; `SDK_INT` is always >= 26">
         <fix-data conditional="true"/>
         <location
-            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/remote/BackgroundConnectionManager.kt"
-            line="526"
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/remote/BackgroundConnectionManager.kt"
+            line="549"
             column="13"
-            startOffset="23237"
-            endLine="526"
+            startOffset="23560"
+            endLine="549"
             endColumn="59"
-            endOffset="23283"/>
+            endOffset="23606"/>
     </incident>
 
     <incident
@@ -710,7 +733,7 @@
         message="Unnecessary; `SDK_INT` is always >= 26">
         <fix-data conditional="true"/>
         <location
-            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/remote/CallForegroundService.kt"
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/remote/CallForegroundService.kt"
             line="46"
             column="17"
             startOffset="1950"
@@ -725,13 +748,13 @@
         message="Unnecessary; `SDK_INT` is always >= 26">
         <fix-data conditional="true"/>
         <location
-            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/remote/CallForegroundService.kt"
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/remote/CallForegroundService.kt"
             line="104"
             column="13"
-            startOffset="4031"
+            startOffset="3904"
             endLine="104"
             endColumn="59"
-            endOffset="4077"/>
+            endOffset="3950"/>
     </incident>
 
     <incident
@@ -740,13 +763,13 @@
         message="Unnecessary; `SDK_INT` is always >= 26">
         <fix-data conditional="true"/>
         <location
-            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/remote/ConnectionForegroundService.kt"
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/remote/ConnectionForegroundService.kt"
             line="38"
             column="17"
-            startOffset="1598"
+            startOffset="1597"
             endLine="38"
             endColumn="63"
-            endOffset="1644"/>
+            endOffset="1643"/>
     </incident>
 
     <incident
@@ -755,13 +778,13 @@
         message="Unnecessary; `SDK_INT` is always >= 26">
         <fix-data conditional="true"/>
         <location
-            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/remote/ConnectionForegroundService.kt"
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/remote/ConnectionForegroundService.kt"
             line="66"
             column="13"
-            startOffset="2527"
+            startOffset="2465"
             endLine="66"
             endColumn="59"
-            endOffset="2573"/>
+            endOffset="2511"/>
     </incident>
 
     <incident
@@ -783,18 +806,18 @@
             shortenNames="true"
             priority="0">
             <range
-                file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/presentation/ui/screens/ChatScreen.kt"
-                startOffset="21309"
-                endOffset="21323"/>
+                file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/presentation/ui/screens/ChatScreen.kt"
+                startOffset="21449"
+                endOffset="21463"/>
         </fix-replace>
         <location
-            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/presentation/ui/screens/ChatScreen.kt"
-            line="516"
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/presentation/ui/screens/ChatScreen.kt"
+            line="518"
             column="29"
-            startOffset="21309"
-            endLine="516"
+            startOffset="21449"
+            endLine="518"
             endColumn="43"
-            endOffset="21323"/>
+            endOffset="21463"/>
     </incident>
 
     <incident
@@ -807,18 +830,18 @@
             shortenNames="true"
             priority="0">
             <range
-                file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/presentation/ui/components/SecureKeyboard.kt"
-                startOffset="2783"
-                endOffset="2797"/>
+                file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/presentation/ui/components/SecureKeyboard.kt"
+                startOffset="10006"
+                endOffset="10020"/>
         </fix-replace>
         <location
-            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/presentation/ui/components/SecureKeyboard.kt"
-            line="66"
-            column="36"
-            startOffset="2783"
-            endLine="66"
-            endColumn="50"
-            endOffset="2797"/>
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/presentation/ui/components/SecureKeyboard.kt"
+            line="270"
+            column="34"
+            startOffset="10006"
+            endLine="270"
+            endColumn="48"
+            endOffset="10020"/>
     </incident>
 
     <incident
@@ -831,18 +854,42 @@
             shortenNames="true"
             priority="0">
             <range
-                file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/presentation/ui/components/SecureKeyboard.kt"
-                startOffset="17397"
-                endOffset="17411"/>
+                file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/presentation/ui/components/SecureKeyboard.kt"
+                startOffset="24044"
+                endOffset="24058"/>
         </fix-replace>
         <location
-            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/presentation/ui/components/SecureKeyboard.kt"
-            line="419"
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/presentation/ui/components/SecureKeyboard.kt"
+            line="606"
+            column="28"
+            startOffset="24044"
+            endLine="606"
+            endColumn="42"
+            endOffset="24058"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`">
+        <fix-replace
+            description="Replace with mutableIntStateOf"
+            replacement="androidx.compose.runtime.mutableIntStateOf"
+            shortenNames="true"
+            priority="0">
+            <range
+                file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/presentation/ui/components/SecureKeyboard.kt"
+                startOffset="31213"
+                endOffset="31227"/>
+        </fix-replace>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/presentation/ui/components/SecureKeyboard.kt"
+            line="781"
             column="37"
-            startOffset="17397"
-            endLine="419"
+            startOffset="31213"
+            endLine="781"
             endColumn="51"
-            endOffset="17411"/>
+            endOffset="31227"/>
     </incident>
 
     <incident
@@ -892,7 +939,7 @@
                 imports="androidx.core.content.edit"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
                     startOffset="1243"
                     endOffset="1248"/>
             </fix-replace>
@@ -904,7 +951,7 @@
                 replacement=" {"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
                     startOffset="1248"
                     endOffset="1249"/>
             </fix-replace>
@@ -916,7 +963,7 @@
                 replacement=""
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
                     startOffset="1249"
                     endOffset="1250"/>
             </fix-replace>
@@ -928,13 +975,13 @@
                 replacement="}"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
                     startOffset="1275"
                     endOffset="1283"/>
             </fix-replace>
         </fix-composite>
         <location
-            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
             line="35"
             column="22"
             startOffset="1237"
@@ -962,7 +1009,7 @@
                 imports="androidx.core.content.edit"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
                     startOffset="1399"
                     endOffset="1404"/>
             </fix-replace>
@@ -974,7 +1021,7 @@
                 replacement=" {"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
                     startOffset="1404"
                     endOffset="1405"/>
             </fix-replace>
@@ -986,7 +1033,7 @@
                 replacement=""
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
                     startOffset="1405"
                     endOffset="1406"/>
             </fix-replace>
@@ -998,13 +1045,13 @@
                 replacement="}"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
                     startOffset="1441"
                     endOffset="1449"/>
             </fix-replace>
         </fix-composite>
         <location
-            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
             line="39"
             column="22"
             startOffset="1393"
@@ -1032,7 +1079,7 @@
                 imports="androidx.core.content.edit"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
                     startOffset="1556"
                     endOffset="1561"/>
             </fix-replace>
@@ -1044,7 +1091,7 @@
                 replacement=" {"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
                     startOffset="1561"
                     endOffset="1562"/>
             </fix-replace>
@@ -1056,7 +1103,7 @@
                 replacement=""
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
                     startOffset="1562"
                     endOffset="1563"/>
             </fix-replace>
@@ -1068,13 +1115,13 @@
                 replacement="}"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
                     startOffset="1593"
                     endOffset="1601"/>
             </fix-replace>
         </fix-composite>
         <location
-            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
             line="43"
             column="22"
             startOffset="1550"
@@ -1102,7 +1149,7 @@
                 imports="androidx.core.content.edit"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
                     startOffset="1708"
                     endOffset="1713"/>
             </fix-replace>
@@ -1114,7 +1161,7 @@
                 replacement=" {"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
                     startOffset="1713"
                     endOffset="1714"/>
             </fix-replace>
@@ -1126,7 +1173,7 @@
                 replacement=""
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
                     startOffset="1714"
                     endOffset="1715"/>
             </fix-replace>
@@ -1138,13 +1185,13 @@
                 replacement="}"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
                     startOffset="1745"
                     endOffset="1753"/>
             </fix-replace>
         </fix-composite>
         <location
-            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
             line="47"
             column="22"
             startOffset="1702"
@@ -1172,7 +1219,7 @@
                 imports="androidx.core.content.edit"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
                     startOffset="1881"
                     endOffset="1886"/>
             </fix-replace>
@@ -1184,7 +1231,7 @@
                 replacement=" {"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
                     startOffset="1886"
                     endOffset="1887"/>
             </fix-replace>
@@ -1196,7 +1243,7 @@
                 replacement=""
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
                     startOffset="1887"
                     endOffset="1888"/>
             </fix-replace>
@@ -1208,13 +1255,13 @@
                 replacement="}"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
                     startOffset="1929"
                     endOffset="1937"/>
             </fix-replace>
         </fix-composite>
         <location
-            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
             line="51"
             column="22"
             startOffset="1875"
@@ -1242,7 +1289,7 @@
                 imports="androidx.core.content.edit"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
                     startOffset="2160"
                     endOffset="2165"/>
             </fix-replace>
@@ -1254,7 +1301,7 @@
                 replacement=" {"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
                     startOffset="2165"
                     endOffset="2166"/>
             </fix-replace>
@@ -1266,7 +1313,7 @@
                 replacement=""
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
                     startOffset="2166"
                     endOffset="2167"/>
             </fix-replace>
@@ -1278,13 +1325,13 @@
                 replacement="}"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
                     startOffset="2174"
                     endOffset="2182"/>
             </fix-replace>
         </fix-composite>
         <location
-            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/AuthStore.kt"
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/AuthStore.kt"
             line="60"
             column="9"
             startOffset="2154"
@@ -1312,9 +1359,9 @@
                 imports="androidx.core.content.edit"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/domain/crypto/IdentityKeyManager.kt"
-                    startOffset="3598"
-                    endOffset="3603"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/domain/crypto/IdentityKeyManager.kt"
+                    startOffset="3597"
+                    endOffset="3602"/>
             </fix-replace>
             <fix-replace
                 description="Replace with  {"
@@ -1324,9 +1371,9 @@
                 replacement=" {"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/domain/crypto/IdentityKeyManager.kt"
-                    startOffset="3603"
-                    endOffset="3604"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/domain/crypto/IdentityKeyManager.kt"
+                    startOffset="3602"
+                    endOffset="3603"/>
             </fix-replace>
             <fix-replace
                 description="Delete &quot;.&quot;"
@@ -1336,9 +1383,9 @@
                 replacement=""
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/domain/crypto/IdentityKeyManager.kt"
-                    startOffset="3617"
-                    endOffset="3618"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/domain/crypto/IdentityKeyManager.kt"
+                    startOffset="3616"
+                    endOffset="3617"/>
             </fix-replace>
             <fix-replace
                 description="Replace with }"
@@ -1348,9 +1395,9 @@
                 replacement="}"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/domain/crypto/IdentityKeyManager.kt"
-                    startOffset="3842"
-                    endOffset="3850"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/domain/crypto/IdentityKeyManager.kt"
+                    startOffset="3841"
+                    endOffset="3849"/>
             </fix-replace>
             <fix-replace
                 description="Replace with     "
@@ -1360,9 +1407,9 @@
                 replacement="    "
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/domain/crypto/IdentityKeyManager.kt"
-                    startOffset="3605"
-                    endOffset="3605"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/domain/crypto/IdentityKeyManager.kt"
+                    startOffset="3604"
+                    endOffset="3604"/>
             </fix-replace>
             <fix-replace
                 description="Replace with     "
@@ -1372,9 +1419,9 @@
                 replacement="    "
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/domain/crypto/IdentityKeyManager.kt"
-                    startOffset="3667"
-                    endOffset="3667"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/domain/crypto/IdentityKeyManager.kt"
+                    startOffset="3666"
+                    endOffset="3666"/>
             </fix-replace>
             <fix-replace
                 description="Replace with     "
@@ -1384,9 +1431,9 @@
                 replacement="    "
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/domain/crypto/IdentityKeyManager.kt"
-                    startOffset="3742"
-                    endOffset="3742"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/domain/crypto/IdentityKeyManager.kt"
+                    startOffset="3741"
+                    endOffset="3741"/>
             </fix-replace>
             <fix-replace
                 description="Replace with     "
@@ -1396,19 +1443,19 @@
                 replacement="    "
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/domain/crypto/IdentityKeyManager.kt"
-                    startOffset="3788"
-                    endOffset="3788"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/domain/crypto/IdentityKeyManager.kt"
+                    startOffset="3787"
+                    endOffset="3787"/>
             </fix-replace>
         </fix-composite>
         <location
-            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/domain/crypto/IdentityKeyManager.kt"
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/domain/crypto/IdentityKeyManager.kt"
             line="84"
             column="9"
-            startOffset="3592"
+            startOffset="3591"
             endLine="84"
             endColumn="21"
-            endOffset="3604"/>
+            endOffset="3603"/>
     </incident>
 
     <incident
@@ -1430,9 +1477,9 @@
                 imports="androidx.core.content.edit"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/domain/crypto/IdentityKeyManager.kt"
-                    startOffset="5029"
-                    endOffset="5034"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/domain/crypto/IdentityKeyManager.kt"
+                    startOffset="5028"
+                    endOffset="5033"/>
             </fix-replace>
             <fix-replace
                 description="Replace with  {"
@@ -1442,23 +1489,23 @@
                 replacement=" {"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/domain/crypto/IdentityKeyManager.kt"
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/domain/crypto/IdentityKeyManager.kt"
+                    startOffset="5033"
+                    endOffset="5034"/>
+            </fix-replace>
+            <fix-replace
+                description="Delete &quot;.&quot;"
+                robot="true"
+                independent="true"
+                oldString="."
+                replacement=""
+                priority="0">
+                <range
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/domain/crypto/IdentityKeyManager.kt"
                     startOffset="5034"
                     endOffset="5035"/>
             </fix-replace>
             <fix-replace
-                description="Delete &quot;.&quot;"
-                robot="true"
-                independent="true"
-                oldString="."
-                replacement=""
-                priority="0">
-                <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/domain/crypto/IdentityKeyManager.kt"
-                    startOffset="5035"
-                    endOffset="5036"/>
-            </fix-replace>
-            <fix-replace
                 description="Replace with }"
                 robot="true"
                 independent="true"
@@ -1466,19 +1513,19 @@
                 replacement="}"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/domain/crypto/IdentityKeyManager.kt"
-                    startOffset="5043"
-                    endOffset="5051"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/domain/crypto/IdentityKeyManager.kt"
+                    startOffset="5042"
+                    endOffset="5050"/>
             </fix-replace>
         </fix-composite>
         <location
-            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/domain/crypto/IdentityKeyManager.kt"
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/domain/crypto/IdentityKeyManager.kt"
             line="124"
             column="9"
-            startOffset="5023"
+            startOffset="5022"
             endLine="124"
             endColumn="21"
-            endOffset="5035"/>
+            endOffset="5034"/>
     </incident>
 
     <incident
@@ -1500,9 +1547,9 @@
                 imports="androidx.core.content.edit"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/keystore/KeystoreManager.kt"
-                    startOffset="2017"
-                    endOffset="2022"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/keystore/KeystoreManager.kt"
+                    startOffset="1852"
+                    endOffset="1857"/>
             </fix-replace>
             <fix-replace
                 description="Replace with  {"
@@ -1512,9 +1559,9 @@
                 replacement=" {"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/keystore/KeystoreManager.kt"
-                    startOffset="2022"
-                    endOffset="2023"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/keystore/KeystoreManager.kt"
+                    startOffset="1857"
+                    endOffset="1858"/>
             </fix-replace>
             <fix-replace
                 description="Delete &quot;.&quot;"
@@ -1524,9 +1571,9 @@
                 replacement=""
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/keystore/KeystoreManager.kt"
-                    startOffset="2036"
-                    endOffset="2037"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/keystore/KeystoreManager.kt"
+                    startOffset="1871"
+                    endOffset="1872"/>
             </fix-replace>
             <fix-replace
                 description="Replace with }"
@@ -1536,43 +1583,113 @@
                 replacement="}"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/keystore/KeystoreManager.kt"
-                    startOffset="2160"
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/keystore/KeystoreManager.kt"
+                    startOffset="1995"
+                    endOffset="2003"/>
+            </fix-replace>
+            <fix-replace
+                description="Replace with     "
+                robot="true"
+                independent="true"
+                oldString=""
+                replacement="    "
+                priority="0">
+                <range
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/keystore/KeystoreManager.kt"
+                    startOffset="1859"
+                    endOffset="1859"/>
+            </fix-replace>
+            <fix-replace
+                description="Replace with     "
+                robot="true"
+                independent="true"
+                oldString=""
+                replacement="    "
+                priority="0">
+                <range
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/keystore/KeystoreManager.kt"
+                    startOffset="1925"
+                    endOffset="1925"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/local/keystore/KeystoreManager.kt"
+            line="50"
+            column="9"
+            startOffset="1846"
+            endLine="50"
+            endColumn="21"
+            endOffset="1858"/>
+    </incident>
+
+    <incident
+        id="UseKtx"
+        severity="warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?">
+        <fix-composite
+            description="Replace with the edit extension function"
+            family="Replace with the edit extension function"
+            robot="true"
+            independent="true">
+            <fix-replace
+                description="Replace with edit"
+                robot="true"
+                independent="true"
+                oldString="edit("
+                replacement="edit"
+                reformat="value"
+                imports="androidx.core.content.edit"
+                priority="0">
+                <range
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/remote/ServerConfig.kt"
+                    startOffset="2163"
                     endOffset="2168"/>
             </fix-replace>
             <fix-replace
-                description="Replace with     "
+                description="Replace with  {"
                 robot="true"
                 independent="true"
-                oldString=""
-                replacement="    "
+                oldString=")"
+                replacement=" {"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/keystore/KeystoreManager.kt"
-                    startOffset="2024"
-                    endOffset="2024"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/remote/ServerConfig.kt"
+                    startOffset="2168"
+                    endOffset="2169"/>
             </fix-replace>
             <fix-replace
-                description="Replace with     "
+                description="Delete &quot;.&quot;"
                 robot="true"
                 independent="true"
-                oldString=""
-                replacement="    "
+                oldString="."
+                replacement=""
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/keystore/KeystoreManager.kt"
-                    startOffset="2090"
-                    endOffset="2090"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/remote/ServerConfig.kt"
+                    startOffset="2169"
+                    endOffset="2170"/>
+            </fix-replace>
+            <fix-replace
+                description="Replace with }"
+                robot="true"
+                independent="true"
+                oldString=".apply()"
+                replacement="}"
+                priority="0">
+                <range
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/remote/ServerConfig.kt"
+                    startOffset="2202"
+                    endOffset="2210"/>
             </fix-replace>
         </fix-composite>
         <location
-            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/local/keystore/KeystoreManager.kt"
-            line="52"
-            column="9"
-            startOffset="2011"
-            endLine="52"
-            endColumn="21"
-            endOffset="2023"/>
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/remote/ServerConfig.kt"
+            line="45"
+            column="21"
+            startOffset="2157"
+            endLine="45"
+            endColumn="33"
+            endOffset="2169"/>
     </incident>
 
     <incident
@@ -1594,9 +1711,9 @@
                 imports="androidx.core.content.edit"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/remote/ServerConfig.kt"
-                    startOffset="1162"
-                    endOffset="1167"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/remote/ServerConfig.kt"
+                    startOffset="2363"
+                    endOffset="2368"/>
             </fix-replace>
             <fix-replace
                 description="Replace with  {"
@@ -1606,9 +1723,9 @@
                 replacement=" {"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/remote/ServerConfig.kt"
-                    startOffset="1167"
-                    endOffset="1168"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/remote/ServerConfig.kt"
+                    startOffset="2368"
+                    endOffset="2369"/>
             </fix-replace>
             <fix-replace
                 description="Delete &quot;.&quot;"
@@ -1618,9 +1735,9 @@
                 replacement=""
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/remote/ServerConfig.kt"
-                    startOffset="1168"
-                    endOffset="1169"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/remote/ServerConfig.kt"
+                    startOffset="2369"
+                    endOffset="2370"/>
             </fix-replace>
             <fix-replace
                 description="Replace with }"
@@ -1630,19 +1747,19 @@
                 replacement="}"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/remote/ServerConfig.kt"
-                    startOffset="1213"
-                    endOffset="1221"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/remote/ServerConfig.kt"
+                    startOffset="2414"
+                    endOffset="2422"/>
             </fix-replace>
         </fix-composite>
         <location
-            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/data/remote/ServerConfig.kt"
-            line="29"
-            column="22"
-            startOffset="1156"
-            endLine="29"
-            endColumn="34"
-            endOffset="1168"/>
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/data/remote/ServerConfig.kt"
+            line="51"
+            column="13"
+            startOffset="2357"
+            endLine="51"
+            endColumn="25"
+            endOffset="2369"/>
     </incident>
 
     <incident
@@ -1660,18 +1777,18 @@
             imports="androidx.core.graphics.createBitmap"
             priority="0">
             <range
-                file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/presentation/ui/screens/SplashAndHomeScreens.kt"
-                startOffset="16975"
-                endOffset="17065"/>
+                file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/presentation/ui/screens/SplashAndHomeScreens.kt"
+                startOffset="16483"
+                endOffset="16573"/>
         </fix-replace>
         <location
-            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/presentation/ui/screens/SplashAndHomeScreens.kt"
-            line="427"
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/presentation/ui/screens/SplashAndHomeScreens.kt"
+            line="421"
             column="23"
-            startOffset="16975"
-            endLine="427"
+            startOffset="16483"
+            endLine="421"
             endColumn="113"
-            endOffset="17065"/>
+            endOffset="16573"/>
     </incident>
 
     <incident
@@ -1689,18 +1806,18 @@
             imports="androidx.core.graphics.set"
             priority="0">
             <range
-                file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/presentation/ui/screens/SplashAndHomeScreens.kt"
-                startOffset="17166"
-                endOffset="17363"/>
+                file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/presentation/ui/screens/SplashAndHomeScreens.kt"
+                startOffset="16674"
+                endOffset="16871"/>
         </fix-replace>
         <location
-            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/presentation/ui/screens/SplashAndHomeScreens.kt"
-            line="430"
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/presentation/ui/screens/SplashAndHomeScreens.kt"
+            line="424"
             column="21"
-            startOffset="17166"
-            endLine="434"
+            startOffset="16674"
+            endLine="428"
             endColumn="22"
-            endOffset="17363"/>
+            endOffset="16871"/>
     </incident>
 
     <incident
@@ -1722,9 +1839,9 @@
                 imports="androidx.core.content.edit"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/presentation/viewmodel/ViewModels.kt"
-                    startOffset="43998"
-                    endOffset="44003"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/presentation/viewmodel/ViewModels.kt"
+                    startOffset="42512"
+                    endOffset="42517"/>
             </fix-replace>
             <fix-replace
                 description="Replace with  {"
@@ -1734,9 +1851,9 @@
                 replacement=" {"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/presentation/viewmodel/ViewModels.kt"
-                    startOffset="44003"
-                    endOffset="44004"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/presentation/viewmodel/ViewModels.kt"
+                    startOffset="42517"
+                    endOffset="42518"/>
             </fix-replace>
             <fix-replace
                 description="Delete &quot;.&quot;"
@@ -1746,9 +1863,9 @@
                 replacement=""
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/presentation/viewmodel/ViewModels.kt"
-                    startOffset="44004"
-                    endOffset="44005"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/presentation/viewmodel/ViewModels.kt"
+                    startOffset="42518"
+                    endOffset="42519"/>
             </fix-replace>
             <fix-replace
                 description="Replace with }"
@@ -1758,19 +1875,19 @@
                 replacement="}"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/presentation/viewmodel/ViewModels.kt"
-                    startOffset="44047"
-                    endOffset="44055"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/presentation/viewmodel/ViewModels.kt"
+                    startOffset="42561"
+                    endOffset="42569"/>
             </fix-replace>
         </fix-composite>
         <location
-            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/presentation/viewmodel/ViewModels.kt"
-            line="1032"
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/presentation/viewmodel/ViewModels.kt"
+            line="1021"
             column="9"
-            startOffset="43992"
-            endLine="1032"
+            startOffset="42506"
+            endLine="1021"
             endColumn="21"
-            endOffset="44004"/>
+            endOffset="42518"/>
     </incident>
 
     <incident
@@ -1792,9 +1909,9 @@
                 imports="androidx.core.content.edit"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/presentation/viewmodel/ViewModels.kt"
-                    startOffset="44191"
-                    endOffset="44196"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/presentation/viewmodel/ViewModels.kt"
+                    startOffset="42705"
+                    endOffset="42710"/>
             </fix-replace>
             <fix-replace
                 description="Replace with  {"
@@ -1804,9 +1921,9 @@
                 replacement=" {"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/presentation/viewmodel/ViewModels.kt"
-                    startOffset="44196"
-                    endOffset="44197"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/presentation/viewmodel/ViewModels.kt"
+                    startOffset="42710"
+                    endOffset="42711"/>
             </fix-replace>
             <fix-replace
                 description="Delete &quot;.&quot;"
@@ -1816,9 +1933,9 @@
                 replacement=""
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/presentation/viewmodel/ViewModels.kt"
-                    startOffset="44197"
-                    endOffset="44198"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/presentation/viewmodel/ViewModels.kt"
+                    startOffset="42711"
+                    endOffset="42712"/>
             </fix-replace>
             <fix-replace
                 description="Replace with }"
@@ -1828,19 +1945,19 @@
                 replacement="}"
                 priority="0">
                 <range
-                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/presentation/viewmodel/ViewModels.kt"
-                    startOffset="44239"
-                    endOffset="44247"/>
+                    file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/presentation/viewmodel/ViewModels.kt"
+                    startOffset="42753"
+                    endOffset="42761"/>
             </fix-replace>
         </fix-composite>
         <location
-            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/hacksecure/messenger/presentation/viewmodel/ViewModels.kt"
-            line="1037"
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/cryptika/messenger/presentation/viewmodel/ViewModels.kt"
+            line="1026"
             column="9"
-            startOffset="44185"
-            endLine="1037"
+            startOffset="42699"
+            endLine="1026"
             endColumn="21"
-            endOffset="44197"/>
+            endOffset="42711"/>
     </incident>
 
 </incidents>

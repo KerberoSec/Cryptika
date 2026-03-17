@@ -2,7 +2,6 @@ package com.cryptika.messenger.data.remote;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import com.cryptika.messenger.data.local.AuthStore;
 import com.cryptika.messenger.data.remote.websocket.RelayWebSocketClient;
 import com.cryptika.messenger.domain.crypto.*;
@@ -53,8 +52,6 @@ public final class EphemeralSessionManager {
     @org.jetbrains.annotations.NotNull()
     private final com.cryptika.messenger.domain.repository.AuthRepository authRepository = null;
     @org.jetbrains.annotations.NotNull()
-    private static final java.lang.String TAG = "EphemeralSessionMgr";
-    @org.jetbrains.annotations.NotNull()
     private final kotlinx.coroutines.CoroutineScope scope = null;
     @org.jetbrains.annotations.NotNull()
     private final java.util.concurrent.ConcurrentHashMap<java.lang.String, com.cryptika.messenger.data.remote.EphemeralSessionManager.EphemeralSession> sessions = null;
@@ -72,6 +69,12 @@ public final class EphemeralSessionManager {
     private final java.util.concurrent.ConcurrentHashMap<java.lang.String, kotlin.jvm.functions.Function2<com.cryptika.messenger.domain.crypto.MessageProcessor, kotlin.coroutines.Continuation<? super kotlin.Unit>, java.lang.Object>> sessionReadyCallbacks = null;
     @org.jetbrains.annotations.NotNull()
     private final java.util.concurrent.ConcurrentHashMap<java.lang.String, kotlin.jvm.functions.Function1<kotlin.coroutines.Continuation<? super kotlin.Unit>, java.lang.Object>> peerDisconnectedCallbacks = null;
+    
+    /**
+     * Hard client-side cap: no ephemeral session may outlive 30 minutes regardless
+     * of what the server declares in [expiresAt].
+     */
+    private static final long MAX_SESSION_TTL_MS = 1800000L;
     
     /**
      * Burns server credentials once on the first successfully sent message.
@@ -174,7 +177,7 @@ public final class EphemeralSessionManager {
     }
     
     /**
-     * Destroy a session — cryptographic erasure.
+     * Destroy a session: cryptographic erasure.
      * 1. Close WebSocket
      * 2. Zeroize all crypto material (DH keys, session keys, ratchet state)
      * 3. Delete all messages for this conversation from DB
@@ -188,7 +191,7 @@ public final class EphemeralSessionManager {
     }
     
     /**
-     * Destroy ALL sessions — called on logout or app wipe.
+     * Destroy ALL sessions: called on logout or app wipe.
      */
     public final void destroyAllSessions() {
     }
@@ -207,7 +210,7 @@ public final class EphemeralSessionManager {
         return null;
     }
     
-    @kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000\u0012\n\u0002\u0018\u0002\n\u0002\u0010\u0000\n\u0002\b\u0002\n\u0002\u0010\u000e\n\u0000\b\u0086\u0003\u0018\u00002\u00020\u0001B\u0007\b\u0002\u00a2\u0006\u0002\u0010\u0002R\u000e\u0010\u0003\u001a\u00020\u0004X\u0082T\u00a2\u0006\u0002\n\u0000\u00a8\u0006\u0005"}, d2 = {"Lcom/cryptika/messenger/data/remote/EphemeralSessionManager$Companion;", "", "()V", "TAG", "", "Cryptika_debug"})
+    @kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000\u0012\n\u0002\u0018\u0002\n\u0002\u0010\u0000\n\u0002\b\u0002\n\u0002\u0010\t\n\u0000\b\u0086\u0003\u0018\u00002\u00020\u0001B\u0007\b\u0002\u00a2\u0006\u0002\u0010\u0002R\u000e\u0010\u0003\u001a\u00020\u0004X\u0082T\u00a2\u0006\u0002\n\u0000\u00a8\u0006\u0005"}, d2 = {"Lcom/cryptika/messenger/data/remote/EphemeralSessionManager$Companion;", "", "()V", "MAX_SESSION_TTL_MS", "", "Cryptika_debug"})
     public static final class Companion {
         
         private Companion() {

@@ -1,6 +1,6 @@
-# HackSecure Relay Server - Docker Deployment Guide
+# Cryptika Relay Server - Docker Deployment Guide
 
-This guide explains how to run the HackSecure relay server using Docker.
+This guide explains how to run the Cryptika relay server using Docker.
 
 ---
 
@@ -17,7 +17,7 @@ This guide explains how to run the HackSecure relay server using Docker.
 
 ### 1. Start the Server
 
-From the **project root directory** (HackSecureMessenger):
+From the **project root directory** (CryptikaMessenger):
 
 ```bash
 docker-compose up -d
@@ -25,7 +25,7 @@ docker-compose up -d
 
 **What this does:**
 - Builds the Docker image from `server/Dockerfile`
-- Creates a container named `hacksecure-relay-server`
+- Creates a container named `cryptika-relay-server`
 - Starts the server on port `8443`
 - Runs in detached mode (background)
 
@@ -81,40 +81,40 @@ docker-compose down -v
 
 ```bash
 cd server
-docker build -t hacksecure-relay-server:latest .
+docker build -t cryptika-relay-server:latest .
 ```
 
 ### 2. Run the Container
 
 ```bash
 docker run -d \
-  --name hacksecure-relay \
+  --name cryptika-relay \
   -p 8443:8443 \
   --restart unless-stopped \
-  hacksecure-relay-server:latest
+  cryptika-relay-server:latest
 ```
 
 ### 3. View Logs
 
 ```bash
 # View all logs
-docker logs hacksecure-relay
+docker logs cryptika-relay
 
 # Follow logs in real-time
-docker logs -f hacksecure-relay
+docker logs -f cryptika-relay
 
 # Extract server public key
-docker logs hacksecure-relay | grep "SERVER_PUBLIC_KEY_HEX"
+docker logs cryptika-relay | grep "SERVER_PUBLIC_KEY_HEX"
 ```
 
 ### 4. Stop and Remove Container
 
 ```bash
 # Stop container
-docker stop hacksecure-relay
+docker stop cryptika-relay
 
 # Remove container
-docker rm hacksecure-relay
+docker rm cryptika-relay
 ```
 
 ---
@@ -214,7 +214,7 @@ docker-compose down
 docker-compose ps
 
 # View resource usage
-docker stats hacksecure-relay-server
+docker stats cryptika-relay-server
 ```
 
 ### Logs
@@ -240,10 +240,10 @@ docker-compose logs > server_logs.txt
 
 ```bash
 # Execute command in running container
-docker-compose exec hacksecure-server sh
+docker-compose exec cryptika-server sh
 
 # View container details
-docker inspect hacksecure-relay-server
+docker inspect cryptika-relay-server
 
 # View container processes
 docker-compose top
@@ -256,7 +256,7 @@ docker-compose top
 docker images
 
 # Remove image
-docker rmi hacksecure-relay-server:latest
+docker rmi cryptika-relay-server:latest
 
 # Rebuild image
 docker-compose build --no-cache
@@ -276,9 +276,9 @@ For production, use a reverse proxy like **Nginx** or **Caddy** with TLS:
 version: '3.8'
 
 services:
-  hacksecure-server:
+  cryptika-server:
     build: ./server
-    container_name: hacksecure-relay
+    container_name: cryptika-relay
     networks:
       - backend
     # Don't expose port directly, only through nginx
@@ -292,7 +292,7 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./certs:/etc/nginx/certs:ro
     depends_on:
-      - hacksecure-server
+      - cryptika-server
     networks:
       - backend
 
@@ -339,10 +339,10 @@ Monitor health status:
 
 ```bash
 # Check health
-docker inspect --format='{{.State.Health.Status}}' hacksecure-relay-server
+docker inspect --format='{{.State.Health.Status}}' cryptika-relay-server
 
 # View health logs
-docker inspect --format='{{json .State.Health}}' hacksecure-relay-server | jq
+docker inspect --format='{{json .State.Health}}' cryptika-relay-server | jq
 ```
 
 ---
@@ -359,7 +359,7 @@ docker-compose logs
 docker-compose ps
 
 # Inspect container
-docker inspect hacksecure-relay-server
+docker inspect cryptika-relay-server
 ```
 
 ### Port Already in Use
@@ -411,7 +411,7 @@ docker-compose config
 
 ```bash
 # 1. Navigate to project root
-cd /path/to/HackSecureMessenger
+cd /path/to/CryptikaMessenger
 
 # 2. Start server with docker-compose
 docker-compose up -d
@@ -448,7 +448,7 @@ docker-compose logs -f
 docker-compose down -v
 
 # Remove images
-docker rmi hacksecure-relay-server:latest
+docker rmi cryptika-relay-server:latest
 
 # Remove all unused Docker resources
 docker system prune -a
@@ -505,13 +505,13 @@ services:
 
 For Docker-specific issues:
 - Check logs: `docker-compose logs`
-- Inspect container: `docker inspect hacksecure-relay-server`
+- Inspect container: `docker inspect cryptika-relay-server`
 - Test connectivity: `curl http://localhost:8443/api/v1/health`
 
 For server issues, see main `COMMANDS.md` troubleshooting section.
 
 ---
 
-**Author:** HackSecure Messenger Team
+**Author:** Cryptika Team
 **Version:** 1.0.0
 **Last Updated:** 2026-03-08

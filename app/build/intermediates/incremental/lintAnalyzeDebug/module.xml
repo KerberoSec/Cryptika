@@ -1,6 +1,6 @@
 <lint-module
     format="1"
-    dir="E:\MY HARD W0RK\NITH\HackSecureMessenger\app"
+    dir="E:\MY HARD W0RK\NITH\Cryptika\app"
     name=":app"
     type="APP"
     maven="CryptikaMessenger:app:unspecified"

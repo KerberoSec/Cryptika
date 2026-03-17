@@ -6,3 +6,4 @@ mipmap ic_launcher
 mipmap ic_launcher_round
 style Theme.Cryptika
 xml data_extraction_rules
+xml network_security_config

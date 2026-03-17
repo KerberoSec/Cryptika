@@ -16,7 +16,7 @@ public final class SecureInputFieldKt {
      * to become visible. It stores text via [value] / [onValueChange] and does NOT
      * open the system soft keyboard.
      *
-     * The secure keyboard is managed externally — this composable only requests focus.
+     * The secure keyboard is managed externally: this composable only requests focus.
      */
     @androidx.compose.runtime.Composable()
     public static final void SecureInputField(@org.jetbrains.annotations.NotNull()
