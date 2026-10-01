@@ -84,7 +84,7 @@ dependencies {
     implementation("org.bouncycastle:bcprov-jdk15on:1.70")
 
     // Secure Storage
-    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+    implementation("androidx.security:security-crypto:1.1.0")
 
     // Compose BOM
     implementation(platform("androidx.compose:compose-bom:2024.02.00"))
