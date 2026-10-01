@@ -40,7 +40,11 @@ class HashRatchet(initialKey: ByteArray) {
      * Advances the ratchet and returns the next key.
      * Previous key is ZEROIZED immediately: it cannot be recovered.
      */
+    @Synchronized
     fun advance(): RatchetKey {
+        if (counter == Long.MAX_VALUE) {
+            throw CryptoError.Unknown(IllegalStateException("Ratchet counter overflow"))
+        }
         val nextKey = sha256(currentKey)
         currentKey.fill(0)  // zeroize previous key
         currentKey = nextKey
@@ -56,7 +60,12 @@ class HashRatchet(initialKey: ByteArray) {
      * If targetCounter > currentCounter: advances ratchet, caches intermediate keys.
      * If targetCounter <= currentCounter and not in lookahead: replay, throws ReplayDetected.
      */
+    @Synchronized
     fun keyForCounter(targetCounter: Long): ByteArray {
+        if (targetCounter <= 0L) {
+            throw CryptoError.ReplayDetected
+        }
+
         // Check lookahead buffer first: handles out-of-order arrivals
         lookaheadBuffer[targetCounter]?.let { (key, _) ->
             lookaheadBuffer.remove(targetCounter)
@@ -78,32 +87,41 @@ class HashRatchet(initialKey: ByteArray) {
         // keysToCache must be declared here so it's in scope for the flush below
         val keysToCache = mutableListOf<Pair<Long, ByteArray>>()
 
-        while (counter < targetCounter) {
-            val ratchetKey = advance()  // increments counter
-            if (counter < targetCounter) {
-                // Intermediate key: cache for potential future out-of-order messages
-                if (keysToCache.size < MAX_LOOKAHEAD) {
-                    keysToCache.add(counter to ratchetKey.key.copyOf())
+        try {
+            while (counter < targetCounter) {
+                val ratchetKey = advance()  // increments counter
+                if (counter < targetCounter) {
+                    // Intermediate key: cache for potential future out-of-order messages
+                    if (keysToCache.size < MAX_LOOKAHEAD) {
+                        keysToCache.add(counter to ratchetKey.key.copyOf())
+                    }
+                    ratchetKey.zeroize()
+                } else {
+                    // counter == targetCounter: this is the key we need
+                    // Flush intermediate keys to lookahead buffer BEFORE returning
+                    val now = System.currentTimeMillis()
+                    keysToCache.forEach { (c, k) ->
+                        lookaheadBuffer[c] = k to now
+                    }
+                    keysToCache.clear()
+                    evictExpiredLookahead()
+                    // Return a copy; caller is responsible for zeroizing
+                    return ratchetKey.key.copyOf().also { ratchetKey.zeroize() }
                 }
-                ratchetKey.zeroize()
-            } else {
-                // counter == targetCounter: this is the key we need
-                // Flush intermediate keys to lookahead buffer BEFORE returning
-                val now = System.currentTimeMillis()
-                keysToCache.forEach { (c, k) ->
-                    lookaheadBuffer[c] = k to now
-                }
-                evictExpiredLookahead()
-                // Return a copy; caller is responsible for zeroizing
-                return ratchetKey.key.copyOf().also { ratchetKey.zeroize() }
             }
+        } catch (t: Throwable) {
+            keysToCache.forEach { (_, k) -> k.fill(0) }
+            keysToCache.clear()
+            throw t
         }
 
         throw CryptoError.ReplayDetected
     }
 
+    @Synchronized
     fun currentCounter(): Long = counter
 
+    @Synchronized
     fun zeroizeAll() {
         currentKey.fill(0)
         lookaheadBuffer.values.forEach { (key, _) -> key.fill(0) }

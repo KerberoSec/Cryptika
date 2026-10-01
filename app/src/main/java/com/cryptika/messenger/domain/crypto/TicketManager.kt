@@ -89,9 +89,14 @@ class TicketManager(
             throw CryptoError.TicketSignatureInvalid
         }
 
-        // 4. Check clock skew (future timestamp tolerance)
+        if (timestamp <= 0L || expirySeconds <= 0) {
+            throw CryptoError.TicketSignatureInvalid
+        }
+
+        // 4. Check clock skew (past and future timestamp tolerance: +/- 5 minutes)
         val now = System.currentTimeMillis()
-        if (timestamp - now > CLOCK_SKEW_TOLERANCE_MS) {
+        val delta = now - timestamp
+        if (delta < -CLOCK_SKEW_TOLERANCE_MS || delta > CLOCK_SKEW_TOLERANCE_MS) {
             throw CryptoError.TimestampStale
         }
 

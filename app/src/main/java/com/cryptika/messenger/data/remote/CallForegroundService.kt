@@ -57,7 +57,6 @@ class CallForegroundService : Service() {
                     action = ACTION_STOP
                 }
                 context.startService(intent)
-                context.stopService(Intent(context, CallForegroundService::class.java))
             } catch (_: Exception) {}
         }
     }
@@ -89,6 +88,7 @@ class CallForegroundService : Service() {
                     }
                 } catch (e: Exception) {
                     android.util.Log.w("CallFgService", "Cannot start foreground service: ${e.message}")
+                    stopSelf()
                 }
             }
 

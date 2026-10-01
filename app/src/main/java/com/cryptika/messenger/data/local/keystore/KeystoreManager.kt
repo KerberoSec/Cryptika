@@ -33,6 +33,7 @@ class KeystoreManager {
     }
 
     private val keyStore: KeyStore = KeyStore.getInstance(ANDROID_KEYSTORE).apply { load(null) }
+    private val keyLock = Any()
 
     // DB Passphrase
 
@@ -43,26 +44,32 @@ class KeystoreManager {
      * Returns the raw 32-byte passphrase (caller must zeroize after use).
      */
     fun generateAndStoreDbPassphrase(prefs: android.content.SharedPreferences): ByteArray {
-        ensureKey(DB_PASSPHRASE_KEY_ALIAS)
-        val passphrase = ByteArray(32).also { SecureRandom().nextBytes(it) }
-        val (encrypted, iv) = encrypt(DB_PASSPHRASE_KEY_ALIAS, passphrase)
+        synchronized(keyLock) {
+            ensureKey(DB_PASSPHRASE_KEY_ALIAS)
+            val passphrase = ByteArray(32).also { SecureRandom().nextBytes(it) }
+            val (encrypted, iv) = encrypt(DB_PASSPHRASE_KEY_ALIAS, passphrase)
 
-        prefs.edit()
-            .putString("db_passphrase_enc", encrypted.toBase64())
-            .putString("db_passphrase_iv", iv.toBase64())
-            .apply()
+            prefs.edit()
+                .putString("db_passphrase_enc", encrypted.toBase64())
+                .putString("db_passphrase_iv", iv.toBase64())
+                .commit()
 
-        return passphrase
+            return passphrase
+        }
     }
 
     /**
      * Retrieves and decrypts the stored DB passphrase.
-     * Returns null if not yet stored.
+     * Returns null if not yet stored or if keystore entry was invalidated.
      */
     fun retrieveDbPassphrase(prefs: android.content.SharedPreferences): ByteArray? {
         val encB64 = prefs.getString("db_passphrase_enc", null) ?: return null
         val ivB64 = prefs.getString("db_passphrase_iv", null) ?: return null
-        return decrypt(DB_PASSPHRASE_KEY_ALIAS, encB64.fromBase64(), ivB64.fromBase64())
+        return try {
+            decrypt(DB_PASSPHRASE_KEY_ALIAS, encB64.fromBase64(), ivB64.fromBase64())
+        } catch (_: Exception) {
+            null
+        }
     }
 
     // Per-Message Storage Keys
@@ -74,7 +81,9 @@ class KeystoreManager {
      */
     fun generateMessageKey(messageId: String): String {
         val alias = "$MESSAGE_KEY_PREFIX$messageId"
-        ensureKey(alias)
+        synchronized(keyLock) {
+            ensureKey(alias)
+        }
         return alias
     }
 
@@ -113,17 +122,21 @@ class KeystoreManager {
      */
     fun deleteMessageKey(messageId: String) {
         val alias = "$MESSAGE_KEY_PREFIX$messageId"
-        if (keyStore.containsAlias(alias)) {
-            keyStore.deleteEntry(alias)
-        }
+        deleteKeyByAlias(alias)
     }
 
     /**
      * Deletes a key by its full alias (used for direct alias management).
+     * Only message keys are permitted to be deleted; master and DB keys are protected.
      */
     fun deleteKeyByAlias(alias: String) {
-        if (keyStore.containsAlias(alias)) {
-            keyStore.deleteEntry(alias)
+        if (!alias.startsWith(MESSAGE_KEY_PREFIX) || alias == DB_PASSPHRASE_KEY_ALIAS) {
+            return
+        }
+        synchronized(keyLock) {
+            if (keyStore.containsAlias(alias)) {
+                keyStore.deleteEntry(alias)
+            }
         }
     }
 
@@ -135,8 +148,9 @@ class KeystoreManager {
     // Private helpers
 
     private fun ensureKey(alias: String) {
-        if (!keyStore.containsAlias(alias)) {
-            val keyGen = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, ANDROID_KEYSTORE)
+        synchronized(keyLock) {
+            if (!keyStore.containsAlias(alias)) {
+                val keyGen = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, ANDROID_KEYSTORE)
             keyGen.init(
                 KeyGenParameterSpec.Builder(
                     alias,

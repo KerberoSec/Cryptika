@@ -107,8 +107,12 @@ class MessageRepositoryImpl @Inject constructor(
 
     override fun getMessages(conversationId: String): Flow<List<Message>> =
         dao.getMessages(conversationId).map { entities ->
+            val now = System.currentTimeMillis()
             entities.map { entity ->
-                val plaintext = if (entity.isDecryptable) {
+                val isExpired = entity.expiryMs != null && entity.expiryMs <= now
+                val isDecryptable = entity.isDecryptable && !isExpired
+
+                val plaintext = if (isDecryptable) {
                     // storage_hash = SHA-256(blob): recompute and verify before decryption (PPT slide 12/13)
                     if (entity.storageHashHex.isNotEmpty()) {
                         val recomputed = MessageDigest.getInstance("SHA-256").digest(entity.ciphertextBlob)
@@ -121,6 +125,16 @@ class MessageRepositoryImpl @Inject constructor(
                         null
                     }
                 } else null
+
+                // If expired but still marked decryptable in DB, clean up in background
+                if (isExpired && entity.isDecryptable) {
+                    kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                        try {
+                            keystoreManager.deleteKeyByAlias(entity.storageKeyAlias)
+                            dao.zeroizeAndMarkUnrecoverable(entity.id)
+                        } catch (_: Exception) {}
+                    }
+                }
 
                 entity.toDomain(plaintext?.toString(Charsets.UTF_8))
             }
@@ -158,7 +172,11 @@ class MessageRepositoryImpl @Inject constructor(
 
     override suspend fun getMessage(id: String): Message? {
         val entity = dao.getMessage(id) ?: return null
-        val plaintext = if (entity.isDecryptable) {
+        val now = System.currentTimeMillis()
+        val isExpired = entity.expiryMs != null && entity.expiryMs <= now
+        val isDecryptable = entity.isDecryptable && !isExpired
+
+        val plaintext = if (isDecryptable) {
             // storage_hash: recompute and verify before decryption (PPT slide 12/13)
             if (entity.storageHashHex.isNotEmpty()) {
                 val recomputed = MessageDigest.getInstance("SHA-256").digest(entity.ciphertextBlob)

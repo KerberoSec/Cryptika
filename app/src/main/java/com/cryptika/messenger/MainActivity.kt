@@ -99,6 +99,16 @@ class MainActivity : ComponentActivity() {
                 try { messageDao.deleteAllMessages() } catch (_: Exception) {}
                 try { contactDao.deleteAllContacts() } catch (_: Exception) {}
                 try { conversationDao.deleteAllConversations() } catch (_: Exception) {}
+
+                // Clear system clipboard to prevent leaks of copied fingerprints/keys
+                try {
+                    val cm = getSystemService(Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                        cm?.clearPrimaryClip()
+                    } else {
+                        cm?.setPrimaryClip(android.content.ClipData.newPlainText("", ""))
+                    }
+                } catch (_: Exception) {}
             }
 
             // Clear auth tokens last (on main thread as SharedPreferences edit is safe there)
@@ -130,7 +140,23 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        // Screenshot blocking is applied per-chat inside ChatScreen via FLAG_SECURE
+
+        // Enforce global window security to shield against screenshotting and recents preview leak
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_SECURE,
+            WindowManager.LayoutParams.FLAG_SECURE
+        )
+        // Defend against tapjacking and touch injection attacks
+        window.decorView.filterTouchesWhenObscured = true
+
+        // Discard back gestures while full wipe is in progress
+        onBackPressedDispatcher.addCallback(this) {
+            if (wipeInProgress) return@addCallback
+            isEnabled = false
+            onBackPressedDispatcher.onBackPressed()
+            isEnabled = true
+        }
+
         MessageExpiryWorker.schedule(this)
         MessageExpiryWorker.runOnce(this)
 
@@ -157,6 +183,20 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         // Reset the guard so the next onStop can trigger a fresh wipe
         wipeInProgress = false
+        val prefs = getSharedPreferences("cryptika_settings", Context.MODE_PRIVATE)
+        val blockScreenshots = prefs.getBoolean("screenshot_blocking", true)
+        if (blockScreenshots) {
+            window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Guarantee window is secure before OS compositor captures Recent Apps preview
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_SECURE,
+            WindowManager.LayoutParams.FLAG_SECURE
+        )
     }
 
     /**
@@ -183,11 +223,11 @@ fun CryptikaNavGraph(onFullWipe: () -> Unit = {}) {
     val callViewModel: CallViewModel = androidx.hilt.navigation.compose.hiltViewModel()
     val incomingCall by callViewModel.incomingCallData.collectAsState()
 
-    // Auto-navigate to CallScreen when an incoming call arrives from any screen
+    // Auto-navigate to CallScreen when an incoming call arrives, but only when authenticated
     LaunchedEffect(incomingCall) {
         val data = incomingCall ?: return@LaunchedEffect
         val current = navController.currentBackStackEntry?.destination?.route
-        if (current != Routes.CALL) {
+        if (current != Routes.AUTH && current != Routes.SPLASH && current != Routes.CALL) {
             navController.navigate(Routes.call(data.contactId, isIncoming = true))
         }
     }

@@ -402,7 +402,7 @@ class CallManager @Inject constructor(
             packet.isNotEmpty() && packet[0] == CALL_SIGNAL_MAGIC ->
                 if (contact != null) onSignalReceived(convId, packet, contact)
             packet.isNotEmpty() && packet[0] == AUDIO_FRAME_MAGIC ->
-                onAudioFrameReceived(packet)
+                onAudioFrameReceived(convId, packet)
         }
     }
 
@@ -689,13 +689,24 @@ class CallManager @Inject constructor(
                     val alignedBytes = bytesRead - (bytesRead % 2)
                     if (alignedBytes < 2) continue
 
-                    val key = encryptKey ?: break
-                    // Keep packet cadence even while muted by sending encrypted silence.
-                    // This prevents remote watchdog timeouts when one side mutes.
-                    val payload = if (isMuted) ByteArray(alignedBytes) else pcmBuf.copyOf(alignedBytes)
-                    val seq = sendSequenceAtomic.getAndIncrement()
-                    val framePacket = buildAudioFrame(key, payload, seq)
-                    sendCallPacket(convId, "af_${seq}", framePacket)
+                    val key = synchronized(cleanupLock) {
+                        if (_callState.value != CallState.ACTIVE) null else encryptKey?.copyOf()
+                    } ?: break
+                    try {
+                        // Keep packet cadence even while muted by sending encrypted silence.
+                        // This prevents remote watchdog timeouts when one side mutes.
+                        val payload = if (isMuted) ByteArray(alignedBytes) else pcmBuf.copyOf(alignedBytes)
+                        val seq = sendSequenceAtomic.getAndIncrement()
+                        if (seq >= Int.MAX_VALUE - 10_000) {
+                            Log.w(TAG, "Audio sequence approaching overflow; terminating call to prevent nonce reuse")
+                            cleanup()
+                            break
+                        }
+                        val framePacket = buildAudioFrame(key, payload, seq)
+                        sendCallPacket(convId, "af_${seq}", framePacket)
+                    } finally {
+                        key.fill(0)
+                    }
                 } catch (_: Exception) { /* drop frame on transient error */ }
             }
         }
@@ -722,21 +733,17 @@ class CallManager @Inject constructor(
         }
     }
 
-    private fun onAudioFrameReceived(packet: ByteArray) {
-        if (_callState.value != CallState.ACTIVE) return
-        // Minimum: magic(1) + seq(4) + nonce(12) + aead_tag(16) = 33 bytes
-        if (packet.size < 33) return
+    private fun onAudioFrameReceived(convId: String, packet: ByteArray) {
+        if (_callState.value != CallState.ACTIVE || convId != activeConvId) return
+        // Minimum: magic(1) + seq(4) + nonce(12) + aead_tag(16) = 33 bytes; max frame 512 bytes
+        if (packet.size < 33 || packet.size > 512) return
         val key = decryptKey ?: return
-
-        // Update watchdog timer immediately (not inside a deferred coroutine)
-        lastAudioRxMs = System.currentTimeMillis()
 
         try {
             val seqBytes = packet.copyOfRange(1, 5)
             val seq = ByteBuffer.wrap(seqBytes).int
             // Anti-replay check: drop frames outside 100-frame sliding window
-            if (seq <= highestRxSeq - 100) return
-            if (seq > highestRxSeq) highestRxSeq = seq
+            if (highestRxSeq != -1 && seq <= highestRxSeq - 100) return
 
             val nonce = packet.copyOfRange(5, 17)
             val ciphertext = packet.copyOfRange(17, packet.size)
@@ -747,9 +754,25 @@ class CallManager @Inject constructor(
                 nonce = nonce,
                 additionalData = seqBytes
             )
+
+            // Update sequence and watchdog ONLY after successful AEAD authentication
+            if (seq > highestRxSeq) highestRxSeq = seq
+            lastAudioRxMs = System.currentTimeMillis()
+
             // Send to single playback coroutine: ordered writes, no thread contention
             audioPlaybackChannel.trySend(pcm)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
+            // Drop unauthenticated or corrupted frame without poisoning sequence or watchdog
+        }
+    }
+
+    /**
+     * Called when the transport disconnects or peer disconnect frame arrives.
+     */
+    fun onPeerDisconnected(convId: String) {
+        if (activeConvId == convId && _callState.value != CallState.IDLE) {
+            Log.i(TAG, "Peer disconnected on convId=$convId; cleaning up active call")
+            cleanup()
         }
     }
 

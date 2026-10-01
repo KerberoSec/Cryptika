@@ -259,8 +259,8 @@ class BackgroundConnectionManager @Inject constructor(
     private fun reconnectAll() {
         for ((_, state) in convStates) {
             val ws = state.wsClient
-            if (!ws.isConnected() && !ws.isReconnecting()) {
-                scope.launch { connectConversation(state) }
+            if (!ws.isConnected()) {
+                ws.resetBackoffAndReconnect()
             }
         }
     }
@@ -387,6 +387,7 @@ class BackgroundConnectionManager @Inject constructor(
                                         // PEER_DISCONNECTED control frame
                                         state.updateConnectionState(ConnectionState.DISCONNECTED)
                                         connStateCallbacks[state.conversationId]?.invoke(ConnectionState.DISCONNECTED)
+                                        callManager.get().onPeerDisconnected(state.conversationId)
                                     }
                                     handshakeManager.isHandshakeOffer(packetBytes) -> {
                                         // DH offer: handled here, never forwarded to ChatViewModel

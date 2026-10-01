@@ -283,7 +283,14 @@ abstract class AppDatabase : RoomDatabase() {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: run {
                     SQLiteDatabase.loadLibs(context)
-                    val factory = SupportFactory(passphrase)
+                    val hook = object : net.sqlcipher.database.SQLiteDatabaseHook {
+                        override fun preKey(database: net.sqlcipher.database.SQLiteDatabase) {}
+                        override fun postKey(database: net.sqlcipher.database.SQLiteDatabase) {
+                            database.rawExecSQL("PRAGMA secure_delete = ON;")
+                            database.rawExecSQL("PRAGMA auto_vacuum = FULL;")
+                        }
+                    }
+                    val factory = SupportFactory(passphrase, hook, true)
                     Room.databaseBuilder(
                         context.applicationContext,
                         AppDatabase::class.java,

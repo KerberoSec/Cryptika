@@ -5,8 +5,10 @@ package com.cryptika.messenger.data.local
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKeys
+import androidx.security.crypto.MasterKey
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.io.IOException
+import java.security.GeneralSecurityException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -18,37 +20,79 @@ import javax.inject.Singleton
 class AuthStore @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-    private val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+    private val masterKey: MasterKey by lazy {
+        MasterKey.Builder(context)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+    }
 
     private val prefs: SharedPreferences by lazy {
-        EncryptedSharedPreferences.create(
-            "cryptika_auth_store",
-            masterKeyAlias,
-            context,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        )
+        createEncryptedPrefs()
+    }
+
+    private fun createEncryptedPrefs(): SharedPreferences {
+        return try {
+            EncryptedSharedPreferences.create(
+                context,
+                "cryptika_auth_store",
+                masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+        } catch (e: Exception) {
+            when (e) {
+                is GeneralSecurityException, is IOException -> {
+                    context.deleteSharedPreferences("cryptika_auth_store")
+                    EncryptedSharedPreferences.create(
+                        context,
+                        "cryptika_auth_store",
+                        masterKey,
+                        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+                    )
+                }
+                else -> throw e
+            }
+        }
     }
 
     var jwtToken: String?
         get() = prefs.getString(KEY_JWT, null)
-        set(value) = prefs.edit().putString(KEY_JWT, value).apply()
+        set(value) {
+            if (value == null) {
+                prefs.edit().remove(KEY_JWT).commit()
+            } else {
+                prefs.edit().putString(KEY_JWT, value).commit()
+            }
+        }
 
     var contactToken: String?
         get() = prefs.getString(KEY_CONTACT_TOKEN, null)
-        set(value) = prefs.edit().putString(KEY_CONTACT_TOKEN, value).apply()
+        set(value) {
+            if (value == null) {
+                prefs.edit().remove(KEY_CONTACT_TOKEN).commit()
+            } else {
+                prefs.edit().putString(KEY_CONTACT_TOKEN, value).commit()
+            }
+        }
 
     var username: String?
         get() = prefs.getString(KEY_USERNAME, null)
-        set(value) = prefs.edit().putString(KEY_USERNAME, value).apply()
+        set(value) {
+            if (value == null) {
+                prefs.edit().remove(KEY_USERNAME).commit()
+            } else {
+                prefs.edit().putString(KEY_USERNAME, value).commit()
+            }
+        }
 
     var tokenExpiresAt: Long
         get() = prefs.getLong(KEY_EXPIRES_AT, 0)
-        set(value) = prefs.edit().putLong(KEY_EXPIRES_AT, value).apply()
+        set(value) = prefs.edit().putLong(KEY_EXPIRES_AT, value).commit().let { }
 
     var credentialsBurned: Boolean
         get() = prefs.getBoolean(KEY_CREDENTIALS_BURNED, false)
-        set(value) = prefs.edit().putBoolean(KEY_CREDENTIALS_BURNED, value).apply()
+        set(value) = prefs.edit().putBoolean(KEY_CREDENTIALS_BURNED, value).commit().let { }
 
     val isLoggedIn: Boolean
         get() {
@@ -58,14 +102,16 @@ class AuthStore @Inject constructor(
         }
 
     fun burnCredentials() {
-        credentialsBurned = true
-        jwtToken = null
-        contactToken = null
-        tokenExpiresAt = 0
+        prefs.edit()
+            .putBoolean(KEY_CREDENTIALS_BURNED, true)
+            .remove(KEY_JWT)
+            .remove(KEY_CONTACT_TOKEN)
+            .putLong(KEY_EXPIRES_AT, 0)
+            .commit()
     }
 
     fun clear() {
-        prefs.edit().clear().apply()
+        prefs.edit().clear().commit()
     }
 
     companion object {

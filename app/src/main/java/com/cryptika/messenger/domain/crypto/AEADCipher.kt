@@ -82,7 +82,9 @@ object AEADCipher {
             val output = ByteArray(cipher.getOutputSize(ciphertext.size))
             var offset = cipher.processBytes(ciphertext, 0, ciphertext.size, output, 0)
             offset += cipher.doFinal(output, offset)
-            output.copyOf(offset)
+            val result = output.copyOf(offset)
+            output.fill(0)
+            result
         } catch (e: org.bouncycastle.crypto.InvalidCipherTextException) {
             throw CryptoError.AEADAuthFailed
         } catch (e: Exception) {

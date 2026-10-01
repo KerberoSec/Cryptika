@@ -107,8 +107,8 @@ class HandshakeManager @Inject constructor(
      * it from a [MessageProcessor] wire packet.
      */
     fun isHandshakeOffer(packetBytes: ByteArray): Boolean =
-        (packetBytes.size == OFFER_SIZE || packetBytes.size == OFFER_WITH_TICKET_SIZE) &&
-        (packetBytes[0] == PACKET_TYPE || packetBytes[0] == PACKET_TYPE_WITH_TICKET)
+        (packetBytes.size == OFFER_SIZE && packetBytes[0] == PACKET_TYPE) ||
+        (packetBytes.size == OFFER_WITH_TICKET_SIZE && packetBytes[0] == PACKET_TYPE_WITH_TICKET)
 
     // TICKET EXTRACTION
 
@@ -125,7 +125,7 @@ class HandshakeManager @Inject constructor(
         userAPublicKey: ByteArray,
         ticketManager: TicketManager
     ): VerifiedTicket? {
-        if (offerBytes.size != OFFER_WITH_TICKET_SIZE) return null
+        if (offerBytes.size != OFFER_WITH_TICKET_SIZE || offerBytes[0] != PACKET_TYPE_WITH_TICKET) return null
         val ticketBytes = offerBytes.copyOfRange(97, OFFER_WITH_TICKET_SIZE)
         return ticketManager.verifyTicket(ticketBytes, userAPublicKey)
     }
@@ -159,11 +159,15 @@ class HandshakeManager @Inject constructor(
         peerIdentityHash: ByteArray,
         verifiedTicket: VerifiedTicket? = null
     ): Triple<ByteArray, ByteArray, ByteArray> {
-        require(offerBytes.size == OFFER_SIZE || offerBytes.size == OFFER_WITH_TICKET_SIZE) {
-            "Offer must be $OFFER_SIZE or $OFFER_WITH_TICKET_SIZE bytes, got ${offerBytes.size}"
-        }
-        require(offerBytes[0] == PACKET_TYPE || offerBytes[0] == PACKET_TYPE_WITH_TICKET) {
-            "First byte is not a HANDSHAKE magic byte"
+        require(
+            (offerBytes.size == OFFER_SIZE && offerBytes[0] == PACKET_TYPE) ||
+            (offerBytes.size == OFFER_WITH_TICKET_SIZE && offerBytes[0] == PACKET_TYPE_WITH_TICKET)
+        ) { "Invalid handshake offer packet size or magic type mismatch" }
+
+        // Verify that peerIdentityPublicKey actually hashes to peerIdentityHash
+        val expectedPeerHash = IdentityHash.compute(peerIdentityPublicKey)
+        if (!MessageDigest.isEqual(expectedPeerHash, peerIdentityHash)) {
+            throw CryptoError.SignatureInvalid
         }
 
         // Only the first 97 bytes contain the DH handshake data.
@@ -176,6 +180,14 @@ class HandshakeManager @Inject constructor(
         // An offer claiming PACKET_TYPE_WITH_TICKET MUST have a verified ticket.
         val signedData = if (offerBytes[0] == PACKET_TYPE_WITH_TICKET) {
             val ticket = verifiedTicket ?: throw CryptoError.TicketSignatureInvalid
+
+            // Verify ticket participants match our identities
+            val matchForward = MessageDigest.isEqual(ticket.aId, myIdentityHash) && MessageDigest.isEqual(ticket.bId, peerIdentityHash)
+            val matchReverse = MessageDigest.isEqual(ticket.aId, peerIdentityHash) && MessageDigest.isEqual(ticket.bId, myIdentityHash)
+            if (!matchForward && !matchReverse) {
+                throw CryptoError.TicketSignatureInvalid
+            }
+
             val buf = ByteArray(1 + 32 + 32)
             offerBytes.copyInto(buf, destinationOffset = 0, startIndex = 0, endIndex = 33)
             ticket.ticketHash.copyInto(buf, destinationOffset = 33)
@@ -225,9 +237,10 @@ class HandshakeManager @Inject constructor(
         val (sendRoot, recvRoot) = sessionKeyManager.deriveDirectionalRoots(
             sessionKey, myIdentityHash, peerIdentityHash
         )
-        val sessionKeyCopy = sessionKey.copyOf()
-        sessionKey.fill(0) // zeroize undifferentiated root
+        // Zeroize undifferentiated root immediately without leaking copy on heap
+        sessionKey.fill(0)
+        val zeroedRoot = ByteArray(32)
 
-        return Triple(sessionKeyCopy, sendRoot, recvRoot)
+        return Triple(zeroedRoot, sendRoot, recvRoot)
     }
 }

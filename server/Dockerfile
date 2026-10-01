@@ -1,13 +1,13 @@
-# HackSecure Relay Server - Dockerfile
+# Cryptika Relay Server - Dockerfile
 # Build and run the blind relay server in Docker
 
 # Use official Node.js LTS (Long Term Support) image
 FROM node:20-alpine
 
 # Set maintainer label
-LABEL maintainer="HackSecure Messenger Team"
-LABEL description="HackSecure Blind Relay Server - Routes encrypted messages without inspecting content"
-LABEL version="1.0.0"
+LABEL maintainer="Cryptika Messenger Team"
+LABEL description="Cryptika Blind Relay Server - Routes encrypted messages without inspecting content"
+LABEL version="3.0.0"
 
 # Create app directory
 WORKDIR /usr/src/app
@@ -22,6 +22,10 @@ RUN npm install --omit=dev
 
 # Bundle app source
 COPY . .
+
+# Change ownership and run as non-root user
+RUN chown -R node:node /usr/src/app
+USER node
 
 # Expose port 8443
 EXPOSE 8443

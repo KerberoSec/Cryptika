@@ -351,7 +351,10 @@ class ChatViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ChatUiState())
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
 
-    private val _events = MutableSharedFlow<ChatEvent>()
+    private val _events = MutableSharedFlow<ChatEvent>(
+        extraBufferCapacity = 64,
+        onBufferOverflow = kotlinx.coroutines.channels.BufferOverflow.DROP_OLDEST
+    )
     val events: SharedFlow<ChatEvent> = _events.asSharedFlow()
 
     // Session state
@@ -832,6 +835,7 @@ class ChatViewModel @Inject constructor(
     }
 
     fun exitCurrentChat() {
+        _uiState.update { it.copy(inputText = "") }
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 if (isEphemeralMode) {
@@ -947,6 +951,7 @@ class ChatViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
+        _uiState.update { it.copy(inputText = "") }
         nextExpiryJob?.cancel()
         ephemeralCountdownJob?.cancel()
         if (isEphemeralMode) {
@@ -1065,15 +1070,20 @@ class SettingsViewModel @Inject constructor(
 
     fun regenerateIdentity() {
         viewModelScope.launch(Dispatchers.IO) {
-            // Destroy all active sessions first
-            ephemeralSessionManager.destroyAllSessions()
-            // Delete old identity and generate new one
-            identityRepository.deleteIdentity()
-            identityRepository.generateIdentity()
-            // Logout: force re-register
-            authRepository.logout()
-            _uiState.update {
-                it.copy(showRegenerateConfirm = false, forceLogout = true)
+            try {
+                // Destroy all active sessions first
+                ephemeralSessionManager.destroyAllSessions()
+                // Delete old identity and generate new one
+                identityRepository.deleteIdentity()
+                identityRepository.generateIdentity()
+            } catch (e: Exception) {
+                Log.e("SettingsVM", "Identity regeneration error: ${e.message}")
+            } finally {
+                // Logout: force re-register even if generation fails
+                authRepository.logout()
+                _uiState.update {
+                    it.copy(showRegenerateConfirm = false, forceLogout = true)
+                }
             }
         }
     }

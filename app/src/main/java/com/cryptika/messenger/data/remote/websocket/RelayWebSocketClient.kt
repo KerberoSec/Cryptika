@@ -177,6 +177,7 @@ class RelayWebSocketClient(
                         return
                     }
                     val convId = ByteArray(convLen).also { buf.get(it) }.toString(Charsets.UTF_8)
+                    if (buf.remaining() < 2) return
                     val msgIdLen = buf.short.toInt()
                     if (msgIdLen <= 0 || msgIdLen > buf.remaining()) {
                         return
@@ -206,6 +207,11 @@ class RelayWebSocketClient(
                 if (!webSocket.isActive()) return
                 isConnected = false
                 _events.tryEmit(RelayEvent.Disconnected)
+                if (code == 4001 || code == 4003 || code == 1008 || code == 4013 || code == 4014) {
+                    android.util.Log.e("RelayWS", "Fatal WebSocket close code $code: $reason. Halting reconnect.")
+                    shouldReconnect = false
+                    return
+                }
                 if (shouldReconnect) scheduleReconnect(conversationId, authToken, identityHash)
             }
 
@@ -224,7 +230,16 @@ class RelayWebSocketClient(
         }
     }
 
+    fun resetBackoffAndReconnect() {
+        reconnectJob?.cancel()
+        reconnectAttempts = 0
+        val convId = currentConversationId ?: return
+        val token = currentAuthToken ?: return
+        connectInternal(convId, token, currentIdentityHash)
+    }
+
     private fun scheduleReconnect(conversationId: String, authToken: String, identityHash: String = "") {
+        reconnectJob?.cancel()
         reconnectAttempts++
         val exponent = (reconnectAttempts - 1).coerceIn(0, 5)
         val backoffMs = min(INITIAL_BACKOFF_MS * (1L shl exponent), MAX_BACKOFF_MS)

@@ -48,7 +48,11 @@ class ServerConfig @Inject constructor(
             return (stored ?: BuildConfig.RELAY_BASE_URL).trimEnd('/')
         }
         set(value) {
-            prefs.edit().putString(KEY_RELAY_URL, value.trimEnd('/')).apply()
+            val trimmed = value.trim().trimEnd('/')
+            require(trimmed.startsWith("ws://") || trimmed.startsWith("wss://")) {
+                "Relay URL must begin with ws:// or wss://"
+            }
+            prefs.edit().putString(KEY_RELAY_URL, trimmed).apply()
         }
 
     /** HTTP(S) base URL derived from the relay URL (ws→http, wss→https). */

@@ -241,6 +241,25 @@ app.post("/api/v1/auth/enter", (req, res) => {
       return res.status(400).json({ error: "Invalid identityHashHex format" });
     }
 
+    if (publicKeyB64) {
+      if (typeof publicKeyB64 !== "string") {
+        return res.status(400).json({ error: "Invalid publicKeyB64 format" });
+      }
+      let pubBytes;
+      try {
+        pubBytes = Buffer.from(publicKeyB64, "base64");
+      } catch (_) {
+        return res.status(400).json({ error: "Invalid base64 in publicKeyB64" });
+      }
+      if (pubBytes.length !== 32) {
+        return res.status(400).json({ error: "Invalid publicKeyB64 length (must be 32 bytes)" });
+      }
+      const computedHash = crypto.createHash("sha256").update(pubBytes).digest("hex");
+      if (identityHashHex && identityHashHex.toLowerCase() !== computedHash.toLowerCase()) {
+        return res.status(400).json({ error: "identityHashHex does not match publicKeyB64" });
+      }
+    }
+
     // Check if username is already taken by an active user
     const existingUser = users.get(trimmed);
     if (existingUser) {
@@ -301,12 +320,27 @@ app.post("/api/v1/auth/burn", authenticateToken, (req, res) => {
     const username = req.user.username;
     const contactToken = req.user.contactToken;
     const jti = req.user.jti;
+    const existingUser = users.get(username);
+    const userHash = existingUser?.identityHashHex;
 
     // Delete user record
     users.delete(username);
 
     // Blacklist the JWT
     if (jti) burnedTokens.set(jti, Date.now());
+
+    // Disconnect active WebSockets belonging to this user
+    for (const [convId, room] of conversationSockets.entries()) {
+      for (const ws of room) {
+        if (ws.contactToken === contactToken || (userHash && ws.identityHash === userHash)) {
+          try { ws.close(4001, "Account burned"); } catch (_) {}
+          room.delete(ws);
+          wsIdentityMap.delete(ws);
+        }
+      }
+      if (room.size === 0) conversationSockets.delete(convId);
+    }
+    if (userHash) presenceMap.delete(userHash);
 
     // Cascade delete contact requests involving this user
     for (const [rid, r] of contactRequests.entries()) {
@@ -732,7 +766,7 @@ app.post("/api/v1/ticket", authenticateToken, (req, res) => {
 
     // Only the initiator (a_id) may request a ticket.
     // Allowing b_id would let the acceptor submit arbitrary bytes as User A's signature.
-    if (!callerIdentityHash || callerIdentityHash !== a_id) {
+    if (!callerIdentityHash || !timingSafeEqual(callerIdentityHash, a_id)) {
       return res.status(403).json({ error: "Only the initiator (a_id) may request a ticket" });
     }
 
@@ -870,7 +904,7 @@ function destroySession(sessionUUID) {
 // WEBSOCKET SERVER
 //
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ server, path: "/ws" });
+const wss = new WebSocket.Server({ server, path: "/ws", maxPayload: 65536 });
 
 wss.on("connection", (ws, req) => {
   const url = new URL(req.url, "http://localhost");
@@ -980,6 +1014,9 @@ wss.on("connection", (ws, req) => {
       let relayed = 0;
       for (const peer of room) {
         if (peer !== ws && peer.readyState === WebSocket.OPEN) {
+          if (peer.bufferedAmount > 512 * 1024) {
+            continue; // Avoid flooding slow consumer
+          }
           peer.send(data, { binary: true });
           relayed++;
         }
@@ -995,6 +1032,7 @@ wss.on("connection", (ws, req) => {
 
     ws.on("close", () => {
       room.delete(ws);
+      wsIdentityMap.delete(ws);
       // Notify remaining peer that this user disconnected
       const PEER_DISCONNECTED = Buffer.from([0xFF, 0xFE, ...Buffer.from("PEER_DISCONNECTED")]);
       for (const peer of room) {
@@ -1011,7 +1049,10 @@ wss.on("connection", (ws, req) => {
       }
     });
 
-    ws.on("error", () => { room.delete(ws); });
+    ws.on("error", () => {
+      room.delete(ws);
+      wsIdentityMap.delete(ws);
+    });
     return; // Done, skip regular conversation logic
   }
 
@@ -1066,10 +1107,20 @@ wss.on("connection", (ws, req) => {
 
   const identityHash = url.searchParams.get("id");
   if (identityHash && /^[a-f0-9]{64}$/.test(identityHash)) {
+    // If authenticated user has a registered identity hash, prevent spoofing a different ID
+    if (convCaller?.identityHashHex && !timingSafeEqual(convCaller.identityHashHex, identityHash)) {
+      ws.close(4014, "Identity hash mismatch");
+      return;
+    }
     ws.identityHash = identityHash;
     wsIdentityMap.set(ws, identityHash);
     const existing = presenceMap.get(identityHash) || {};
     presenceMap.set(identityHash, { ...existing, lastSeen: Date.now(), online: true });
+  } else if (convCaller?.identityHashHex) {
+    ws.identityHash = convCaller.identityHashHex;
+    wsIdentityMap.set(ws, convCaller.identityHashHex);
+    const existing = presenceMap.get(convCaller.identityHashHex) || {};
+    presenceMap.set(convCaller.identityHashHex, { ...existing, lastSeen: Date.now(), online: true });
   }
 
   // Deliver buffered messages intended for this participant
@@ -1100,6 +1151,9 @@ wss.on("connection", (ws, req) => {
     let relayed = 0;
     for (const peer of room) {
       if (peer !== ws && peer.readyState === WebSocket.OPEN) {
+        if (peer.bufferedAmount > 512 * 1024) {
+          continue; // Avoid flooding slow consumer
+        }
         peer.send(data, { binary: true });
         relayed++;
       }
@@ -1132,6 +1186,7 @@ wss.on("connection", (ws, req) => {
 
   ws.on("error", (err) => {
     room.delete(ws);
+    wsIdentityMap.delete(ws);
   });
 });
 

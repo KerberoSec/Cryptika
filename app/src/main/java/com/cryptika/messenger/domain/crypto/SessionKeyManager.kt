@@ -68,7 +68,20 @@ class SessionKeyManager {
 
             val sharedSecret = ByteArray(32)
             privateParams.generateSecret(peerPublicParams, sharedSecret, 0)
+
+            // RFC 7748: abort if computed shared secret is all zeros (small-subgroup attack)
+            var isZero = 0
+            for (b in sharedSecret) {
+                isZero = isZero or b.toInt()
+            }
+            if (isZero == 0) {
+                sharedSecret.fill(0)
+                throw CryptoError.DhExchangeFailed
+            }
+
             sharedSecret
+        } catch (e: CryptoError) {
+            throw e
         } catch (e: Exception) {
             throw CryptoError.DhExchangeFailed
         } finally {
@@ -134,6 +147,11 @@ class SessionKeyManager {
         peerIdentityHash: ByteArray
     ): Pair<ByteArray, ByteArray> {
         require(sessionKey.size == 32) { "Session key must be 32 bytes" }
+        require(myIdentityHash.size == 32) { "myIdentityHash must be 32 bytes" }
+        require(peerIdentityHash.size == 32) { "peerIdentityHash must be 32 bytes" }
+        require(!myIdentityHash.contentEquals(peerIdentityHash)) {
+            "Local and peer identity hashes cannot be identical (prevents nonce reuse)"
+        }
         val myHex = myIdentityHash.joinToString("") { "%02x".format(it) }
         val peerHex = peerIdentityHash.joinToString("") { "%02x".format(it) }
         val iAmA = myHex < peerHex // lexicographic ordering determines role

@@ -31,16 +31,20 @@ class MessageProcessor(
     private val sendRatchet: HashRatchet,
     private val recvRatchet: HashRatchet,
     private val identityKeyManager: IdentityKeyManager,
-    private val peerPublicKeyBytes: ByteArray,      // 32-byte peer Ed25519 public key
-    private val myIdentityHash: ByteArray,          // 32-byte SHA-256 of our public key
+    peerPublicKeyBytes: ByteArray,      // 32-byte peer Ed25519 public key
+    myIdentityHash: ByteArray,          // 32-byte SHA-256 of our public key
     private val gson: Gson = Gson()
 ) {
+    private val peerPublicKeyBytes = peerPublicKeyBytes.copyOf()
+    private val myIdentityHash = myIdentityHash.copyOf()
+
     companion object {
         const val TIMESTAMP_TOLERANCE_MS = 300_000L  // 5 minutes
     }
 
     private var highWaterRecvCounter: Long = 0L
     private val processedCounters = mutableSetOf<Long>()
+    private val processLock = Any()
 
     /** Zeroize all crypto material: called during cryptographic erasure. */
     fun zeroize() {
@@ -67,55 +71,55 @@ class MessageProcessor(
     ): Pair<ByteArray, Long> {
         // 1. Advance ratchet to get message key
         val ratchetKey = sendRatchet.advance()
+        try {
+            // 2. Build header
+            val header = MessageHeader(
+                senderId = myIdentityHash,
+                timestampMs = System.currentTimeMillis(),
+                counter = ratchetKey.counter,
+                expirySeconds = expirySeconds,
+                messageType = messageType
+            )
+            val headerBytes = serializeHeader(header)
 
-        // 2. Build header
-        val header = MessageHeader(
-            senderId = myIdentityHash,
-            timestampMs = System.currentTimeMillis(),
-            counter = ratchetKey.counter,
-            expirySeconds = expirySeconds,
-            messageType = messageType
-        )
-        val headerBytes = serializeHeader(header)
+            // 3. Compute header_hash for AEAD additional data
+            val headerHash = AEADCipher.computeHeaderHash(headerBytes)
 
-        // 3. Compute header_hash for AEAD additional data
-        val headerHash = AEADCipher.computeHeaderHash(headerBytes)
+            // 4. Derive deterministic nonce
+            val nonce = AEADCipher.deriveNonce(ratchetKey.key, ratchetKey.counter)
 
-        // 4. Derive deterministic nonce
-        val nonce = AEADCipher.deriveNonce(ratchetKey.key, ratchetKey.counter)
+            // 5. AEAD encrypt
+            val ciphertext = AEADCipher.encrypt(
+                plaintext = plaintext,
+                key = ratchetKey.key,
+                nonce = nonce,
+                additionalData = headerHash
+            )
 
-        // 5. AEAD encrypt
-        val ciphertext = AEADCipher.encrypt(
-            plaintext = plaintext,
-            key = ratchetKey.key,
-            nonce = nonce,
-            additionalData = headerHash
-        )
+            // 6. Compute signing digest: SHA-256(header_bytes || ciphertext)
+            val signingDigest = MessageDigest.getInstance("SHA-256").run {
+                update(headerBytes)
+                update(ciphertext)
+                digest()
+            }
 
-        // 6. Compute signing digest: SHA-256(header_bytes || ciphertext)
-        val signingDigest = MessageDigest.getInstance("SHA-256").run {
-            update(headerBytes)
-            update(ciphertext)
-            digest()
+            // 7. Sign with Ed25519 identity key
+            val signature = identityKeyManager.sign(signingDigest)
+
+            // Save counter BEFORE zeroizing
+            val msgCounter = ratchetKey.counter
+
+            // 8. Serialize to wire format
+            val wirePacket = WirePacket(
+                headerBytes = headerBytes,
+                ciphertext = ciphertext,
+                signature = signature
+            )
+
+            return serializeWirePacket(wirePacket) to msgCounter
+        } finally {
+            ratchetKey.zeroize()
         }
-
-        // 7. Sign with Ed25519 identity key
-        val signature = identityKeyManager.sign(signingDigest)
-
-        // Save counter BEFORE zeroizing (Long is a value type, safe, but be explicit)
-        val msgCounter = ratchetKey.counter
-
-        // 8. Zeroize ratchet key: do this exactly ONCE after all uses of the key are done
-        ratchetKey.zeroize()
-
-        // 9. Serialize to wire format
-        val wirePacket = WirePacket(
-            headerBytes = headerBytes,
-            ciphertext = ciphertext,
-            signature = signature
-        )
-
-        return serializeWirePacket(wirePacket) to msgCounter
     }
 
     // RECEIVE PIPELINE
@@ -159,45 +163,47 @@ class MessageProcessor(
         }
 
         // 4. VERIFY COUNTER: reject replays (already processed) and ancient counters
-        if (header.counter in processedCounters) {
-            throw CryptoError.ReplayDetected
+        synchronized(processLock) {
+            if (header.counter <= 0L || header.counter in processedCounters) {
+                throw CryptoError.ReplayDetected
+            }
+            if (header.counter <= highWaterRecvCounter - HashRatchet.MAX_LOOKAHEAD) {
+                throw CryptoError.ReplayDetected
+            }
+
+            // 5. ADVANCE RATCHET to counter position (handles out-of-order via lookahead)
+            val ratchetKey = recvRatchet.keyForCounter(header.counter)
+
+            // 6. Derive nonce
+            val nonce = AEADCipher.deriveNonce(ratchetKey, header.counter)
+
+            // 7. Compute header_hash for AEAD verification
+            val headerHash = AEADCipher.computeHeaderHash(wirePacket.headerBytes)
+
+            // 8. AEAD DECRYPT: throws AEADAuthFailed on tamper
+            // ratchetKey is zeroized in both success and failure paths
+            val plaintext: ByteArray
+            try {
+                plaintext = AEADCipher.decrypt(
+                    ciphertext = wirePacket.ciphertext,
+                    key = ratchetKey,
+                    nonce = nonce,
+                    additionalData = headerHash
+                )
+            } finally {
+                ratchetKey.fill(0)  // Always zeroize, even on exception
+            }
+
+            // 9. Update counter tracking ONLY on complete success (after AEAD passes)
+            processedCounters.add(header.counter)
+            if (header.counter > highWaterRecvCounter) {
+                highWaterRecvCounter = header.counter
+            }
+            // Evict processed counters outside the lookahead window to bound memory
+            processedCounters.removeAll { it <= highWaterRecvCounter - HashRatchet.MAX_LOOKAHEAD }
+
+            return plaintext to header
         }
-        if (header.counter <= highWaterRecvCounter - HashRatchet.MAX_LOOKAHEAD) {
-            throw CryptoError.ReplayDetected
-        }
-
-        // 5. ADVANCE RATCHET to counter position (handles out-of-order via lookahead)
-        val ratchetKey = recvRatchet.keyForCounter(header.counter)
-
-        // 6. Derive nonce
-        val nonce = AEADCipher.deriveNonce(ratchetKey, header.counter)
-
-        // 7. Compute header_hash for AEAD verification
-        val headerHash = AEADCipher.computeHeaderHash(wirePacket.headerBytes)
-
-        // 8. AEAD DECRYPT: throws AEADAuthFailed on tamper
-        // ratchetKey is zeroized in both success and failure paths
-        val plaintext: ByteArray
-        try {
-            plaintext = AEADCipher.decrypt(
-                ciphertext = wirePacket.ciphertext,
-                key = ratchetKey,
-                nonce = nonce,
-                additionalData = headerHash
-            )
-        } finally {
-            ratchetKey.fill(0)  // Always zeroize, even on exception
-        }
-
-        // 9. Update counter tracking ONLY on complete success (after AEAD passes)
-        processedCounters.add(header.counter)
-        if (header.counter > highWaterRecvCounter) {
-            highWaterRecvCounter = header.counter
-        }
-        // Evict processed counters outside the lookahead window to bound memory
-        processedCounters.removeAll { it <= highWaterRecvCounter - HashRatchet.MAX_LOOKAHEAD }
-
-        return plaintext to header
     }
 
     // Serialization helpers
@@ -214,16 +220,31 @@ class MessageProcessor(
     }
 
     private fun deserializeHeader(bytes: ByteArray): MessageHeader {
-        val map = gson.fromJson(String(bytes, Charsets.UTF_8), Map::class.java)
-        return MessageHeader(
-            senderId = (map["sid"] as String).hexToByteArray(),
-            timestampMs = (map["ts"] as Double).toLong(),
-            counter = (map["ctr"] as Double).toLong(),
-            expirySeconds = (map["exp"] as Double).toInt(),
-            messageType = try {
-                MessageType.valueOf(map["type"] as? String ?: "TEXT")
+        return try {
+            val jsonStr = String(bytes, Charsets.UTF_8)
+            val map = gson.fromJson(jsonStr, Map::class.java)
+                ?: throw IllegalArgumentException("Null JSON object")
+            val sidStr = map["sid"] as? String ?: throw IllegalArgumentException("Missing sid")
+            val ts = (map["ts"] as? Number)?.toLong() ?: throw IllegalArgumentException("Missing ts")
+            val ctr = (map["ctr"] as? Number)?.toLong() ?: throw IllegalArgumentException("Missing ctr")
+            val exp = (map["exp"] as? Number)?.toInt() ?: 0
+            val typeStr = map["type"] as? String ?: "TEXT"
+            val messageType = try {
+                MessageType.valueOf(typeStr)
             } catch (_: Exception) { MessageType.TEXT }
-        )
+
+            MessageHeader(
+                senderId = sidStr.hexToByteArray(),
+                timestampMs = ts,
+                counter = ctr,
+                expirySeconds = exp,
+                messageType = messageType
+            )
+        } catch (e: CryptoError) {
+            throw e
+        } catch (e: Exception) {
+            throw CryptoError.Unknown(IllegalArgumentException("Malformed message header", e))
+        }
     }
 
     /**
@@ -247,17 +268,17 @@ class MessageProcessor(
     }
 
     fun deserializeWirePacket(bytes: ByteArray): WirePacket {
-        if (bytes.size < 4 + 1 + 4 + 1 + 64) {
+        if (bytes.size < 4 + 1 + 4 + 16 + 64) {
             throw CryptoError.Unknown(IllegalArgumentException("Packet too short: ${bytes.size} bytes"))
         }
         val buf = ByteBuffer.wrap(bytes)
         val headerLen = buf.int
-        if (headerLen <= 0 || headerLen > buf.remaining() - (4 + 64)) {
+        if (headerLen <= 0 || headerLen > buf.remaining() - (4 + 16 + 64)) {
             throw CryptoError.Unknown(IllegalArgumentException("Invalid header length: $headerLen"))
         }
         val headerBytes = ByteArray(headerLen).also { buf.get(it) }
         val ciphertextLen = buf.int
-        if (ciphertextLen <= 0 || ciphertextLen > buf.remaining() - 64) {
+        if (ciphertextLen < 16 || ciphertextLen > buf.remaining() - 64) {
             throw CryptoError.Unknown(IllegalArgumentException("Invalid ciphertext length: $ciphertextLen"))
         }
         val ciphertext = ByteArray(ciphertextLen).also { buf.get(it) }
@@ -265,6 +286,9 @@ class MessageProcessor(
             throw CryptoError.Unknown(IllegalArgumentException("Missing signature"))
         }
         val signature = ByteArray(64).also { buf.get(it) }
+        if (buf.hasRemaining()) {
+            throw CryptoError.Unknown(IllegalArgumentException("Trailing bytes in wire packet: ${buf.remaining()} bytes"))
+        }
         return WirePacket(headerBytes, ciphertext, signature)
     }
 

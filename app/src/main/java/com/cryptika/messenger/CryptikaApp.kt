@@ -28,7 +28,7 @@ class CryptikaApp : Application(), Configuration.Provider {
         } catch (_: Exception) {}
         backgroundConnectionManager.startAllConnections()
         try {
-            com.cryptika.messenger.data.local.worker.MessageExpiryWorker.schedule(this)
+            com.cryptika.messenger.worker.MessageExpiryWorker.schedule(this)
         } catch (_: Exception) {}
     }
 }
