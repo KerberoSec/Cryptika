@@ -1,0 +1,37 @@
+# Dependabot configuration for Cryptika Messenger
+# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  # Android App Dependencies (Gradle)
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "KerberoSec"
+    commit-message:
+      prefix: "build(deps)"
+
+  # Blind Relay Server Dependencies (npm)
+  - package-ecosystem: "npm"
+    directory: "/server"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "KerberoSec"
+    commit-message:
+      prefix: "server(deps)"
+
+  # GitHub Actions Workflows
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "KerberoSec"
+    commit-message:
+      prefix: "ci(deps)"
