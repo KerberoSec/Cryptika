@@ -52,9 +52,17 @@ class AuthStore @Inject constructor(
 
     val isLoggedIn: Boolean
         get() {
+            if (credentialsBurned) return false
             val token = jwtToken ?: return false
             return token.isNotEmpty() && tokenExpiresAt > System.currentTimeMillis()
         }
+
+    fun burnCredentials() {
+        credentialsBurned = true
+        jwtToken = null
+        contactToken = null
+        tokenExpiresAt = 0
+    }
 
     fun clear() {
         prefs.edit().clear().apply()

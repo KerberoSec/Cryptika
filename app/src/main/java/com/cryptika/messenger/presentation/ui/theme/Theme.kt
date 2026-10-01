@@ -10,49 +10,65 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-// COLOR PALETTE: Security-focused, clean dark/light
-val SecureGreen = Color(0xFF00C853)
-val SecureGreenDark = Color(0xFF00E676)
-val SecureGreenContainer = Color(0xFF003916)
-val WarningAmber = Color(0xFFFFB300)
-val DangerRed = Color(0xFFD50000)
-val RelayYellow = Color(0xFFFDD835)
-val P2PGreen = Color(0xFF43A047)
-val DisconnectedGray = Color(0xFF757575)
+// COLOR PALETTE: Deep Obsidian & Bold Stealth Cobalt / Glacier Cyan
+// High contrast, professional security application theme
+val PitchBlack = Color(0xFF07090E)
+val DeepObsidian = Color(0xFF0E131F)
+val ElevatedObsidian = Color(0xFF161E2E)
+val BorderSubtle = Color(0xFF26334D)
+
+val BoldElectricCyan = Color(0xFF00E5FF)
+val BoldElectricCobalt = Color(0xFF2563EB)
+val CyanContainer = Color(0xFF0B253A)
+val OnCyanContainer = Color(0xFFBAE6FD)
+
+val SecureGreen = Color(0xFF10B981)
+val SecureGreenDark = Color(0xFF059669)
+val SecureGreenContainer = Color(0xFF064E3B)
+val WarningAmber = Color(0xFFF59E0B)
+val DangerRed = Color(0xFFF43F5E)
+val RelayYellow = Color(0xFFFACC15)
+val P2PGreen = Color(0xFF10B981)
+val DisconnectedGray = Color(0xFF64748B)
 
 private val DarkColorScheme = darkColorScheme(
-    primary = SecureGreenDark,
-    onPrimary = Color.Black,
-    primaryContainer = SecureGreenContainer,
-    onPrimaryContainer = SecureGreenDark,
-    secondary = Color(0xFF90CAF9),
-    onSecondary = Color.Black,
-    background = Color(0xFF0A0A0A),
-    onBackground = Color(0xFFEEEEEE),
-    surface = Color(0xFF1A1A1A),
-    onSurface = Color(0xFFEEEEEE),
-    surfaceVariant = Color(0xFF2A2A2A),
-    onSurfaceVariant = Color(0xFFBDBDBD),
-    error = Color(0xFFCF6679),
-    onError = Color.Black,
-    outline = Color(0xFF444444)
+    primary = BoldElectricCyan,
+    onPrimary = Color(0xFF001F29),
+    primaryContainer = CyanContainer,
+    onPrimaryContainer = OnCyanContainer,
+    secondary = BoldElectricCobalt,
+    onSecondary = Color.White,
+    secondaryContainer = Color(0xFF1E293B),
+    onSecondaryContainer = Color(0xFF93C5FD),
+    background = PitchBlack,
+    onBackground = Color(0xFFF8FAFC),
+    surface = DeepObsidian,
+    onSurface = Color(0xFFF1F5F9),
+    surfaceVariant = ElevatedObsidian,
+    onSurfaceVariant = Color(0xFF94A3B8),
+    error = DangerRed,
+    onError = Color.White,
+    errorContainer = Color(0xFF4C0519),
+    onErrorContainer = Color(0xFFFFD1DC),
+    outline = BorderSubtle
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF00695C),
+    primary = Color(0xFF0284C7),
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFB2DFDB),
-    onPrimaryContainer = Color(0xFF00352D),
-    secondary = Color(0xFF1976D2),
+    primaryContainer = Color(0xFFE0F2FE),
+    onPrimaryContainer = Color(0xFF0369A1),
+    secondary = Color(0xFF2563EB),
     onSecondary = Color.White,
-    background = Color(0xFFFAFAFA),
-    onBackground = Color(0xFF121212),
-    surface = Color.White,
-    onSurface = Color(0xFF121212),
-    surfaceVariant = Color(0xFFF5F5F5),
-    onSurfaceVariant = Color(0xFF424242),
-    error = Color(0xFFB00020),
-    outline = Color(0xFFBDBDBD)
+    background = Color(0xFF0A0D14),
+    onBackground = Color(0xFFF8FAFC),
+    surface = Color(0xFF111726),
+    onSurface = Color(0xFFF8FAFC),
+    surfaceVariant = Color(0xFF1B2337),
+    onSurfaceVariant = Color(0xFF94A3B8),
+    error = DangerRed,
+    onError = Color.White,
+    outline = Color(0xFF334155)
 )
 
 @Composable

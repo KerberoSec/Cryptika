@@ -58,9 +58,7 @@ object AppModule {
         val prefs = context.getSharedPreferences("cryptika_db_prefs", Context.MODE_PRIVATE)
         val passphrase = keystoreManager.retrieveDbPassphrase(prefs)
             ?: keystoreManager.generateAndStoreDbPassphrase(prefs)
-        return AppDatabase.getInstance(context, passphrase).also {
-            passphrase.fill(0)  // Zeroize after use
-        }
+        return AppDatabase.getInstance(context, passphrase)
     }
 
     @Provides fun provideContactDao(db: AppDatabase): ContactDao = db.contactDao()

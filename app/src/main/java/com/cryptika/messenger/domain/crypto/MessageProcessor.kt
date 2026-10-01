@@ -131,9 +131,8 @@ class MessageProcessor(
     fun receive(packetBytes: ByteArray): Pair<ByteArray, MessageHeader> {
         // 1. Parse wire packet
         val wirePacket = deserializeWirePacket(packetBytes)
-        val header = deserializeHeader(wirePacket.headerBytes)
 
-        // 2. VERIFY SIGNATURE FIRST: before any other processing
+        // 2. VERIFY SIGNATURE FIRST: before deserializing header (Doom Principle)
         val signingDigest = MessageDigest.getInstance("SHA-256").run {
             update(wirePacket.headerBytes)
             update(wirePacket.ciphertext)
@@ -143,9 +142,19 @@ class MessageProcessor(
             throw CryptoError.SignatureInvalid
         }
 
-        // 3. VERIFY TIMESTAMP
+        // Deserialize header only after authenticating wire packet
+        val header = deserializeHeader(wirePacket.headerBytes)
+
+        // Verify senderId matches peer's identity hash (prevent identity spoofing & deletion forgery)
+        val expectedPeerId = IdentityHash.compute(peerPublicKeyBytes)
+        if (!header.senderId.contentEquals(expectedPeerId)) {
+            throw CryptoError.SignatureInvalid
+        }
+
+        // 3. VERIFY TIMESTAMP (safe against Long.MIN_VALUE overflow)
         val now = System.currentTimeMillis()
-        if (Math.abs(now - header.timestampMs) > TIMESTAMP_TOLERANCE_MS) {
+        val delta = now - header.timestampMs
+        if (delta < -TIMESTAMP_TOLERANCE_MS || delta > TIMESTAMP_TOLERANCE_MS) {
             throw CryptoError.TimestampStale
         }
 

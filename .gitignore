@@ -24,7 +24,6 @@ local.properties
 
 # Test artifacts / screenshots
 *.png
-*.xml
 add_contact_*.xml
 after_*.xml
 after_type.png

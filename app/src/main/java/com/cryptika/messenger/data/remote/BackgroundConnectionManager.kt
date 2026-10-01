@@ -207,18 +207,25 @@ class BackgroundConnectionManager @Inject constructor(
         scope.launch {
             // Wait for identity (may not exist yet on first launch)
             var identity = identityRepository.getLocalIdentity()
-            if (identity == null) {
-                repeat(20) {
-                    delay(500)
-                    identity = identityRepository.getLocalIdentity()
-                    if (identity != null) return@repeat
-                }
-                if (identity == null) return@launch
+            while (identity == null && isActive) {
+                delay(1000)
+                identity = identityRepository.getLocalIdentity()
             }
-            val myIdentity = identity!!
+            val myIdentity = identity ?: return@launch
 
             // Connect to existing contacts AND watch for new ones added during the session
             contactRepository.getContacts().collect { contacts ->
+                val currentConvIds = contacts.map { buildConvId(myIdentity.identityHex, it.identityHex) }.toSet()
+                val iterator = convStates.entries.iterator()
+                while (iterator.hasNext()) {
+                    val entry = iterator.next()
+                    if (entry.key !in currentConvIds) {
+                        entry.value.collectionJob?.cancel()
+                        entry.value.ourEphemeralPair?.zeroizePrivate()
+                        entry.value.wsClient.disconnect()
+                        iterator.remove()
+                    }
+                }
                 contacts.forEach { contact ->
                     val convId = buildConvId(myIdentity.identityHex, contact.identityHex)
                     if (!convStates.containsKey(convId)) {
@@ -348,6 +355,7 @@ class BackgroundConnectionManager @Inject constructor(
             state.wsClient.connect(state.conversationId, jwtToken, state.myIdentity.identityHex)
 
             // Collect relay events for this conversation
+            state.collectionJob?.cancel()
             state.collectionJob = scope.launch {
                 state.wsClient.events.collect { event ->
                     when (event) {
@@ -373,6 +381,13 @@ class BackgroundConnectionManager @Inject constructor(
                             if (event.message.conversationId == state.conversationId) {
                                 val packetBytes = event.message.packetBytes
                                 when {
+                                    packetBytes.size >= 2 &&
+                                    packetBytes[0] == 0xFF.toByte() &&
+                                    packetBytes[1] == 0xFE.toByte() -> {
+                                        // PEER_DISCONNECTED control frame
+                                        state.updateConnectionState(ConnectionState.DISCONNECTED)
+                                        connStateCallbacks[state.conversationId]?.invoke(ConnectionState.DISCONNECTED)
+                                    }
                                     handshakeManager.isHandshakeOffer(packetBytes) -> {
                                         // DH offer: handled here, never forwarded to ChatViewModel
                                         completeHandshake(state, packetBytes)
@@ -529,6 +544,21 @@ class BackgroundConnectionManager @Inject constructor(
             val text = plaintextBytes.toString(Charsets.UTF_8)
             val now = System.currentTimeMillis()
 
+            if (text.startsWith("__DEL__:")) {
+                val counterStr = text.removePrefix("__DEL__:")
+                val targetCounter = counterStr.toLongOrNull()
+                if (targetCounter != null) {
+                    withContext(Dispatchers.IO) {
+                        messageRepository.deletePeerMessageByCounter(
+                            state.conversationId,
+                            state.contact.identityHex,
+                            targetCounter
+                        )
+                    }
+                }
+                return
+            }
+
             val message = Message(
                 id = UUID.randomUUID().toString(),
                 conversationId = state.conversationId,
@@ -584,7 +614,7 @@ class BackgroundConnectionManager @Inject constructor(
             state.wsClient.disconnect()
         }
         convStates.clear()
-        scope.cancel()
+        scope.coroutineContext[Job]?.cancelChildren()
     }
     private fun registerNetworkCallback() {
         try {

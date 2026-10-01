@@ -142,6 +142,7 @@ class CallManager @Inject constructor(
     @Volatile private var watchdogJob: Job? = null
     // AtomicInteger makes the sequence counter thread-safe without synchronization overhead
     private val sendSequenceAtomic = AtomicInteger(0)
+    @Volatile private var highestRxSeq: Int = -1
     @Volatile private var lastAudioRxMs: Long = 0L
     @Volatile private var isMuted: Boolean = false
     private val cleanupLock = Any()
@@ -171,13 +172,17 @@ class CallManager @Inject constructor(
     private suspend fun sendCallPacket(convId: String, messageId: String, packet: ByteArray): Boolean {
         // Check if convId is a UUID (ephemeral session) vs identity hash pair (regular conversation)
         val isEphemeralSession = convId.length == 36 && convId.count { it == '-' } == 4
-        Log.d(TAG, "sendCallPacket: convId=$convId isEphemeral=$isEphemeralSession msgId=$messageId packetSize=${packet.size}")
+        if (packet.isNotEmpty() && packet[0] == CALL_SIGNAL_MAGIC) {
+            Log.d(TAG, "sendCallPacket: convId=$convId isEphemeral=$isEphemeralSession msgId=$messageId packetSize=${packet.size}")
+        }
         val result = if (isEphemeralSession) {
             ephemeralSessionManager.get().sendPacket(convId, messageId, packet)
         } else {
             backgroundConnectionManager.sendPacket(convId, messageId, packet)
         }
-        Log.d(TAG, "sendCallPacket: result=$result")
+        if (packet.isNotEmpty() && packet[0] == CALL_SIGNAL_MAGIC) {
+            Log.d(TAG, "sendCallPacket: result=$result")
+        }
         return result
     }
 
@@ -320,9 +325,14 @@ class CallManager @Inject constructor(
                     return@launch
                 }
 
-                pendingOfferEphPub = null
-                _callState.value = CallState.ACTIVE
-                startAudio()
+                synchronized(cleanupLock) {
+                    if (_callState.value != CallState.INCOMING_RINGING || activeCallId != callId) {
+                        return@launch
+                    }
+                    pendingOfferEphPub = null
+                    _callState.value = CallState.ACTIVE
+                    startAudio()
+                }
             } catch (e: Exception) {
                 cleanup()
             }
@@ -384,11 +394,13 @@ class CallManager @Inject constructor(
      *
      * @param contact the Contact associated with this conversation (for signature verification)
      */
-    fun onRelayPacket(convId: String, msgId: String, packet: ByteArray, contact: Contact) {
-        Log.d(TAG, "onRelayPacket: convId=$convId size=${packet.size} magic=${if (packet.isNotEmpty()) "%02x".format(packet[0]) else "empty"}")
+    fun onRelayPacket(convId: String, msgId: String, packet: ByteArray, contact: Contact? = null) {
+        if (packet.isNotEmpty() && packet[0] == CALL_SIGNAL_MAGIC) {
+            Log.d(TAG, "onRelayPacket: convId=$convId size=${packet.size} magic=%02x".format(packet[0]))
+        }
         when {
             packet.isNotEmpty() && packet[0] == CALL_SIGNAL_MAGIC ->
-                onSignalReceived(convId, packet, contact)
+                if (contact != null) onSignalReceived(convId, packet, contact)
             packet.isNotEmpty() && packet[0] == AUDIO_FRAME_MAGIC ->
                 onAudioFrameReceived(packet)
         }
@@ -425,9 +437,9 @@ class CallManager @Inject constructor(
             return
         }
 
-        // Timestamp freshness ±5 minutes
+        // Timestamp freshness: 45 seconds tolerance
         val now = System.currentTimeMillis()
-        if (kotlin.math.abs(now - tsMs) > 5 * 60_000L) {
+        if (kotlin.math.abs(now - tsMs) > 45_000L) {
             Log.w(TAG, "onSignalReceived: timestamp stale, diff=${now - tsMs}ms for type=$type")
             return
         }
@@ -444,15 +456,33 @@ class CallManager @Inject constructor(
     }
 
     private fun handleIncomingOffer(convId: String, callId: String, callerEphPub: ByteArray, contact: Contact) {
-        if (_callState.value != CallState.IDLE) {
+        if (_callState.value == CallState.OUTGOING_RINGING && activeConvId == convId) {
+            val localCallId = activeCallId ?: ""
+            // Glare tie break: compare call IDs lexicographically
+            if (localCallId < callId) {
+                // Remote offer takes precedence: abandon local outgoing offer
+                ringTimeoutJob?.cancel()
+                ourEphemeralPair?.zeroizePrivate()
+                ourEphemeralPair = null
+                _callState.value = CallState.IDLE
+            } else {
+                // Local offer takes precedence: notify peer of busy
+                scope.launch {
+                    try {
+                        val packet = buildSignalPacket(CallSignalType.BUSY, callId, ByteArray(32))
+                        sendCallPacket(convId, "call_busy_${UUID.randomUUID()}", packet)
+                    } catch (_: Exception) {}
+                }
+                return
+            }
+        } else if (_callState.value != CallState.IDLE) {
             Log.w(TAG, "handleIncomingOffer: busy (state=${_callState.value}), sending BUSY signal")
             // Already busy: send BUSY and discard
             scope.launch {
                 try {
                     val packet = buildSignalPacket(CallSignalType.BUSY, callId, ByteArray(32))
                     sendCallPacket(convId, "call_busy_${UUID.randomUUID()}", packet)
-                } catch (e: Exception) {
-                }
+                } catch (_: Exception) {}
             }
             return
         }
@@ -505,8 +535,13 @@ class CallManager @Inject constructor(
                 ephemeral.zeroizePrivate()   // wipe private key bytes now that DH is done
                 ourEphemeralPair = null
 
-                _callState.value = CallState.ACTIVE
-                startAudio()
+                synchronized(cleanupLock) {
+                    if (_callState.value != CallState.OUTGOING_RINGING || activeCallId != callId) {
+                        return@launch
+                    }
+                    _callState.value = CallState.ACTIVE
+                    startAudio()
+                }
             } catch (e: Exception) {
                 cleanup()
             }
@@ -528,6 +563,7 @@ class CallManager @Inject constructor(
 
     private fun startAudio() {
         sendSequenceAtomic.set(0)
+        highestRxSeq = -1
         lastAudioRxMs = System.currentTimeMillis()   // baseline for watchdog
 
         // Start foreground service so Android keeps AudioRecord/AudioTrack alive in background.
@@ -549,7 +585,7 @@ class CallManager @Inject constructor(
             SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT
         )
         try {
-            audioTrack = AudioTrack.Builder()
+            val track = AudioTrack.Builder()
                 .setAudioAttributes(
                     AudioAttributes.Builder()
                         .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
@@ -566,23 +602,32 @@ class CallManager @Inject constructor(
                 .setBufferSizeInBytes(maxOf(minTrackBuf * 4, FRAME_BYTES * 8))
                 .setTransferMode(AudioTrack.MODE_STREAM)
                 .build()
-            audioTrack?.play()
+            if (track.state != AudioTrack.STATE_INITIALIZED) {
+                Log.e(TAG, "AudioTrack failed to initialize")
+                cleanup()
+                return
+            }
+            audioTrack = track
+            track.play()
         } catch (e: Exception) {
             cleanup()
             return
         }
 
-        // Playback coroutine: single consumer for ordered AudioTrack writes
-        audioPlaybackChannel = Channel(capacity = 64)
+        // Playback coroutine: single consumer for ordered AudioTrack writes with DROP_OLDEST
+        audioPlaybackChannel = Channel(capacity = 64, onBufferOverflow = kotlinx.coroutines.channels.BufferOverflow.DROP_OLDEST)
         playbackJob = scope.launch(Dispatchers.IO) {
             val track = audioTrack ?: return@launch
             try {
                 for (pcm in audioPlaybackChannel) {
                     if (_callState.value != CallState.ACTIVE) break
-                    try {
-                        track.write(pcm, 0, pcm.size)
-                    } catch (e: Exception) {
-                        break
+                    val written = track.write(pcm, 0, pcm.size)
+                    if (written < 0) {
+                        Log.e(TAG, "AudioTrack.write error: $written")
+                        if (written == AudioTrack.ERROR_DEAD_OBJECT || written == AudioTrack.ERROR_INVALID_OPERATION) {
+                            cleanup()
+                            break
+                        }
                     }
                 }
             } catch (_: Exception) { /* channel closed */ }
@@ -622,16 +667,32 @@ class CallManager @Inject constructor(
         captureJob = scope.launch(Dispatchers.IO) {
             val convId = activeConvId ?: return@launch
             val pcmBuf = ByteArray(FRAME_BYTES)
+            var consecutiveErrors = 0
 
             while (isActive && _callState.value == CallState.ACTIVE) {
                 try {
                     val bytesRead = audioRecord?.read(pcmBuf, 0, FRAME_BYTES) ?: break
-                    if (bytesRead <= 0) continue
+                    if (bytesRead < 0) {
+                        consecutiveErrors++
+                        Log.e(TAG, "AudioRecord.read error: $bytesRead (count=$consecutiveErrors)")
+                        if (bytesRead == AudioRecord.ERROR_DEAD_OBJECT || consecutiveErrors >= 5) {
+                            cleanup()
+                            break
+                        }
+                        delay(50)
+                        continue
+                    }
+                    consecutiveErrors = 0
+                    if (bytesRead < 2) continue
+
+                    // Align to 16-bit mono PCM sample boundary (even byte count)
+                    val alignedBytes = bytesRead - (bytesRead % 2)
+                    if (alignedBytes < 2) continue
 
                     val key = encryptKey ?: break
                     // Keep packet cadence even while muted by sending encrypted silence.
                     // This prevents remote watchdog timeouts when one side mutes.
-                    val payload = if (isMuted) ByteArray(bytesRead) else pcmBuf.copyOf(bytesRead)
+                    val payload = if (isMuted) ByteArray(alignedBytes) else pcmBuf.copyOf(alignedBytes)
                     val seq = sendSequenceAtomic.getAndIncrement()
                     val framePacket = buildAudioFrame(key, payload, seq)
                     sendCallPacket(convId, "af_${seq}", framePacket)
@@ -671,6 +732,12 @@ class CallManager @Inject constructor(
         lastAudioRxMs = System.currentTimeMillis()
 
         try {
+            val seqBytes = packet.copyOfRange(1, 5)
+            val seq = ByteBuffer.wrap(seqBytes).int
+            // Anti-replay check: drop frames outside 100-frame sliding window
+            if (seq <= highestRxSeq - 100) return
+            if (seq > highestRxSeq) highestRxSeq = seq
+
             val nonce = packet.copyOfRange(5, 17)
             val ciphertext = packet.copyOfRange(17, packet.size)
 
@@ -678,7 +745,7 @@ class CallManager @Inject constructor(
                 ciphertext = ciphertext,
                 key = key,
                 nonce = nonce,
-                additionalData = byteArrayOf()
+                additionalData = seqBytes
             )
             // Send to single playback coroutine: ordered writes, no thread contention
             audioPlaybackChannel.trySend(pcm)
@@ -724,7 +791,7 @@ class CallManager @Inject constructor(
             plaintext = pcm,
             key = key,
             nonce = nonce,
-            additionalData = byteArrayOf()
+            additionalData = seqBytes
         )
 
         return ByteBuffer.allocate(1 + 4 + 12 + ciphertext.size).apply {

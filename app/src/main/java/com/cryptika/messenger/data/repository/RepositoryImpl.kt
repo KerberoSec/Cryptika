@@ -178,7 +178,9 @@ class MessageRepositoryImpl @Inject constructor(
         val expired = dao.getExpiredMessages(now)
         expired.forEach { entity ->
             // 1. Delete Keystore key: ciphertext becomes unrecoverable noise
-            keystoreManager.deleteKeyByAlias(entity.storageKeyAlias)
+            try {
+                keystoreManager.deleteKeyByAlias(entity.storageKeyAlias)
+            } catch (_: Exception) {}
             // 2. Zeroize ciphertext in DB and mark unrecoverable
             dao.zeroizeAndMarkUnrecoverable(entity.id)
             // 3. Delete the row
@@ -188,7 +190,9 @@ class MessageRepositoryImpl @Inject constructor(
 
     override suspend fun deleteMessage(messageId: String) {
         val entity = dao.getMessage(messageId) ?: return
-        keystoreManager.deleteKeyByAlias(entity.storageKeyAlias)
+        try {
+            keystoreManager.deleteKeyByAlias(entity.storageKeyAlias)
+        } catch (_: Exception) {}
         dao.deleteMessage(entity.id)
     }
 
@@ -224,6 +228,9 @@ class MessageRepositoryImpl @Inject constructor(
     override suspend fun updateMessageState(messageId: String, state: MessageState) =
         dao.updateMessageState(messageId, state.name)
 
+    override suspend fun updateMessageCounterAndState(messageId: String, counter: Long, state: MessageState) =
+        dao.updateCounterAndState(messageId, counter, state.name)
+
     override suspend fun getFailedMessages(conversationId: String): List<Message> =
         dao.getFailedMessages(conversationId).map { entity ->
             val plaintext = if (entity.isDecryptable) {
@@ -246,7 +253,7 @@ class MessageRepositoryImpl @Inject constructor(
         content = plaintext ?: "[Message expired]",
         timestampMs = timestampMs,
         counter = counter,
-        expirySeconds = 0,
+        expirySeconds = parseExpirySeconds(headerJson),
         expiryDeadlineMs = expiryMs,
         isOutgoing = isOutgoing,
         state = if (!isDecryptable) MessageState.EXPIRED
@@ -254,6 +261,17 @@ class MessageRepositoryImpl @Inject constructor(
         messageType = try { MessageType.valueOf(messageType) } catch (_: Exception) { MessageType.TEXT }
     )
 
+    private fun parseExpirySeconds(headerJson: String): Int {
+        return try {
+            val idx = headerJson.indexOf("\"exp\":")
+            if (idx != -1) {
+                val start = idx + 6
+                val end = headerJson.indexOfAny(charArrayOf(',', '}'), start)
+                if (end != -1) headerJson.substring(start, end).trim().toInt() else 0
+            } else 0
+        } catch (_: Exception) { 0 }
+    }
+
     private fun buildHeaderJson(message: Message): String =
-        """{"id":"${message.id}","ctr":${message.counter},"ts":${message.timestampMs}}"""
+        """{"id":"${message.id}","ctr":${message.counter},"ts":${message.timestampMs},"exp":${message.expirySeconds}}"""
 }

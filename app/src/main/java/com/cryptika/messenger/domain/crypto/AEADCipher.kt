@@ -70,7 +70,9 @@ object AEADCipher {
     ): ByteArray {
         require(key.size == KEY_SIZE) { "Key must be $KEY_SIZE bytes" }
         require(nonce.size == NONCE_SIZE) { "Nonce must be $NONCE_SIZE bytes" }
-        require(ciphertext.size >= TAG_SIZE) { "Ciphertext too short to contain authentication tag" }
+        if (ciphertext.size < TAG_SIZE) {
+            throw CryptoError.AEADAuthFailed
+        }
 
         return try {
             val cipher = ChaCha20Poly1305()

@@ -56,6 +56,7 @@ class EphemeralSessionManager @Inject constructor(
         val expiresAt: Long,
         val wsClient: RelayWebSocketClient,
         var destroyJob: Job? = null,
+        var collectionJob: Job? = null,
         @Volatile var messageProcessor: MessageProcessor? = null,
         @Volatile var ephemeralKeyPair: SessionKeyManager.EphemeralKeyPair? = null
     )
@@ -179,7 +180,8 @@ class EphemeralSessionManager @Inject constructor(
         session.wsClient.connect(session.sessionUUID, jwtToken, identity.identityHex)
 
         // Collect events
-        scope.launch {
+        session.collectionJob?.cancel()
+        session.collectionJob = scope.launch {
             session.wsClient.events.collect { event ->
                 when (event) {
                     is com.cryptika.messenger.data.remote.websocket.RelayEvent.Connected -> {
@@ -198,14 +200,26 @@ class EphemeralSessionManager @Inject constructor(
                                 peerDisconnectedCallbacks[session.sessionUUID]?.invoke()
                                 destroySession(session.sessionUUID)
                             }
+                            packetBytes.size == 1 &&
+                            packetBytes[0] == BackgroundConnectionManager.FORCE_LOGOUT_MAGIC &&
+                            session.messageProcessor != null -> {
+                                peerDisconnectedCallbacks[session.sessionUUID]?.invoke()
+                                destroySession(session.sessionUUID)
+                            }
                             handshakeManager.isHandshakeOffer(packetBytes) -> {
                                 completeHandshake(session, packetBytes)
                             }
-                            // Call signal / audio frame: route to CallManager
-                            // Use sessionUUID as the convId so CallManager can send packets back
-                            packetBytes.isNotEmpty() &&
-                            (packetBytes[0] == CallManager.CALL_SIGNAL_MAGIC ||
-                             packetBytes[0] == CallManager.AUDIO_FRAME_MAGIC) -> {
+                            // Audio frame: route directly to CallManager without querying Room DB (100 fps performance optimization)
+                            packetBytes.isNotEmpty() && packetBytes[0] == CallManager.AUDIO_FRAME_MAGIC -> {
+                                callManager.get().onRelayPacket(
+                                    session.sessionUUID,
+                                    event.message.messageId,
+                                    packetBytes,
+                                    null
+                                )
+                            }
+                            // Call signal: requires Contact for Ed25519 signature verification
+                            packetBytes.isNotEmpty() && packetBytes[0] == CallManager.CALL_SIGNAL_MAGIC -> {
                                 val contact = contactRepository.getContact(session.contactId)
                                 if (contact != null) {
                                     callManager.get().onRelayPacket(
@@ -217,30 +231,23 @@ class EphemeralSessionManager @Inject constructor(
                                 }
                             }
                             else -> {
-                                // Forward to ChatViewModel if registered
-                                chatPacketHandlers[session.sessionUUID]?.invoke(
-                                    event.message.messageId, packetBytes
-                                )
+                                val handler = chatPacketHandlers[session.sessionUUID]
+                                if (handler != null) {
+                                    handler(event.message.messageId, packetBytes)
+                                } else {
+                                    receiveInBackground(session, event.message.messageId, packetBytes)
+                                }
                             }
                         }
                     }
 
                     is com.cryptika.messenger.data.remote.websocket.RelayEvent.Disconnected -> {
-                        // Only notify and destroy if session was already established
-                        // (to preserve sessions from temporary network hiccups during handshake)
-                        if (session.messageProcessor != null) {
-                            peerDisconnectedCallbacks[session.sessionUUID]?.invoke()
-                            destroySession(session.sessionUUID)
-                        }
+                        // Transport disconnect: RelayWebSocketClient will automatically reconnect with backoff.
+                        // Do NOT destroy the ephemeral session or delete messages on transient network drops.
                     }
 
                     is com.cryptika.messenger.data.remote.websocket.RelayEvent.Error -> {
-                        // Only notify and destroy if session was already established
-                        // (to preserve sessions from temporary errors during handshake)
-                        if (session.messageProcessor != null) {
-                            peerDisconnectedCallbacks[session.sessionUUID]?.invoke()
-                            destroySession(session.sessionUUID)
-                        }
+                        // Transport error: RelayWebSocketClient will automatically reconnect with backoff.
                     }
                 }
             }
@@ -248,6 +255,7 @@ class EphemeralSessionManager @Inject constructor(
     }
 
     private suspend fun completeHandshake(session: EphemeralSession, offerPacket: ByteArray) {
+        if (session.messageProcessor != null) return
         val contactId = session.contactId
         val contact = contactRepository.getContact(contactId) ?: return
         val identity = identityRepository.getLocalIdentity() ?: return
@@ -282,6 +290,7 @@ class EphemeralSessionManager @Inject constructor(
                 session.messageProcessor = processor
                 sessionReadyCallbacks[session.sessionUUID]?.invoke(processor)
             } catch (_: Exception) {
+                session.ephemeralKeyPair = null
             }
         } else {
             // We haven't sent an offer yet: create one and respond
@@ -318,6 +327,7 @@ class EphemeralSessionManager @Inject constructor(
                 session.messageProcessor = processor
                 sessionReadyCallbacks[session.sessionUUID]?.invoke(processor)
             } catch (_: Exception) {
+                session.ephemeralKeyPair = null
             }
         }
     }
@@ -340,6 +350,64 @@ class EphemeralSessionManager @Inject constructor(
         }
     }
 
+    private val seenMessageIds = ConcurrentHashMap.newKeySet<String>()
+
+    private suspend fun receiveInBackground(
+        session: EphemeralSession,
+        messageId: String,
+        packetBytes: ByteArray
+    ) {
+        if (!seenMessageIds.add(messageId)) return
+        val processor = session.messageProcessor ?: return
+
+        try {
+            val (plaintextBytes, header) = withContext(Dispatchers.Default) {
+                processor.receive(packetBytes)
+            }
+            val text = plaintextBytes.toString(Charsets.UTF_8)
+            val now = System.currentTimeMillis()
+
+            if (text.startsWith("__DEL__:")) {
+                val counterStr = text.removePrefix("__DEL__:")
+                val targetCounter = counterStr.toLongOrNull()
+                if (targetCounter != null) {
+                    val contact = contactRepository.getContact(session.contactId)
+                    if (contact != null) {
+                        withContext(Dispatchers.IO) {
+                            messageRepository.deletePeerMessageByCounter(
+                                session.sessionUUID,
+                                contact.identityHex,
+                                targetCounter
+                            )
+                        }
+                    }
+                }
+                return
+            }
+
+            val message = Message(
+                id = UUID.randomUUID().toString(),
+                conversationId = session.sessionUUID,
+                senderId = header.senderId.toHexString(),
+                content = text,
+                timestampMs = header.timestampMs,
+                counter = header.counter,
+                expirySeconds = header.expirySeconds,
+                expiryDeadlineMs = if (header.expirySeconds > 0) {
+                    val senderDeadline = header.timestampMs + (header.expirySeconds * 1000L)
+                    maxOf(senderDeadline, now + 5_000L)
+                } else null,
+                isOutgoing = false,
+                state = MessageState.DELIVERED,
+                messageType = header.messageType
+            )
+
+            withContext(Dispatchers.IO) {
+                messageRepository.saveMessage(message, plaintextBytes)
+            }
+        } catch (_: Exception) {}
+    }
+
     fun getMessageProcessor(sessionUUID: String): MessageProcessor? =
         sessions[sessionUUID]?.messageProcessor
 
@@ -360,8 +428,9 @@ class EphemeralSessionManager @Inject constructor(
         val session = sessions.remove(sessionUUID) ?: return
         updateActiveSessionsList()
 
-        // Cancel auto-destroy timer
+        // Cancel auto-destroy timer and collection job
         session.destroyJob?.cancel()
+        session.collectionJob?.cancel()
 
         // Close WebSocket
         session.wsClient.disconnect()

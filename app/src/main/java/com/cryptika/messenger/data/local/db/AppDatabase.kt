@@ -44,14 +44,43 @@ data class MessageEntity(
     val isOutgoing: Boolean,
     val messageType: String = "TEXT",       // TEXT | VOICE_NOTE (Phase 2)
     val messageState: String = "SENT"       // mirrors MessageState enum name
-) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is MessageEntity) return false
-        return id == other.id
+        if (id != other.id) return false
+        if (conversationId != other.conversationId) return false
+        if (senderIdHex != other.senderIdHex) return false
+        if (!ciphertextBlob.contentEquals(other.ciphertextBlob)) return false
+        if (storageKeyAlias != other.storageKeyAlias) return false
+        if (storageHashHex != other.storageHashHex) return false
+        if (headerJson != other.headerJson) return false
+        if (timestampMs != other.timestampMs) return false
+        if (counter != other.counter) return false
+        if (expiryMs != other.expiryMs) return false
+        if (isDecryptable != other.isDecryptable) return false
+        if (isOutgoing != other.isOutgoing) return false
+        if (messageType != other.messageType) return false
+        if (messageState != other.messageState) return false
+        return true
     }
-    override fun hashCode(): Int = id.hashCode()
-}
+
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + conversationId.hashCode()
+        result = 31 * result + senderIdHex.hashCode()
+        result = 31 * result + ciphertextBlob.contentHashCode()
+        result = 31 * result + storageKeyAlias.hashCode()
+        result = 31 * result + storageHashHex.hashCode()
+        result = 31 * result + headerJson.hashCode()
+        result = 31 * result + timestampMs.hashCode()
+        result = 31 * result + counter.hashCode()
+        result = 31 * result + (expiryMs?.hashCode() ?: 0)
+        result = 31 * result + isDecryptable.hashCode()
+        result = 31 * result + isOutgoing.hashCode()
+        result = 31 * result + messageType.hashCode()
+        result = 31 * result + messageState.hashCode()
+        return result
+    }
 
 @Entity(tableName = "conversations")
 data class ConversationEntity(
@@ -155,6 +184,9 @@ interface MessageDao {
     @Query("UPDATE messages SET messageState = :state WHERE id = :id")
     suspend fun updateMessageState(id: String, state: String)
 
+    @Query("UPDATE messages SET counter = :counter, messageState = :state WHERE id = :id")
+    suspend fun updateCounterAndState(id: String, counter: Long, state: String)
+
     /** Returns outgoing messages in FAILED state: used by the retry mechanism. */
     @Query("SELECT * FROM messages WHERE conversationId = :conversationId AND isOutgoing = 1 AND messageState = 'FAILED' ORDER BY counter ASC")
     suspend fun getFailedMessages(conversationId: String): List<MessageEntity>
@@ -249,18 +281,20 @@ abstract class AppDatabase : RoomDatabase() {
 
         fun getInstance(context: Context, passphrase: ByteArray): AppDatabase {
             return INSTANCE ?: synchronized(this) {
-                SQLiteDatabase.loadLibs(context)
-                val factory = SupportFactory(passphrase)
-                Room.databaseBuilder(
-                    context.applicationContext,
-                    AppDatabase::class.java,
-                    "cryptika.db"
-                )
-                    .openHelperFactory(factory)
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
-                    .fallbackToDestructiveMigration()
-                    .build()
-                    .also { INSTANCE = it }
+                INSTANCE ?: run {
+                    SQLiteDatabase.loadLibs(context)
+                    val factory = SupportFactory(passphrase)
+                    Room.databaseBuilder(
+                        context.applicationContext,
+                        AppDatabase::class.java,
+                        "cryptika.db"
+                    )
+                        .openHelperFactory(factory)
+                        .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                        .fallbackToDestructiveMigration()
+                        .build()
+                        .also { INSTANCE = it }
+                }
             }
         }
     }

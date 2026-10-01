@@ -69,6 +69,11 @@ class HashRatchet(initialKey: ByteArray) {
             throw CryptoError.ReplayDetected
         }
 
+        // Bounded lookahead: prevent DoS by rejecting counters too far ahead
+        if (targetCounter - counter > MAX_LOOKAHEAD) {
+            throw CryptoError.ReplayDetected
+        }
+
         // Advance ratchet to target position, caching all intermediate keys
         // keysToCache must be declared here so it's in scope for the flush below
         val keysToCache = mutableListOf<Pair<Long, ByteArray>>()
@@ -94,12 +99,7 @@ class HashRatchet(initialKey: ByteArray) {
             }
         }
 
-        // counter was already == targetCounter when we entered (edge case: first message)
-        // This happens when targetCounter == 1 and counter is already 0 after init
-        val ratchetKey = advance()
-        val now = System.currentTimeMillis()
-        keysToCache.forEach { (c, k) -> lookaheadBuffer[c] = k to now }
-        return ratchetKey.key.copyOf().also { ratchetKey.zeroize() }
+        throw CryptoError.ReplayDetected
     }
 
     fun currentCounter(): Long = counter

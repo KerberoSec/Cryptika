@@ -52,7 +52,7 @@ class RelayWebSocketClient(
     }
 
     private val _events = MutableSharedFlow<RelayEvent>(
-        replay = 0,
+        replay = 1,
         extraBufferCapacity = 64,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
@@ -75,6 +75,7 @@ class RelayWebSocketClient(
         currentAuthToken = authToken
         currentIdentityHash = identityHash
         shouldReconnect = true
+        reconnectAttempts = 0
         reconnectJob?.cancel()   // cancel any pending backoff before starting fresh
         connectInternal(conversationId, authToken, identityHash)
     }
@@ -82,9 +83,13 @@ class RelayWebSocketClient(
     fun disconnect() {
         shouldReconnect = false
         reconnectJob?.cancel()
-        webSocket?.close(1000, "User disconnect")
+        val ws = webSocket
         webSocket = null
         isConnected = false
+        if (ws?.close(1000, "User disconnect") == false) {
+            ws?.cancel()
+        }
+        _events.tryEmit(RelayEvent.Disconnected)
     }
 
     fun isConnected(): Boolean = isConnected
@@ -155,6 +160,13 @@ class RelayWebSocketClient(
                 if (!webSocket.isActive()) return
                 try {
                     val data = bytes.toByteArray()
+                    // Server raw control frame: 0xFF 0xFE PEER_DISCONNECTED (no envelope)
+                    if (data.size >= 2 && data[0] == 0xFF.toByte() && data[1] == 0xFE.toByte()) {
+                        _events.tryEmit(RelayEvent.MessageReceived(
+                            RawRelayMessage(currentConversationId ?: "", "", data)
+                        ))
+                        return
+                    }
                     // Guard: minimum viable envelope is 2+1+2+1 = 6 bytes
                     if (data.size < 6) {
                         return
@@ -207,15 +219,15 @@ class RelayWebSocketClient(
 
         // Close the stale WebSocket AFTER the new one is assigned, so `isActive()` checks
         // from the stale WS's callbacks correctly detect it as inactive and bail out early.
-        staleWs?.close(1000, "Reconnecting")
+        if (staleWs?.close(1000, "Reconnecting") == false) {
+            staleWs?.cancel()
+        }
     }
 
     private fun scheduleReconnect(conversationId: String, authToken: String, identityHash: String = "") {
         reconnectAttempts++
-        val backoffMs = min(
-            INITIAL_BACKOFF_MS * (2.0.pow(reconnectAttempts - 1)).toLong(),
-            MAX_BACKOFF_MS
-        )
+        val exponent = (reconnectAttempts - 1).coerceIn(0, 5)
+        val backoffMs = min(INITIAL_BACKOFF_MS * (1L shl exponent), MAX_BACKOFF_MS)
         // Use a coroutine instead of Handler(Looper.getMainLooper()): the main looper
         // stops processing messages during Doze mode, silently preventing reconnection.
         reconnectJob = reconnectScope.launch {

@@ -23,9 +23,12 @@ class CryptikaApp : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
-        // Start foreground service FIRST: keeps the process alive under Doze/battery-optimisation.
-        // BackgroundConnectionManager (started next) runs in this same process's coroutine scope.
-        com.cryptika.messenger.data.remote.ConnectionForegroundService.start(this)
+        try {
+            com.cryptika.messenger.data.remote.ConnectionForegroundService.start(this)
+        } catch (_: Exception) {}
         backgroundConnectionManager.startAllConnections()
+        try {
+            com.cryptika.messenger.data.local.worker.MessageExpiryWorker.schedule(this)
+        } catch (_: Exception) {}
     }
 }

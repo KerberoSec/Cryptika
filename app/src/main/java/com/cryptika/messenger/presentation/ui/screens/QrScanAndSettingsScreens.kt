@@ -179,6 +179,12 @@ private fun CameraPreview(modifier: Modifier, onQrCodeDetected: (String) -> Unit
     val executor: ExecutorService = remember { Executors.newSingleThreadExecutor() }
     var hasDetected by remember { mutableStateOf(false) }
 
+    DisposableEffect(Unit) {
+        onDispose {
+            executor.shutdown()
+        }
+    }
+
     AndroidView(
         factory = { ctx ->
             PreviewView(ctx).apply {

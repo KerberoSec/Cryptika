@@ -98,6 +98,9 @@ class KeystoreManager {
         if (!keyStore.containsAlias(alias)) {
             throw IllegalStateException("Storage key deleted: message has expired")
         }
+        if (blob.size < GCM_IV_LENGTH + (GCM_TAG_LENGTH / 8)) {
+            throw IllegalStateException("Ciphertext blob too small or zeroized: message unrecoverable")
+        }
         val iv = blob.copyOf(GCM_IV_LENGTH)
         val encrypted = blob.copyOfRange(GCM_IV_LENGTH, blob.size)
         return decrypt(alias, encrypted, iv)
@@ -150,7 +153,8 @@ class KeystoreManager {
     }
 
     private fun encrypt(alias: String, data: ByteArray): Pair<ByteArray, ByteArray> {
-        val key = keyStore.getKey(alias, null) as SecretKey
+        val key = keyStore.getKey(alias, null) as? SecretKey
+            ?: throw IllegalStateException("Key $alias not found in Keystore")
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
         cipher.init(Cipher.ENCRYPT_MODE, key)
         val iv = cipher.iv
@@ -158,7 +162,8 @@ class KeystoreManager {
     }
 
     private fun decrypt(alias: String, encrypted: ByteArray, iv: ByteArray): ByteArray {
-        val key = keyStore.getKey(alias, null) as SecretKey
+        val key = keyStore.getKey(alias, null) as? SecretKey
+            ?: throw IllegalStateException("Key $alias not found in Keystore")
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
         cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(GCM_TAG_LENGTH, iv))
         return cipher.doFinal(encrypted)

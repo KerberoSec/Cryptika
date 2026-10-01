@@ -84,15 +84,20 @@ class TicketManager(
         val timestamp = buffer.long
         val expirySeconds = buffer.int
 
-        // 4. Check clock skew
+        // Verify userAPublicKey matches ticket initiator aId
+        if (!IdentityHash.compute(userAPublicKey).contentEquals(aId)) {
+            throw CryptoError.TicketSignatureInvalid
+        }
+
+        // 4. Check clock skew (future timestamp tolerance)
         val now = System.currentTimeMillis()
-        if (Math.abs(now - timestamp) > CLOCK_SKEW_TOLERANCE_MS) {
+        if (timestamp - now > CLOCK_SKEW_TOLERANCE_MS) {
             throw CryptoError.TimestampStale
         }
 
-        // 5. Check expiry
+        // 5. Check expiry (with clock skew tolerance)
         val expiryMs = timestamp + (expirySeconds * 1000L)
-        if (now > expiryMs) {
+        if (now > expiryMs + CLOCK_SKEW_TOLERANCE_MS) {
             throw CryptoError.TicketExpired
         }
 

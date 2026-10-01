@@ -173,12 +173,12 @@ class HandshakeManager @Inject constructor(
         // Verify Ed25519 signature.
         // Type 0x01: signed data = type || ephem_pubkey (33 bytes)
         // Type 0x02: signed data = type || ephem_pubkey || ticketHash (65 bytes)
-        // The ticketHash must be provided by the caller (extracted from the offer via
-        // extractTicketFromOffer before calling deriveSessionKey).
-        val signedData = if (offerBytes[0] == PACKET_TYPE_WITH_TICKET && verifiedTicket != null) {
+        // An offer claiming PACKET_TYPE_WITH_TICKET MUST have a verified ticket.
+        val signedData = if (offerBytes[0] == PACKET_TYPE_WITH_TICKET) {
+            val ticket = verifiedTicket ?: throw CryptoError.TicketSignatureInvalid
             val buf = ByteArray(1 + 32 + 32)
             offerBytes.copyInto(buf, destinationOffset = 0, startIndex = 0, endIndex = 33)
-            verifiedTicket.ticketHash.copyInto(buf, destinationOffset = 33)
+            ticket.ticketHash.copyInto(buf, destinationOffset = 33)
             buf
         } else {
             offerBytes.copyOfRange(0, 33)
@@ -225,8 +225,9 @@ class HandshakeManager @Inject constructor(
         val (sendRoot, recvRoot) = sessionKeyManager.deriveDirectionalRoots(
             sessionKey, myIdentityHash, peerIdentityHash
         )
+        val sessionKeyCopy = sessionKey.copyOf()
         sessionKey.fill(0) // zeroize undifferentiated root
 
-        return Triple(sessionKey, sendRoot, recvRoot)
+        return Triple(sessionKeyCopy, sendRoot, recvRoot)
     }
 }

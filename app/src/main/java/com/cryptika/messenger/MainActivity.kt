@@ -57,6 +57,7 @@ class MainActivity : ComponentActivity() {
     @Inject lateinit var ephemeralSessionManager: EphemeralSessionManager
     @Inject lateinit var backgroundConnectionManager: BackgroundConnectionManager
     @Inject lateinit var authRepository: AuthRepository
+    @Inject lateinit var callManager: dagger.Lazy<com.cryptika.messenger.data.remote.CallManager>
 
     // DAOs for cryptographic erasure on every wipe
     @Inject lateinit var messageDao: MessageDao
@@ -81,7 +82,7 @@ class MainActivity : ComponentActivity() {
         if (wipeInProgress) return
         wipeInProgress = true
         wipeScope.launch {
-            withContext(Dispatchers.IO) {
+            withContext(kotlinx.coroutines.NonCancellable + Dispatchers.IO) {
                 // Stop live connections
                 try { ephemeralSessionManager.destroyAllSessions() } catch (_: Exception) {}
                 try { backgroundConnectionManager.stopAll() } catch (_: Exception) {}
@@ -103,11 +104,13 @@ class MainActivity : ComponentActivity() {
             // Clear auth tokens last (on main thread as SharedPreferences edit is safe there)
             try { authRepository.logout() } catch (_: Exception) {}
 
-            // Restart to AUTH screen with a clean back-stack
-            val restart = Intent(this@MainActivity, MainActivity::class.java)
-            restart.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            startActivity(restart)
-            finish()
+            // Restart to AUTH screen with a clean back-stack only if currently in foreground
+            if (lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)) {
+                val restart = Intent(this@MainActivity, MainActivity::class.java)
+                restart.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                startActivity(restart)
+            }
+            finishAffinity()
         }
     }
 
@@ -115,6 +118,10 @@ class MainActivity : ComponentActivity() {
     private val screenOffReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == Intent.ACTION_SCREEN_OFF) {
+                // Do not wipe if a call is ongoing or active in background
+                if (callManager.get().callState.value != com.cryptika.messenger.domain.model.CallState.IDLE) {
+                    return
+                }
                 performFullWipe()
             }
         }
@@ -159,6 +166,10 @@ class MainActivity : ComponentActivity() {
     override fun onStop() {
         super.onStop()
         if (!isChangingConfigurations) {
+            // Do not wipe if a call is ongoing or active in background
+            if (callManager.get().callState.value != com.cryptika.messenger.domain.model.CallState.IDLE) {
+                return
+            }
             performFullWipe()
         }
     }

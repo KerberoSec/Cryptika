@@ -24,6 +24,7 @@ interface MessageRepository {
     suspend fun saveMessage(message: Message, plaintextBytes: ByteArray)
     suspend fun getMessage(id: String): Message?
     suspend fun updateMessageState(messageId: String, state: MessageState)
+    suspend fun updateMessageCounterAndState(messageId: String, counter: Long, state: MessageState)
     suspend fun deleteExpiredMessages()
     suspend fun deleteMessage(messageId: String)
     suspend fun deleteMessageByCounterAndSender(convId: String, senderHex: String, counter: Long)

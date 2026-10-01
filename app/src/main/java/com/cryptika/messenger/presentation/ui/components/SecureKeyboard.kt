@@ -48,6 +48,7 @@ enum class KeyboardLanguage(val code: String, val nativeName: String) {
     ENGLISH ("EN", "English"),
     GERMAN  ("DE", "Deutsch"),
     SPANISH ("ES", "Español"),
+    RUSSIAN ("RU", "Русский"),
     HINDI   ("HI", "हिन्दी"),
     MARATHI ("MR", "मराठी"),
     SANSKRIT("SA", "संस्कृत"),
@@ -110,6 +111,19 @@ private val LAYOUTS: Map<KeyboardLanguage, LangLayout> = mapOf(
             listOf("Q","W","E","R","T","Y","U","I","O","P"),
             listOf("A","S","D","F","G","H","J","K","L","Ñ"),
             listOf("Z","X","C","V","B","N","M")
+        )
+    ),
+
+    KeyboardLanguage.RUSSIAN to LangLayout(
+        primaryRows = listOf(
+            listOf("й","ц","у","к","е","н","г","ш","щ","з","х"),
+            listOf("ф","ы","в","а","п","р","о","л","д","ж","э"),
+            listOf("я","ч","с","м","и","т","ь","б","ю")
+        ),
+        secondaryRows = listOf(
+            listOf("Й","Ц","У","К","Е","Н","Г","Ш","Щ","З","Х"),
+            listOf("Ф","Ы","В","А","П","Р","О","Л","Д","Ж","Э"),
+            listOf("Я","Ч","С","М","И","Т","Ь","Б","Ю")
         )
     ),
 
@@ -541,9 +555,9 @@ private fun LetterKeys(
                 // English: no spacers, row 3 keys fill the full width between
                 // Shift and Backspace (same key width as rows 1 & 2, like Gboard).
                 // Other layouts centre their shorter row 3 with half-spacers.
-                val pad = if (isEnglish) 0f else (9f - row.size.coerceAtMost(9)) / 2f
+                val pad = if (isEnglish || row.size >= 9) 0f else (9f - row.size) / 2f
                 if (pad > 0f) Spacer(Modifier.weight(pad))
-                row.take(9).forEach { ch ->
+                row.forEach { ch ->
                     CharKey(ch, { onChar(ch) }, Modifier.weight(1f), fontScale = scale)
                 }
                 if (pad > 0f) Spacer(Modifier.weight(pad))
@@ -551,23 +565,23 @@ private fun LetterKeys(
             }
         }
 
-        // Bottom row: ?123 | , | language | space | . | Done
+        // Bottom row: ?123 | ☺ | language | space | . | Done
         Row(
             modifier              = Modifier.fillMaxWidth().padding(horizontal = H_PAD),
             horizontalArrangement = Arrangement.spacedBy(KEY_SPACING)
         ) {
-            LabelKey("?123",  onSymbols, Modifier.weight(1.3f))
-            CharKey(layout.commaKey, { onChar(layout.commaKey) }, Modifier.weight(0.7f))
+            LabelKey("?123",  onSymbols, Modifier.weight(1.2f))
+            LabelKey("☺",     onEmoji,   Modifier.weight(0.8f))
             LangKey(
                 language    = language,
                 onPress     = onLangCycle,
                 onLongPress = onLangLongPress,
-                modifier    = Modifier.weight(0.9f)
+                modifier    = Modifier.weight(0.8f)
             )
             SpaceKey(
                 onClick  = onSpace,
                 label    = language.nativeName,
-                modifier = Modifier.weight(3.2f)
+                modifier = Modifier.weight(3.0f)
             )
             CharKey(layout.periodKey, { onChar(layout.periodKey) }, Modifier.weight(0.7f))
             DoneKey(onDone, Modifier.weight(1.1f))

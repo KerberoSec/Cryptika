@@ -77,19 +77,22 @@ class HomeViewModel @Inject constructor(
             val myHex = withContext(Dispatchers.IO) {
                 identityRepository.getLocalIdentity()?.identityHex ?: ""
             }
-            contactRepository.getContacts().collect { contacts ->
-                val items = contacts.map { contact ->
+            combine(
+                contactRepository.getContacts(),
+                conversationDao.getAllConversations()
+            ) { contacts, conversations ->
+                val convMap = conversations.associateBy { it.id }
+                contacts.map { contact ->
                     val convId = buildConversationId(myHex, contact.identityHex)
-                    val conv = withContext(Dispatchers.IO) {
-                        conversationDao.getConversation(convId)
-                    }
+                    val conv = convMap[convId]
                     ConversationUiItem(
                         conversationId = convId,
                         contact = contact,
                         lastMessageAt = conv?.lastMessageAt ?: contact.verifiedAt,
                         unreadCount = conv?.unreadCount ?: 0
                     )
-                }
+                }.sortedByDescending { it.lastMessageAt }
+            }.collect { items ->
                 _uiState.update { it.copy(conversations = items, isLoading = false) }
             }
         }
@@ -114,6 +117,7 @@ class HomeViewModel @Inject constructor(
                 val myHex = identityRepository.getLocalIdentity()?.identityHex ?: return@launch
                 val convId = buildConversationId(myHex, contact.identityHex)
                 messageRepository.deleteConversationMessages(convId)
+                conversationDao.deleteConversation(convId)
                 contactRepository.deleteContact(contactId)
             } catch (_: Exception) {}
         }
@@ -505,6 +509,7 @@ class ChatViewModel @Inject constructor(
     }
 
     private fun startEphemeralCountdown(expiresAt: Long) {
+        if (expiresAt <= 0) return
         ephemeralCountdownJob?.cancel()
         ephemeralCountdownJob = viewModelScope.launch {
             while (true) {
@@ -513,8 +518,6 @@ class ChatViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(ephemeralState = EphemeralSessionState.Expired)
                     }
-                    // Trigger force-logout when session expires
-                    _events.emit(ChatEvent.ForceLogout)
                     break
                 }
                 _uiState.update {
@@ -851,7 +854,7 @@ class ChatViewModel @Inject constructor(
 
     fun retryFailedMessages() {
         val convId = conversationId ?: return
-        if (!backgroundConnectionManager.isConnected(convId)) return
+        val processor = messageProcessor ?: return
 
         viewModelScope.launch {
             val failedMessages = withContext(Dispatchers.IO) {
@@ -859,13 +862,55 @@ class ChatViewModel @Inject constructor(
             }
             if (failedMessages.isEmpty()) return@launch
 
-            _events.emit(ChatEvent.ShowError("${failedMessages.size} message(s) failed, will resend when session is ready"))
-            failedMessages.forEach { message ->
-                withContext(Dispatchers.IO) {
-                    messageRepository.updateMessageState(message.id, MessageState.SENDING)
+            var anySuccess = false
+            for (message in failedMessages) {
+                try {
+                    withContext(Dispatchers.IO) {
+                        messageRepository.updateMessageState(message.id, MessageState.SENDING)
+                    }
+                    val plaintextBytes = message.content.toByteArray(Charsets.UTF_8)
+                    val (wirePacketBytes, newCounter) = withContext(Dispatchers.Default) {
+                        processor.send(
+                            plaintext = plaintextBytes,
+                            expirySeconds = message.expirySeconds,
+                            messageType = message.messageType
+                        )
+                    }
+                    val sendSuccess = withContext(Dispatchers.IO) {
+                        if (isEphemeralMode && ephemeralSessionUUID != null) {
+                            ephemeralSessionManager.sendPacket(
+                                sessionUUID = ephemeralSessionUUID!!,
+                                messageId = message.id,
+                                packet = wirePacketBytes
+                            )
+                        } else {
+                            backgroundConnectionManager.sendPacket(
+                                convId = convId,
+                                messageId = message.id,
+                                packet = wirePacketBytes
+                            )
+                        }
+                    }
+                    val finalState = if (sendSuccess) {
+                        anySuccess = true
+                        MessageState.SENT
+                    } else {
+                        MessageState.FAILED
+                    }
+                    withContext(Dispatchers.IO) {
+                        messageRepository.updateMessageCounterAndState(message.id, newCounter, finalState)
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.IO) {
+                        messageRepository.updateMessageState(message.id, MessageState.FAILED)
+                    }
                 }
             }
-            _events.emit(ChatEvent.RetrySucceeded)
+            if (anySuccess) {
+                _events.emit(ChatEvent.RetrySucceeded)
+            } else {
+                _events.emit(ChatEvent.ShowError("Retry failed: unable to send messages"))
+            }
         }
     }
 
@@ -883,6 +928,12 @@ class ChatViewModel @Inject constructor(
     private fun scheduleNextExpiry(messages: List<Message>) {
         nextExpiryJob?.cancel()
         val now = System.currentTimeMillis()
+        val hasExpired = messages.any { it.expiryDeadlineMs != null && it.expiryDeadlineMs <= now }
+        if (hasExpired) {
+            viewModelScope.launch(Dispatchers.IO) {
+                try { messageRepository.deleteExpiredMessages() } catch (_: Exception) {}
+            }
+        }
         val nextDeadline = messages
             .mapNotNull { it.expiryDeadlineMs }
             .filter { it > now }

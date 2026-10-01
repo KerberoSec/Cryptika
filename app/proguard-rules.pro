@@ -7,8 +7,19 @@
 # Keep Room entities
 -keep class com.cryptika.messenger.data.local.db.** { *; }
 
-# Keep domain models (Gson serialization)
+# Keep domain models & API DTOs (Gson serialization & Retrofit)
 -keep class com.cryptika.messenger.domain.model.** { *; }
+-keep class com.cryptika.messenger.data.remote.api.** { *; }
+
+-keepattributes Signature
+-keepattributes *Annotation*
+-keepattributes Exceptions
+-keepattributes InnerClasses
+
+-keepclassmembers class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
+-keep class com.google.gson.** { *; }
 
 # Keep Hilt generated code
 -keep class * extends dagger.hilt.android.internal.managers.ActivityComponentManager { *; }
@@ -18,10 +29,12 @@
 -keep,allowobfuscation interface * {
     @retrofit2.http.* <methods>;
 }
+-dontwarn retrofit2.**
 
 # SQLCipher
 -keep class net.sqlcipher.** { *; }
 -keep class net.sqlcipher.database.** { *; }
+-dontwarn net.sqlcipher.**
 
 # WorkManager
 -keep class * extends androidx.work.Worker { *; }

@@ -52,11 +52,13 @@ class CallForegroundService : Service() {
 
         /** Signal the service to tear down the foreground notification and stop itself. */
         fun stop(context: Context) {
-            context.startService(
-                Intent(context, CallForegroundService::class.java).apply {
+            try {
+                val intent = Intent(context, CallForegroundService::class.java).apply {
                     action = ACTION_STOP
                 }
-            )
+                context.startService(intent)
+                context.stopService(Intent(context, CallForegroundService::class.java))
+            } catch (_: Exception) {}
         }
     }
 
@@ -73,27 +75,47 @@ class CallForegroundService : Service() {
                 val name = intent.getStringExtra(EXTRA_CONTACT_NAME) ?: ""
                 val notification = buildNotification(name)
 
-                // On API 29+ pass the service type so the OS knows this foreground service
-                // is using the microphone (required for Android 12+ strict enforcement).
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    startForeground(
-                        NOTIFICATION_ID,
-                        notification,
-                        ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
-                    )
-                } else {
-                    startForeground(NOTIFICATION_ID, notification)
+                try {
+                    // On API 29+ pass the service type so the OS knows this foreground service
+                    // is using the microphone (required for Android 12+ strict enforcement).
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        startForeground(
+                            NOTIFICATION_ID,
+                            notification,
+                            ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
+                        )
+                    } else {
+                        startForeground(NOTIFICATION_ID, notification)
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.w("CallFgService", "Cannot start foreground service: ${e.message}")
                 }
             }
 
             ACTION_STOP -> {
-                @Suppress("DEPRECATION")
-                stopForeground(true)   // compatible with all minSdk=26 devices
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    stopForeground(STOP_FOREGROUND_REMOVE)
+                } else {
+                    @Suppress("DEPRECATION")
+                    stopForeground(true)
+                }
                 stopSelf()
             }
         }
         // START_NOT_STICKY: do not recreate this service if killed: the call is already dead.
         return START_NOT_STICKY
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+        } else {
+            @Suppress("DEPRECATION")
+            stopForeground(true)
+        }
+        val nm = getSystemService(NotificationManager::class.java)
+        nm?.cancel(NOTIFICATION_ID)
     }
 
     override fun onBind(intent: Intent?): IBinder? = null

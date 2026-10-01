@@ -1,4 +1,4 @@
-﻿// server/index.js
+// server/index.js
 // Cryptika Relay Server v3.0.0
 // Blind relay: routes encrypted packets without inspecting content
 // Auth layer: username-only entry, contact tokens, ephemeral anonymous sessions
@@ -50,7 +50,13 @@ try {
   const savedKey = process.env.SERVER_PRIVATE_KEY_HEX;
   if (savedKey) {
     const privBytes = Buffer.from(savedKey, "hex");
-    serverKeyPair = nacl.sign.keyPair.fromSeed(privBytes);
+    if (privBytes.length === 64) {
+      serverKeyPair = nacl.sign.keyPair.fromSecretKey(privBytes);
+    } else if (privBytes.length === 32) {
+      serverKeyPair = nacl.sign.keyPair.fromSeed(privBytes);
+    } else {
+      throw new Error("Invalid key length: must be 32 or 64 bytes");
+    }
   } else {
     serverKeyPair = nacl.sign.keyPair();
     console.log("   NEW SERVER KEYPAIR GENERATED");
@@ -129,7 +135,7 @@ function isRateLimited(key, maxRequests, windowMs) {
   const now = Date.now();
   let entry = rateLimits.get(key);
   if (!entry || now - entry.windowStart > windowMs) {
-    entry = { count: 0, windowStart: now };
+    entry = { count: 0, windowStart: now, windowMs };
   }
   entry.count++;
   rateLimits.set(key, entry);
@@ -140,7 +146,8 @@ function isRateLimited(key, maxRequests, windowMs) {
 setInterval(() => {
   const now = Date.now();
   for (const [key, entry] of rateLimits.entries()) {
-    if (now - entry.windowStart > 3_600_000) rateLimits.delete(key);
+    const limitWindow = entry.windowMs || 3_600_000;
+    if (now - entry.windowStart > limitWindow) rateLimits.delete(key);
   }
 }, 300_000);
 
@@ -154,12 +161,14 @@ function authenticateToken(req, res, next) {
   if (!token) return res.status(401).json({ error: "Authentication required" });
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ["HS256"] });
     // Check if this token has been burned (blacklisted)
     if (decoded.jti && burnedTokens.has(decoded.jti)) {
       return res.status(401).json({ error: "Token has been revoked" });
     }
     req.user = decoded; // { username, contactToken, jti, iat, exp }
+    const u = users.get(decoded.username);
+    if (u) u.lastActive = Date.now();
     next();
   } catch (e) {
     return res.status(401).json({ error: "Invalid or expired token" });
@@ -188,7 +197,7 @@ app.use(helmet());
 app.use(express.json({ limit: "16kb" }));
 
 // Health check
-app.get("/health", (req, res) => {
+const healthCheckHandler = (req, res) => {
   res.json({
     status: "ok",
     version: "2.0.0",
@@ -196,7 +205,9 @@ app.get("/health", (req, res) => {
     activeSessions: ephemeralSessions.size,
     timestamp: Date.now()
   });
-});
+};
+app.get("/health", healthCheckHandler);
+app.get("/api/v1/health", healthCheckHandler);
 
 // AUTH ENDPOINTS
 
@@ -222,17 +233,30 @@ app.post("/api/v1/auth/enter", (req, res) => {
     }
 
     const trimmed = username.trim();
+    if (trimmed.length > 64) {
+      return res.status(400).json({ error: "Username cannot exceed 64 characters" });
+    }
+
+    if (identityHashHex && (!/^[0-9a-fA-F]{64}$/.test(identityHashHex))) {
+      return res.status(400).json({ error: "Invalid identityHashHex format" });
+    }
 
     // Check if username is already taken by an active user
     const existingUser = users.get(trimmed);
     if (existingUser) {
-      // If the existing user has the same identityHashHex, allow re-login (same device)
-      // Otherwise, reject login attempt for this username
-      if (identityHashHex && existingUser.identityHashHex &&
-          identityHashHex !== existingUser.identityHashHex) {
-        return res.status(409).json({
-          error: "Username is currently in use by another user. Please try a different username."
-        });
+      const isExpired = Date.now() - (existingUser.lastActive || existingUser.createdAt) > USER_TTL_MS;
+      if (!isExpired) {
+        // Active user: only allow re-entry if the exact same identity hash is provided
+        if (existingUser.identityHashHex && existingUser.identityHashHex !== identityHashHex) {
+          return res.status(409).json({
+            error: "Username is currently in use by another user. Please try a different username."
+          });
+        }
+        if (!identityHashHex && existingUser.identityHashHex) {
+          return res.status(409).json({
+            error: "Username is currently registered with an active cryptographic identity."
+          });
+        }
       }
     }
 
@@ -245,6 +269,7 @@ app.post("/api/v1/auth/enter", (req, res) => {
       identityHashHex: identityHashHex || "",
       publicKeyB64: publicKeyB64 || "",
       createdAt: Date.now(),
+      lastActive: Date.now(),
     });
 
     // Issue JWT
@@ -323,11 +348,12 @@ app.post("/api/v1/contact/request", authenticateToken, async (req, res) => {
 
   try {
     const { targetUsername, nickname } = req.body;
-    if (!targetUsername || typeof targetUsername !== "string") {
+    if (!targetUsername || typeof targetUsername !== "string" || !targetUsername.trim()) {
       return res.json({ status: "request_sent" }); // Anti-enumeration
     }
 
-    const toToken = deriveContactToken(targetUsername);
+    const trimmedTarget = targetUsername.trim();
+    const toToken = deriveContactToken(trimmedTarget);
 
     // Prevent self-request
     if (timingSafeEqual(fromToken, toToken)) {
@@ -548,7 +574,7 @@ app.post("/api/v1/contact/accept", authenticateToken, async (req, res) => {
       participants,
       createdAt: now,
       expiresAt,
-      joinedCount: 0,
+      joinedTokens: new Set(),
       identityMappingDeleted: false,
       destroyTimer,
     });
@@ -558,6 +584,9 @@ app.post("/api/v1/contact/accept", authenticateToken, async (req, res) => {
     tokenToSession.get(r.fromToken).add(sessionUUID);
     if (!tokenToSession.has(myToken)) tokenToSession.set(myToken, new Set());
     tokenToSession.get(myToken).add(sessionUUID);
+
+    // Clean up accepted request
+    contactRequests.delete(requestId);
 
     res.json({
       sessionUUID,
@@ -877,7 +906,7 @@ wss.on("connection", (ws, req) => {
     }
     let decoded;
     try {
-      decoded = jwt.verify(authToken, JWT_SECRET);
+      decoded = jwt.verify(authToken, JWT_SECRET, { algorithms: ["HS256"] });
     } catch (e) {
       ws.close(4013, "Invalid token");
       return;
@@ -903,14 +932,16 @@ wss.on("connection", (ws, req) => {
 
     room.add(ws);
     ws.conversationId = sessionId;
+    ws.contactToken = decoded.contactToken;
     ws.isEphemeral = true;
     ws.isAlive = true;
     ws.on("pong", () => { ws.isAlive = true; });
 
-    session.joinedCount++;
+    session.joinedTokens = session.joinedTokens || new Set();
+    session.joinedTokens.add(decoded.contactToken);
 
-    // When BOTH participants have joined: delete identity mapping
-    if (session.joinedCount >= 2 && !session.identityMappingDeleted) {
+    // When BOTH distinct participants have joined: delete identity mapping
+    if (session.joinedTokens.size >= 2 && !session.identityMappingDeleted) {
       session.identityMappingDeleted = true;
       // Actually clear identity info from participant entries
       for (const [token, info] of session.participants) {
@@ -920,16 +951,23 @@ wss.on("connection", (ws, req) => {
       // Server no longer knows which user is in which session
     }
 
-    // Deliver buffered messages
+    // Deliver buffered messages intended for this participant
     const backlog = messageBuffer.get(sessionId);
     if (backlog && backlog.length > 0) {
       const now = Date.now();
+      const remaining = [];
       for (const entry of backlog) {
-        if (now - entry.ts < BUFFER_TTL_MS && ws.readyState === WebSocket.OPEN) {
+        if (entry.senderToken !== decoded.contactToken && now - entry.ts < BUFFER_TTL_MS && ws.readyState === WebSocket.OPEN) {
           ws.send(entry.data, { binary: true });
+        } else if (entry.senderToken === decoded.contactToken && now - entry.ts < BUFFER_TTL_MS) {
+          remaining.push(entry);
         }
       }
-      messageBuffer.delete(sessionId);
+      if (remaining.length > 0) {
+        messageBuffer.set(sessionId, remaining);
+      } else {
+        messageBuffer.delete(sessionId);
+      }
     }
 
     // Message relay for session (identical to conversation relay)
@@ -949,7 +987,7 @@ wss.on("connection", (ws, req) => {
       if (relayed === 0) {
         const buf = messageBuffer.get(sessionId) || [];
         if (buf.length < MAX_BUFFER_PER_CONV) {
-          buf.push({ data: Buffer.from(bytes), ts: Date.now() });
+          buf.push({ senderToken: decoded.contactToken, data: Buffer.from(bytes), ts: Date.now() });
           messageBuffer.set(sessionId, buf);
         }
       }
@@ -964,11 +1002,13 @@ wss.on("connection", (ws, req) => {
           try { peer.send(PEER_DISCONNECTED, { binary: true }); } catch (_) {}
         }
       }
-      // Destroy the entire session when a participant leaves
       if (room.size === 0) {
         conversationSockets.delete(sessionId);
       }
-      destroySession(sessionId);
+      // If the session has expired, destroy it
+      if (Date.now() > session.expiresAt) {
+        destroySession(sessionId);
+      }
     });
 
     ws.on("error", () => { room.delete(ws); });
@@ -987,7 +1027,7 @@ wss.on("connection", (ws, req) => {
   }
   let convDecoded;
   try {
-    convDecoded = jwt.verify(authToken, JWT_SECRET);
+    convDecoded = jwt.verify(authToken, JWT_SECRET, { algorithms: ["HS256"] });
   } catch (e) {
     ws.close(4013, "Invalid token");
     return;
@@ -1032,16 +1072,23 @@ wss.on("connection", (ws, req) => {
     presenceMap.set(identityHash, { ...existing, lastSeen: Date.now(), online: true });
   }
 
-  // Deliver buffered messages
+  // Deliver buffered messages intended for this participant
   const backlog = messageBuffer.get(conversationId);
   if (backlog && backlog.length > 0) {
     const now = Date.now();
+    const remaining = [];
     for (const entry of backlog) {
-      if (now - entry.ts < BUFFER_TTL_MS && ws.readyState === WebSocket.OPEN) {
+      if ((!identityHash || entry.senderHash !== identityHash) && now - entry.ts < BUFFER_TTL_MS && ws.readyState === WebSocket.OPEN) {
         ws.send(entry.data, { binary: true });
+      } else if (identityHash && entry.senderHash === identityHash && now - entry.ts < BUFFER_TTL_MS) {
+        remaining.push(entry);
       }
     }
-    messageBuffer.delete(conversationId);
+    if (remaining.length > 0) {
+      messageBuffer.set(conversationId, remaining);
+    } else {
+      messageBuffer.delete(conversationId);
+    }
   }
 
   ws.on("message", (data, isBinary) => {
@@ -1060,7 +1107,7 @@ wss.on("connection", (ws, req) => {
     if (relayed === 0) {
       const buf = messageBuffer.get(conversationId) || [];
       if (buf.length < MAX_BUFFER_PER_CONV) {
-        buf.push({ data: Buffer.from(bytes), ts: Date.now() });
+        buf.push({ senderHash: identityHash || "", data: Buffer.from(bytes), ts: Date.now() });
         messageBuffer.set(conversationId, buf);
       }
     }
@@ -1116,7 +1163,10 @@ setInterval(() => {
   // Cleanup dead sockets and empty rooms
   for (const [convId, room] of conversationSockets.entries()) {
     for (const ws of room) {
-      if (ws.readyState !== WebSocket.OPEN) room.delete(ws);
+      if (ws.readyState !== WebSocket.OPEN) {
+        wsIdentityMap.delete(ws);
+        room.delete(ws);
+      }
     }
     if (room.size === 0) conversationSockets.delete(convId);
   }
@@ -1153,9 +1203,9 @@ setInterval(() => {
     }
   }
 
-  // Phase 1.1 + 5.1: Auto-delete user records after USER_TTL_MS from login
+  // Auto-delete user records after USER_TTL_MS of inactivity
   for (const [username, user] of users.entries()) {
-    const ref = user.createdAt;
+    const ref = user.lastActive || user.createdAt;
     if (now - ref > USER_TTL_MS) {
       const contactToken = user.contactToken;
       users.delete(username);

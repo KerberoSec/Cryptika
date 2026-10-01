@@ -27,10 +27,8 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun enter(username: String): Result<Unit> =
         withContext(Dispatchers.IO) {
             try {
-                // Delete any existing identity so a fresh keypair + fingerprint is generated
-                // on every login, ensures no identity material persists across sessions.
-                try { identityRepository.deleteIdentity() } catch (_: Exception) {}
-                val identity = identityRepository.generateIdentity()
+                // Use existing local identity or generate a new one if not present
+                val identity = identityRepository.getLocalIdentity() ?: identityRepository.generateIdentity()
                 val response = authApi.enter(
                     url = "${serverConfig.apiBaseUrl}/api/v1/auth/enter",
                     request = EnterRequest(
@@ -39,6 +37,7 @@ class AuthRepositoryImpl @Inject constructor(
                         publicKeyB64 = Base64.encodeToString(identity.publicKeyBytes, Base64.NO_WRAP)
                     )
                 )
+                authStore.credentialsBurned = false
                 authStore.jwtToken = response.token
                 authStore.contactToken = response.contactToken
                 authStore.username = username

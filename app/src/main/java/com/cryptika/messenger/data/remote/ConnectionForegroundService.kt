@@ -34,16 +34,22 @@ class ConnectionForegroundService : Service() {
         private const val CHANNEL_ID     = "cryptika_bg_connection"
 
         fun start(context: Context) {
-            val intent = Intent(context, ConnectionForegroundService::class.java)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
-            } else {
-                context.startService(intent)
+            try {
+                val intent = Intent(context, ConnectionForegroundService::class.java)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    context.startForegroundService(intent)
+                } else {
+                    context.startService(intent)
+                }
+            } catch (e: Exception) {
+                android.util.Log.w("ConnFgService", "Cannot start foreground service: ${e.message}")
             }
         }
 
         fun stop(context: Context) {
-            context.stopService(Intent(context, ConnectionForegroundService::class.java))
+            try {
+                context.stopService(Intent(context, ConnectionForegroundService::class.java))
+            } catch (_: Exception) {}
         }
     }
 
@@ -53,9 +59,33 @@ class ConnectionForegroundService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        startForeground(NOTIFICATION_ID, buildNotification())
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                startForeground(
+                    NOTIFICATION_ID,
+                    buildNotification(),
+                    android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_REMOTE_MESSAGING
+                )
+            } else {
+                startForeground(NOTIFICATION_ID, buildNotification())
+            }
+        } catch (e: Exception) {
+            android.util.Log.w("ConnFgService", "startForeground failed: ${e.message}")
+        }
         // START_STICKY: if killed by OS, restart without delivering the original intent
         return START_STICKY
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+        } else {
+            @Suppress("DEPRECATION")
+            stopForeground(true)
+        }
+        val nm = getSystemService(NotificationManager::class.java)
+        nm?.cancel(NOTIFICATION_ID)
     }
 
     override fun onBind(intent: Intent?): IBinder? = null  // not a bound service
