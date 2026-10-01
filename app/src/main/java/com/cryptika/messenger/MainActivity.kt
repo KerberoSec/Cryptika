@@ -150,12 +150,14 @@ class MainActivity : ComponentActivity() {
         window.decorView.filterTouchesWhenObscured = true
 
         // Discard back gestures while full wipe is in progress
-        onBackPressedDispatcher.addCallback(this) {
-            if (wipeInProgress) return@addCallback
-            isEnabled = false
-            onBackPressedDispatcher.onBackPressed()
-            isEnabled = true
-        }
+        onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (wipeInProgress) return
+                isEnabled = false
+                onBackPressedDispatcher.onBackPressed()
+                isEnabled = true
+            }
+        })
 
         MessageExpiryWorker.schedule(this)
         MessageExpiryWorker.runOnce(this)

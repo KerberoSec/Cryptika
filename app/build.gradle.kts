@@ -36,12 +36,12 @@ android {
         buildConfigField(
             "String",
             "SERVER_PUBLIC_KEY_HEX",
-            "\"c402f7a9ec0f9e45f5cc0a1abc0342e36d57841e28bca0bffb60d327a529297d\""
+            "\"e7a753d313841b701dbb83893aae17b1d35207c8b9e3d7cf5856a993f61cfa3e\""
         )
-        // LAN IP for release / physical device builds
-        buildConfigField("String", "RELAY_BASE_URL", "\"ws://13.235.150.23:8443\"")
-        buildConfigField("String", "API_BASE_URL", "\"http://13.235.150.23:8443\"")
-        buildConfigField("String", "APP_VERSION", "\"1.0.0\"")
+        // Public Cloudflare Tunnel endpoint
+        buildConfigField("String", "RELAY_BASE_URL", "\"wss://appliance-burner-contractors-influence.trycloudflare.com\"")
+        buildConfigField("String", "API_BASE_URL", "\"https://appliance-burner-contractors-influence.trycloudflare.com\"")
+        buildConfigField("String", "APP_VERSION", "\"3.0.0\"")
         // Safe fallback: debug buildType overrides this to "true"; release to "false".
         // Network security config (domain-config) is the real authority for cleartext.
         manifestPlaceholders["usesCleartextTraffic"] = "false"
@@ -52,10 +52,10 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            // Release: TLS-only. Upgrade plaintext build-config URLs to secure schemes.
+            // Release: TLS-only.
             manifestPlaceholders["usesCleartextTraffic"] = "false"
-            buildConfigField("String", "RELAY_BASE_URL", "\"wss://13.235.150.23:8443\"")
-            buildConfigField("String", "API_BASE_URL",   "\"https://13.235.150.23:8443\"")
+            buildConfigField("String", "RELAY_BASE_URL", "\"wss://appliance-burner-contractors-influence.trycloudflare.com\"")
+            buildConfigField("String", "API_BASE_URL",   "\"https://appliance-burner-contractors-influence.trycloudflare.com\"")
         }
         debug {
             isDebuggable = true

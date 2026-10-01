@@ -437,9 +437,9 @@ class CallManager @Inject constructor(
             return
         }
 
-        // Timestamp freshness: 45 seconds tolerance
+        // Timestamp freshness: 300 seconds (5 min) tolerance for clock skew
         val now = System.currentTimeMillis()
-        if (kotlin.math.abs(now - tsMs) > 45_000L) {
+        if (kotlin.math.abs(now - tsMs) > 300_000L) {
             Log.w(TAG, "onSignalReceived: timestamp stale, diff=${now - tsMs}ms for type=$type")
             return
         }
@@ -509,6 +509,41 @@ class CallManager @Inject constructor(
         )
         _callState.value = CallState.INCOMING_RINGING
         Log.d(TAG, "handleIncomingOffer: INCOMING_RINGING from ${contact.displayName} callId=${callId.take(8)}…")
+
+        // Show incoming call notification with ringtone and full screen intent
+        try {
+            val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                val channel = android.app.NotificationChannel(
+                    "cryptika_calls",
+                    "Incoming Calls",
+                    android.app.NotificationManager.IMPORTANCE_HIGH
+                ).apply {
+                    description = "Cryptika Voice Calls"
+                }
+                nm.createNotificationChannel(channel)
+            }
+            val intent = android.content.Intent(context, com.cryptika.messenger.MainActivity::class.java).apply {
+                flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
+            }
+            val pendingIntent = android.app.PendingIntent.getActivity(
+                context,
+                1002,
+                intent,
+                android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+            )
+            val notification = androidx.core.app.NotificationCompat.Builder(context, "cryptika_calls")
+                .setContentTitle("Incoming Encrypted Voice Call")
+                .setContentText(contact.displayName)
+                .setSmallIcon(android.R.drawable.ic_menu_call)
+                .setPriority(androidx.core.app.NotificationCompat.PRIORITY_MAX)
+                .setCategory(androidx.core.app.NotificationCompat.CATEGORY_CALL)
+                .setFullScreenIntent(pendingIntent, true)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
+                .build()
+            nm.notify(1002, notification)
+        } catch (_: Exception) {}
     }
 
     private fun handleAnswer(callId: String, calleeEphPub: ByteArray) {
@@ -880,6 +915,12 @@ class CallManager @Inject constructor(
 
             // Stop the call foreground service (no-op if never started)
             CallForegroundService.stop(context)
+
+            // Cancel any ringing call notification
+            try {
+                val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+                nm.cancel(1002)
+            } catch (_: Exception) {}
 
             ringTimeoutJob?.cancel(); ringTimeoutJob = null
             captureJob?.cancel(); captureJob = null

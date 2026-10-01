@@ -73,10 +73,16 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun sendContactRequest(targetUsername: String, nickname: String): Result<Unit> =
         withContext(Dispatchers.IO) {
             try {
+                val identity = identityRepository.getLocalIdentity()
                 authApi.sendContactRequest(
                     url = "${serverConfig.apiBaseUrl}/api/v1/contact/request",
                     auth = authHeader(),
-                    request = ContactRequestBody(targetUsername, nickname)
+                    request = ContactRequestBody(
+                        targetUsername = targetUsername,
+                        nickname = nickname,
+                        identityHashHex = identity?.identityHex,
+                        publicKeyB64 = identity?.let { Base64.encodeToString(it.publicKeyBytes, Base64.NO_WRAP) }
+                    )
                 )
                 Result.success(Unit)
             } catch (e: Exception) {
@@ -87,10 +93,16 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun sendContactRequestByFingerprint(targetIdentityHash: String, nickname: String): Result<Unit> =
         withContext(Dispatchers.IO) {
             try {
+                val identity = identityRepository.getLocalIdentity()
                 authApi.sendContactRequestByFingerprint(
                     url = "${serverConfig.apiBaseUrl}/api/v1/contact/request-by-fingerprint",
                     auth = authHeader(),
-                    request = ContactRequestByFingerprintBody(targetIdentityHash, nickname)
+                    request = ContactRequestByFingerprintBody(
+                        targetIdentityHash = targetIdentityHash,
+                        nickname = nickname,
+                        identityHashHex = identity?.identityHex,
+                        publicKeyB64 = identity?.let { Base64.encodeToString(it.publicKeyBytes, Base64.NO_WRAP) }
+                    )
                 )
                 Result.success(Unit)
             } catch (e: Exception) {
@@ -114,10 +126,15 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun acceptRequest(requestId: String): Result<AcceptRequestResponse> =
         withContext(Dispatchers.IO) {
             try {
+                val identity = identityRepository.getLocalIdentity()
                 val response = authApi.acceptContactRequest(
                     url = "${serverConfig.apiBaseUrl}/api/v1/contact/accept",
                     auth = authHeader(),
-                    request = AcceptRequestBody(requestId)
+                    request = AcceptRequestBody(
+                        requestId = requestId,
+                        identityHashHex = identity?.identityHex,
+                        publicKeyB64 = identity?.let { Base64.encodeToString(it.publicKeyBytes, Base64.NO_WRAP) }
+                    )
                 )
                 Result.success(response)
             } catch (e: Exception) {
@@ -159,11 +176,8 @@ class AuthRepositoryImpl @Inject constructor(
                     url = "${serverConfig.apiBaseUrl}/api/v1/auth/burn",
                     auth = authHeader()
                 )
-                authStore.credentialsBurned = true
                 Result.success(Unit)
             } catch (e: Exception) {
-                // Even if server call fails, mark as burned locally to prevent re-use attempts
-                authStore.credentialsBurned = true
                 Result.failure(e)
             }
         }

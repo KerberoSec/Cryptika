@@ -24,12 +24,16 @@ data class EnterResponse(
 
 data class ContactRequestBody(
     val targetUsername: String,
-    val nickname: String
+    val nickname: String,
+    val identityHashHex: String? = null,
+    val publicKeyB64: String? = null
 )
 
 data class ContactRequestByFingerprintBody(
     val targetIdentityHash: String,
-    val nickname: String
+    val nickname: String,
+    val identityHashHex: String? = null,
+    val publicKeyB64: String? = null
 )
 
 data class ContactRequestResponse(val status: String)
@@ -45,7 +49,11 @@ data class PendingRequest(
 
 data class PendingRequestsResponse(val requests: List<PendingRequest>)
 
-data class AcceptRequestBody(val requestId: String)
+data class AcceptRequestBody(
+    val requestId: String,
+    val identityHashHex: String? = null,
+    val publicKeyB64: String? = null
+)
 
 data class AcceptRequestResponse(
     val sessionUUID: String,

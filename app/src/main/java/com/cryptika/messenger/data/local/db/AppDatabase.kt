@@ -44,6 +44,7 @@ data class MessageEntity(
     val isOutgoing: Boolean,
     val messageType: String = "TEXT",       // TEXT | VOICE_NOTE (Phase 2)
     val messageState: String = "SENT"       // mirrors MessageState enum name
+) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is MessageEntity) return false
@@ -81,6 +82,7 @@ data class MessageEntity(
         result = 31 * result + messageState.hashCode()
         return result
     }
+}
 
 @Entity(tableName = "conversations")
 data class ConversationEntity(

@@ -2,6 +2,7 @@
 package com.cryptika.messenger.presentation.viewmodel
 
 import android.util.Base64
+import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
