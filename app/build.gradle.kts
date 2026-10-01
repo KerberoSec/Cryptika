@@ -38,9 +38,9 @@ android {
             "SERVER_PUBLIC_KEY_HEX",
             "\"e7a753d313841b701dbb83893aae17b1d35207c8b9e3d7cf5856a993f61cfa3e\""
         )
-        // Public Cloudflare Tunnel endpoint
-        buildConfigField("String", "RELAY_BASE_URL", "\"wss://appliance-burner-contractors-influence.trycloudflare.com\"")
-        buildConfigField("String", "API_BASE_URL", "\"https://appliance-burner-contractors-influence.trycloudflare.com\"")
+        // Direct EC2 Server endpoint
+        buildConfigField("String", "RELAY_BASE_URL", "\"ws://13.235.96.65:8443\"")
+        buildConfigField("String", "API_BASE_URL", "\"http://13.235.96.65:8443\"")
         buildConfigField("String", "APP_VERSION", "\"3.0.0\"")
         // Safe fallback: debug buildType overrides this to "true"; release to "false".
         // Network security config (domain-config) is the real authority for cleartext.
@@ -52,10 +52,9 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            // Release: TLS-only.
-            manifestPlaceholders["usesCleartextTraffic"] = "false"
-            buildConfigField("String", "RELAY_BASE_URL", "\"wss://appliance-burner-contractors-influence.trycloudflare.com\"")
-            buildConfigField("String", "API_BASE_URL",   "\"https://appliance-burner-contractors-influence.trycloudflare.com\"")
+            manifestPlaceholders["usesCleartextTraffic"] = "true"
+            buildConfigField("String", "RELAY_BASE_URL", "\"ws://13.235.96.65:8443\"")
+            buildConfigField("String", "API_BASE_URL",   "\"http://13.235.96.65:8443\"")
         }
         debug {
             isDebuggable = true
