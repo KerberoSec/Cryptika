@@ -27,7 +27,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
 
-        // ⚠️  REPLACE BEFORE RUNNING:
+        // NOTE: Server configuration
         // 1. Start the relay server: cd server && node index.js
         // 2. Copy the printed server public key hex below
         // 3. Replace 192.168.1.X with your machine's LAN IP
@@ -232,6 +232,6 @@ tasks.register("collectTestLogs") {
             isIgnoreExitValue = true
         }
         
-        println("✓ Logs collected to ${logsDir}/")
+        println("Logs collected to ${logsDir}/")
     }
 }

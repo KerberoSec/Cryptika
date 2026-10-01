@@ -1,0 +1,13 @@
+# Cryptika Code Owners
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Global default owner
+* @KerberoSec
+
+# Critical Cryptographic & Security Components
+/app/src/main/java/com/cryptika/messenger/domain/crypto/ @KerberoSec
+/app/src/main/java/com/cryptika/messenger/data/local/keystore/ @KerberoSec
+/app/src/main/java/com/cryptika/messenger/data/remote/websocket/ @KerberoSec
+/server/ @KerberoSec
+SECURITY.md @KerberoSec
+.github/workflows/ @KerberoSec

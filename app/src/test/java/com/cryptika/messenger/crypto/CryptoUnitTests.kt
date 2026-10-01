@@ -414,7 +414,7 @@ class IntegrationTest {
         val alice = makeProcessor(sharedRoot.copyOf(), sharedRoot.copyOf(), alicePriv, alicePub, bobPub)
         val bob = makeProcessor(sharedRoot.copyOf(), sharedRoot.copyOf(), bobPriv, bobPub, alicePub)
 
-        val messages = listOf("Hello", "How are you?", "Great!", "End-to-end is working", "Secure 🔒")
+        val messages = listOf("Hello", "How are you?", "Great!", "End-to-end is working", "Secure ")
 
         messages.forEachIndexed { i, msg ->
             val (packetBytes, counter) = alice.send(msg.toByteArray())

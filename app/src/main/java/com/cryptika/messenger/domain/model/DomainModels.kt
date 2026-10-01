@@ -152,7 +152,7 @@ data class RelayEnvelope(
 data class Conversation(
     val id: String,                     // conversationId
     val contact: Contact,
-    val lastMessagePreview: String,     // always "🔒 Encrypted message" in UI
+    val lastMessagePreview: String,     // always "Encrypted message" in UI
     val lastMessageAt: Long,
     val unreadCount: Int,
     val connectionState: ConnectionState

@@ -1306,8 +1306,8 @@ setInterval(() => {
 }, 60_000);
 
 server.listen(PORT, () => {
-  console.log(`\nðŸ”’ Cryptika Relay Server v3.0.0`);
+  console.log(`\nCryptika Relay Server v3.0.0`);
   console.log(`   Listening on port ${PORT}`);
   console.log(`   Auth: POST /api/v1/auth/enter (passwordless)`);
-  console.log(`   Server is BLIND â€” no passwords, no logs, only ciphertext relay\n`);
+  console.log(`   Server is BLIND -- no passwords, no logs, only ciphertext relay\n`);
 });

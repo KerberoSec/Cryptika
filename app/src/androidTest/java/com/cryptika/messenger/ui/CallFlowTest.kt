@@ -60,7 +60,7 @@ class CallFlowTest {
         // Check logs for successful encryption
         Thread.sleep(2000)
         
-        println("✓ Key exchange test passed")
+        println("Key exchange test passed")
     }
     
     @Test
