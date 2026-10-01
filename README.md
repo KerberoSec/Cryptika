@@ -910,6 +910,8 @@ sequenceDiagram
         E_Call->>E_Call: ChaCha20 Poly1305 Decrypt with callerEncKey
         E_Call->>E_Audio: Play 320 Bytes PCM via AudioTrack
     end
+```
+
 ### Voice Call Lifecycle State Machine (FSM)
 
 ```mermaid
