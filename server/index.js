@@ -323,24 +323,27 @@ app.post("/api/v1/auth/burn", authenticateToken, (req, res) => {
     const existingUser = users.get(username);
     const userHash = existingUser?.identityHashHex;
 
-    // Delete user record
+    // Delete user record so handle is burned from server memory
     users.delete(username);
 
-    // Blacklist the JWT
-    if (jti) burnedTokens.set(jti, Date.now());
+    // Only blacklist JWT and disconnect sockets if an explicit full disconnect/wipe was requested
+    const forceDisconnect = req.body && req.body.forceDisconnect === true;
+    if (forceDisconnect) {
+      if (jti) burnedTokens.set(jti, Date.now());
 
-    // Disconnect active WebSockets belonging to this user
-    for (const [convId, room] of conversationSockets.entries()) {
-      for (const ws of room) {
-        if (ws.contactToken === contactToken || (userHash && ws.identityHash === userHash)) {
-          try { ws.close(4001, "Account burned"); } catch (_) {}
-          room.delete(ws);
-          wsIdentityMap.delete(ws);
+      // Disconnect active WebSockets belonging to this user
+      for (const [convId, room] of conversationSockets.entries()) {
+        for (const ws of room) {
+          if (ws.contactToken === contactToken || (userHash && ws.identityHash === userHash)) {
+            try { ws.close(4001, "Account burned"); } catch (_) {}
+            room.delete(ws);
+            wsIdentityMap.delete(ws);
+          }
         }
+        if (room.size === 0) conversationSockets.delete(convId);
       }
-      if (room.size === 0) conversationSockets.delete(convId);
+      if (userHash) presenceMap.delete(userHash);
     }
-    if (userHash) presenceMap.delete(userHash);
 
     // Cascade delete contact requests involving this user
     for (const [rid, r] of contactRequests.entries()) {
@@ -412,14 +415,16 @@ app.post("/api/v1/contact/request", authenticateToken, async (req, res) => {
 
     // Get sender's identity info
     const senderUser = users.get(req.user.username);
+    const fromIdentityHash = req.body.identityHashHex || (senderUser ? senderUser.identityHashHex : "");
+    const fromPublicKeyB64 = req.body.publicKeyB64 || (senderUser ? senderUser.publicKeyB64 : "");
 
     const requestId = uuidv4();
     contactRequests.set(requestId, {
       fromToken,
       toToken,
       fromUsername: req.user.username,
-      fromIdentityHash: senderUser ? senderUser.identityHashHex : "",
-      fromPublicKeyB64: senderUser ? senderUser.publicKeyB64 : "",
+      fromIdentityHash,
+      fromPublicKeyB64,
       fromNickname: nickname || req.user.username,
       status: "pending",
       createdAt: Date.now(),
@@ -485,13 +490,16 @@ app.post("/api/v1/contact/request-by-fingerprint", authenticateToken, async (req
       }
     }
 
+    const fromIdentityHash = req.body.identityHashHex || (senderUser ? senderUser.identityHashHex : "");
+    const fromPublicKeyB64 = req.body.publicKeyB64 || (senderUser ? senderUser.publicKeyB64 : "");
+
     const requestId = uuidv4();
     contactRequests.set(requestId, {
       fromToken,
       toToken,
       fromUsername: req.user.username,
-      fromIdentityHash: senderUser ? senderUser.identityHashHex : "",
-      fromPublicKeyB64: senderUser ? senderUser.publicKeyB64 : "",
+      fromIdentityHash,
+      fromPublicKeyB64,
       fromNickname: nickname || req.user.username,
       status: "pending",
       createdAt: Date.now(),
@@ -596,9 +604,12 @@ app.post("/api/v1/contact/accept", authenticateToken, async (req, res) => {
       publicKeyB64: r.fromPublicKeyB64,
       nickname: r.fromNickname,
     });
+    const accepterIdentityHash = req.body.identityHashHex || (accepterUser ? accepterUser.identityHashHex : "");
+    const accepterPublicKeyB64 = req.body.publicKeyB64 || (accepterUser ? accepterUser.publicKeyB64 : "");
+
     participants.set(myToken, {
-      identityHash: accepterUser ? accepterUser.identityHashHex : "",
-      publicKeyB64: accepterUser ? accepterUser.publicKeyB64 : "",
+      identityHash: accepterIdentityHash,
+      publicKeyB64: accepterPublicKeyB64,
       nickname: req.user.username,
     });
 
@@ -959,6 +970,14 @@ wss.on("connection", (ws, req) => {
       conversationSockets.set(sessionId, new Set());
     }
     const room = conversationSockets.get(sessionId);
+    // Replace any stale connection from the same participant (e.g. rapid reconnect or network switch)
+    for (const oldWs of room) {
+      if (oldWs.contactToken === decoded.contactToken) {
+        try { oldWs.close(4000, "Replaced by new connection"); } catch (_) {}
+        room.delete(oldWs);
+        wsIdentityMap.delete(oldWs);
+      }
+    }
     if (room.size >= 2) {
       ws.close(4015, "Session full");
       return;
@@ -974,16 +993,8 @@ wss.on("connection", (ws, req) => {
     session.joinedTokens = session.joinedTokens || new Set();
     session.joinedTokens.add(decoded.contactToken);
 
-    // When BOTH distinct participants have joined: delete identity mapping
-    if (session.joinedTokens.size >= 2 && !session.identityMappingDeleted) {
-      session.identityMappingDeleted = true;
-      // Actually clear identity info from participant entries
-      for (const [token, info] of session.participants) {
-        info.identityHash = "";
-        info.publicKeyB64 = "";
-      }
-      // Server no longer knows which user is in which session
-    }
+    // Both participants tracked in joinedTokens; participant identity info is preserved
+    // for cryptographic handshake and key exchange throughout the session lifetime.
 
     // Deliver buffered messages intended for this participant
     const backlog = messageBuffer.get(sessionId);
@@ -1169,6 +1180,12 @@ wss.on("connection", (ws, req) => {
 
   ws.on("close", () => {
     room.delete(ws);
+    const PEER_DISCONNECTED = Buffer.from([0xFF, 0xFE, ...Buffer.from("PEER_DISCONNECTED")]);
+    for (const peer of room) {
+      if (peer !== ws && peer.readyState === WebSocket.OPEN) {
+        try { peer.send(PEER_DISCONNECTED, { binary: true }); } catch (_) {}
+      }
+    }
     if (room.size === 0) conversationSockets.delete(conversationId);
 
     const hash = wsIdentityMap.get(ws);

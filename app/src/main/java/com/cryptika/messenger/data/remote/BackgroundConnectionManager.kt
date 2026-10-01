@@ -438,6 +438,12 @@ class BackgroundConnectionManager @Inject constructor(
                             state.updateConnectionState(ConnectionState.ERROR)
                             connStateCallbacks[state.conversationId]?.invoke(ConnectionState.ERROR)
                         }
+
+                        is RelayEvent.ForceLogout -> {
+                            state.updateConnectionState(ConnectionState.DISCONNECTED)
+                            connStateCallbacks[state.conversationId]?.invoke(ConnectionState.DISCONNECTED)
+                            callManager.get().onPeerDisconnected(state.conversationId)
+                        }
                     }
                 }
             }
@@ -550,7 +556,7 @@ class BackgroundConnectionManager @Inject constructor(
                 val targetCounter = counterStr.toLongOrNull()
                 if (targetCounter != null) {
                     withContext(Dispatchers.IO) {
-                        messageRepository.deletePeerMessageByCounter(
+                        messageRepository.deleteMessageByCounterAndSender(
                             state.conversationId,
                             state.contact.identityHex,
                             targetCounter

@@ -32,6 +32,7 @@ sealed class RelayEvent {
     object Connected : RelayEvent()
     object Disconnected : RelayEvent()
     data class Error(val throwable: Throwable) : RelayEvent()
+    object ForceLogout : RelayEvent()
 }
 
 /**
@@ -209,6 +210,7 @@ class RelayWebSocketClient(
                 _events.tryEmit(RelayEvent.Disconnected)
                 if (code == 4001 || code == 4003 || code == 1008 || code == 4013 || code == 4014) {
                     android.util.Log.e("RelayWS", "Fatal WebSocket close code $code: $reason. Halting reconnect.")
+                    _events.tryEmit(RelayEvent.ForceLogout)
                     shouldReconnect = false
                     return
                 }

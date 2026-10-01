@@ -7,6 +7,9 @@ import com.cryptika.messenger.domain.crypto.IdentityHash
 import com.cryptika.messenger.domain.crypto.IdentityKeyManager
 import com.cryptika.messenger.domain.model.*
 import com.cryptika.messenger.domain.repository.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.security.MessageDigest
@@ -128,11 +131,11 @@ class MessageRepositoryImpl @Inject constructor(
 
                 // If expired but still marked decryptable in DB, clean up in background
                 if (isExpired && entity.isDecryptable) {
-                    kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                    CoroutineScope(Dispatchers.IO).launch {
                         try {
                             keystoreManager.deleteKeyByAlias(entity.storageKeyAlias)
                             dao.zeroizeAndMarkUnrecoverable(entity.id)
-                        } catch (_: Exception) {}
+                        } catch (e: Exception) {}
                     }
                 }
 

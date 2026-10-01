@@ -14,6 +14,7 @@ import com.cryptika.messenger.domain.repository.IdentityRepository
 import com.cryptika.messenger.domain.repository.MessageRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import android.content.Context
+import android.util.Log
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -46,6 +47,14 @@ class EphemeralSessionManager @Inject constructor(
     // Lazy<CallManager> breaks the circular dependency
     private val callManager: dagger.Lazy<CallManager>
 ) {
+    companion object {
+        private const val TAG = "EphemeralSession"
+
+        /** Hard client-side cap: no ephemeral session may outlive 30 minutes regardless
+         *  of what the server declares in [expiresAt]. */
+        private const val MAX_SESSION_TTL_MS = 30 * 60 * 1_000L  // 30 minutes
+    }
+
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     // Per-session state
@@ -53,12 +62,14 @@ class EphemeralSessionManager @Inject constructor(
     data class EphemeralSession(
         val sessionUUID: String,
         val contactId: String,
+        val contact: Contact,
         val expiresAt: Long,
         val wsClient: RelayWebSocketClient,
         var destroyJob: Job? = null,
         var collectionJob: Job? = null,
         @Volatile var messageProcessor: MessageProcessor? = null,
-        @Volatile var ephemeralKeyPair: SessionKeyManager.EphemeralKeyPair? = null
+        @Volatile var ephemeralKeyPair: SessionKeyManager.EphemeralKeyPair? = null,
+        @Volatile var ourOfferPacket: ByteArray? = null
     )
 
     private val sessions = ConcurrentHashMap<String, EphemeralSession>()
@@ -102,12 +113,6 @@ class EphemeralSessionManager @Inject constructor(
 
     // Session lifecycle
 
-    companion object {
-        /** Hard client-side cap: no ephemeral session may outlive 30 minutes regardless
-         *  of what the server declares in [expiresAt]. */
-        private const val MAX_SESSION_TTL_MS = 30 * 60 * 1_000L  // 30 minutes
-    }
-
     /**
      * Create and connect to an ephemeral session.
      * Called after a contact request is accepted (by either party).
@@ -125,19 +130,54 @@ class EphemeralSessionManager @Inject constructor(
         peerPublicKeyB64: String,
         peerNickname: String
     ) {
-        if (sessions.containsKey(sessionUUID)) return // already joined
+        if (sessions.containsKey(sessionUUID)) {
+            Log.d(TAG, "joinSession: session $sessionUUID already joined")
+            return
+        }
 
-        val identity = identityRepository.getLocalIdentity() ?: return
-        val peerPubKeyBytes = android.util.Base64.decode(peerPublicKeyB64, android.util.Base64.NO_WRAP)
+        if (peerIdentityHash.isBlank() || peerPublicKeyB64.isBlank()) {
+            Log.e(TAG, "joinSession: peerIdentityHash or peerPublicKeyB64 is blank for session $sessionUUID")
+            return
+        }
 
-        // JWT required for WS auth: check before creating any session state to avoid orphaned contact entries
-        val jwtToken = authStore.jwtToken ?: return
+        val identity = identityRepository.getLocalIdentity() ?: run {
+            Log.e(TAG, "joinSession: local identity not found")
+            return
+        }
+
+        val peerPubKeyBytes = try {
+            android.util.Base64.decode(peerPublicKeyB64, android.util.Base64.NO_WRAP)
+        } catch (e: Exception) {
+            Log.e(TAG, "joinSession: failed to decode peerPublicKeyB64", e)
+            return
+        }
+        if (peerPubKeyBytes.size != 32) {
+            Log.e(TAG, "joinSession: invalid peerPubKeyBytes length=${peerPubKeyBytes.size}")
+            return
+        }
+
+        val peerIdentityHashBytes = try {
+            peerIdentityHash.hexToBytes()
+        } catch (e: Exception) {
+            Log.e(TAG, "joinSession: failed to parse peerIdentityHash hex", e)
+            return
+        }
+        if (peerIdentityHashBytes.size != 32) {
+            Log.e(TAG, "joinSession: invalid peerIdentityHash length=${peerIdentityHashBytes.size}")
+            return
+        }
+
+        // JWT required for WS auth
+        val jwtToken = authStore.jwtToken ?: run {
+            Log.e(TAG, "joinSession: jwtToken is null")
+            return
+        }
 
         // Save peer as a contact (ephemeral, will be deleted on session destroy)
         val contactId = UUID.randomUUID().toString()
         val contact = Contact(
             id = contactId,
-            identityHash = peerIdentityHash.hexToBytes(),
+            identityHash = peerIdentityHashBytes,
             publicKeyBytes = peerPubKeyBytes,
             displayName = peerNickname,
             verifiedAt = System.currentTimeMillis()
@@ -154,6 +194,7 @@ class EphemeralSessionManager @Inject constructor(
         val session = EphemeralSession(
             sessionUUID = sessionUUID,
             contactId = contactId,
+            contact = contact,
             expiresAt = cappedExpiresAt,
             wsClient = wsClient
         )
@@ -176,37 +217,52 @@ class EphemeralSessionManager @Inject constructor(
     }
 
     private fun connectSession(session: EphemeralSession, jwtToken: String, identity: LocalIdentity) {
-        // Use the WS client with session-based routing; the JWT stays in the Authorization header.
-        session.wsClient.connect(session.sessionUUID, jwtToken, identity.identityHex)
-
-        // Collect events
+        // Collect events BEFORE connecting so no event is dropped
         session.collectionJob?.cancel()
         session.collectionJob = scope.launch {
             session.wsClient.events.collect { event ->
                 when (event) {
                     is com.cryptika.messenger.data.remote.websocket.RelayEvent.Connected -> {
-                        // Initiate DH handshake
-                        val (offerPacket, ephemeralPair) = withContext(Dispatchers.Default) {
-                            handshakeManager.createOffer()
+                        Log.d(TAG, "WS Connected for session ${session.sessionUUID}")
+                        // If session already established, do NOT recreate offer
+                        if (session.messageProcessor != null) {
+                            Log.d(TAG, "Session already established, skipping offer creation")
+                            return@collect
                         }
-                        session.ephemeralKeyPair = ephemeralPair
-                        session.wsClient.send(session.sessionUUID, "hs_${UUID.randomUUID()}", offerPacket)
+
+                        // Generate our offer if not already generated
+                        if (session.ourOfferPacket == null) {
+                            val (offerPacket, ephemeralPair) = withContext(Dispatchers.Default) {
+                                handshakeManager.createOffer()
+                            }
+                            session.ephemeralKeyPair = ephemeralPair
+                            session.ourOfferPacket = offerPacket
+                        }
+
+                        session.ourOfferPacket?.let { packet ->
+                            session.wsClient.send(session.sessionUUID, "hs_${UUID.randomUUID()}", packet)
+                            Log.d(TAG, "Sent handshake offer for session ${session.sessionUUID} (${packet.size} bytes)")
+                        }
                     }
 
                     is com.cryptika.messenger.data.remote.websocket.RelayEvent.MessageReceived -> {
                         val packetBytes = event.message.packetBytes
                         when {
                             isPeerDisconnectedSignal(packetBytes) -> {
+                                Log.d(TAG, "Peer disconnected signal received for session ${session.sessionUUID}")
+                                callManager.get().onPeerDisconnected(session.sessionUUID)
                                 peerDisconnectedCallbacks[session.sessionUUID]?.invoke()
                                 destroySession(session.sessionUUID)
                             }
                             packetBytes.size == 1 &&
-                            packetBytes[0] == BackgroundConnectionManager.FORCE_LOGOUT_MAGIC &&
-                            session.messageProcessor != null -> {
+                            packetBytes[0] == BackgroundConnectionManager.FORCE_LOGOUT_MAGIC -> {
+                                Log.d(TAG, "Force logout magic received for session ${session.sessionUUID}")
+                                callManager.get().onPeerDisconnected(session.sessionUUID)
                                 peerDisconnectedCallbacks[session.sessionUUID]?.invoke()
                                 destroySession(session.sessionUUID)
                             }
                             handshakeManager.isHandshakeOffer(packetBytes) -> {
+                                Log.d(TAG, "Handshake offer received for session ${session.sessionUUID} (${packetBytes.size} bytes)")
                                 completeHandshake(session, packetBytes)
                             }
                             // Audio frame: route directly to CallManager without querying Room DB (100 fps performance optimization)
@@ -220,15 +276,13 @@ class EphemeralSessionManager @Inject constructor(
                             }
                             // Call signal: requires Contact for Ed25519 signature verification
                             packetBytes.isNotEmpty() && packetBytes[0] == CallManager.CALL_SIGNAL_MAGIC -> {
-                                val contact = contactRepository.getContact(session.contactId)
-                                if (contact != null) {
-                                    callManager.get().onRelayPacket(
-                                        session.sessionUUID,
-                                        event.message.messageId,
-                                        packetBytes,
-                                        contact
-                                    )
-                                }
+                                Log.d(TAG, "Call signal received for session ${session.sessionUUID}")
+                                callManager.get().onRelayPacket(
+                                    session.sessionUUID,
+                                    event.message.messageId,
+                                    packetBytes,
+                                    session.contact
+                                )
                             }
                             else -> {
                                 val handler = chatPacketHandlers[session.sessionUUID]
@@ -242,93 +296,91 @@ class EphemeralSessionManager @Inject constructor(
                     }
 
                     is com.cryptika.messenger.data.remote.websocket.RelayEvent.Disconnected -> {
-                        // Transport disconnect: RelayWebSocketClient will automatically reconnect with backoff.
-                        // Do NOT destroy the ephemeral session or delete messages on transient network drops.
+                        Log.d(TAG, "WS Disconnected for session ${session.sessionUUID}")
                     }
 
                     is com.cryptika.messenger.data.remote.websocket.RelayEvent.Error -> {
-                        // Transport error: RelayWebSocketClient will automatically reconnect with backoff.
+                        Log.w(TAG, "WS Error for session ${session.sessionUUID}")
+                    }
+
+                    is com.cryptika.messenger.data.remote.websocket.RelayEvent.ForceLogout -> {
+                        Log.w(TAG, "WS ForceLogout for session ${session.sessionUUID}")
+                        callManager.get().onPeerDisconnected(session.sessionUUID)
+                        peerDisconnectedCallbacks[session.sessionUUID]?.invoke()
+                        destroySession(session.sessionUUID)
                     }
                 }
             }
         }
+
+        // Use the WS client with session-based routing; the JWT stays in the Authorization header.
+        session.wsClient.connect(session.sessionUUID, jwtToken, identity.identityHex)
     }
 
     private suspend fun completeHandshake(session: EphemeralSession, offerPacket: ByteArray) {
-        if (session.messageProcessor != null) return
-        val contactId = session.contactId
-        val contact = contactRepository.getContact(contactId) ?: return
-        val identity = identityRepository.getLocalIdentity() ?: return
+        if (session.messageProcessor != null) {
+            Log.d(TAG, "completeHandshake: already established for session ${session.sessionUUID}")
+            return
+        }
 
-        val ephemeralPair = session.ephemeralKeyPair
-        if (ephemeralPair != null) {
-            // We already sent an offer: derive session key
-            try {
-                val (_, sendRoot, recvRoot) = withContext(Dispatchers.Default) {
-                    handshakeManager.deriveSessionKey(
-                        offerBytes = offerPacket,
-                        peerIdentityPublicKey = contact.publicKeyBytes,
-                        ourEphemeralPair = ephemeralPair,
-                        myIdentityHash = identity.identityHash,
-                        peerIdentityHash = contact.identityHash
-                    )
-                }
-                session.ephemeralKeyPair = null
-
-                val sendRatchet = HashRatchet(sendRoot)
-                val recvRatchet = HashRatchet(recvRoot)
-                sendRoot.fill(0)   // HashRatchet copied the seed; zeroize the original
-                recvRoot.fill(0)
-
-                val processor = MessageProcessor(
-                    sendRatchet = sendRatchet,
-                    recvRatchet = recvRatchet,
-                    identityKeyManager = identityKeyManager,
-                    peerPublicKeyBytes = contact.publicKeyBytes,
-                    myIdentityHash = identity.identityHash
-                )
-                session.messageProcessor = processor
-                sessionReadyCallbacks[session.sessionUUID]?.invoke(processor)
-            } catch (_: Exception) {
-                session.ephemeralKeyPair = null
-            }
-        } else {
-            // We haven't sent an offer yet: create one and respond
-            val (responsePacket, newPair) = withContext(Dispatchers.Default) {
+        // Always ensure we have generated our offer and echo it to the peer
+        // so a peer who missed our initial offer can also complete the handshake
+        if (session.ourOfferPacket == null) {
+            val (offer, pair) = withContext(Dispatchers.Default) {
                 handshakeManager.createOffer()
             }
-            session.ephemeralKeyPair = newPair
-            session.wsClient.send(session.sessionUUID, "hs_${UUID.randomUUID()}", responsePacket)
+            session.ephemeralKeyPair = pair
+            session.ourOfferPacket = offer
+        }
+        session.ourOfferPacket?.let { storedOffer ->
+            session.wsClient.send(session.sessionUUID, "hs_echo_${UUID.randomUUID()}", storedOffer)
+            Log.d(TAG, "Echoed handshake offer for session ${session.sessionUUID}")
+        }
 
-            try {
-                val (_, sendRoot2, recvRoot2) = withContext(Dispatchers.Default) {
-                    handshakeManager.deriveSessionKey(
-                        offerBytes = offerPacket,
-                        peerIdentityPublicKey = contact.publicKeyBytes,
-                        ourEphemeralPair = newPair,
-                        myIdentityHash = identity.identityHash,
-                        peerIdentityHash = contact.identityHash
-                    )
-                }
-                session.ephemeralKeyPair = null
+        val ephemeralPair = session.ephemeralKeyPair ?: run {
+            Log.e(TAG, "completeHandshake: ephemeralKeyPair is null for session ${session.sessionUUID}")
+            return
+        }
 
-                val sendRatchet = HashRatchet(sendRoot2)
-                val recvRatchet = HashRatchet(recvRoot2)
-                sendRoot2.fill(0)  // HashRatchet copied the seed; zeroize the original
-                recvRoot2.fill(0)
+        val contact = session.contact
+        val identity = identityRepository.getLocalIdentity() ?: run {
+            Log.e(TAG, "completeHandshake: local identity is null")
+            return
+        }
 
-                val processor = MessageProcessor(
-                    sendRatchet = sendRatchet,
-                    recvRatchet = recvRatchet,
-                    identityKeyManager = identityKeyManager,
-                    peerPublicKeyBytes = contact.publicKeyBytes,
-                    myIdentityHash = identity.identityHash
+        try {
+            Log.d(TAG, "Deriving session keys for session ${session.sessionUUID}...")
+            val (_, sendRoot, recvRoot) = withContext(Dispatchers.Default) {
+                handshakeManager.deriveSessionKey(
+                    offerBytes = offerPacket,
+                    peerIdentityPublicKey = contact.publicKeyBytes,
+                    ourEphemeralPair = ephemeralPair,
+                    myIdentityHash = identity.identityHash,
+                    peerIdentityHash = contact.identityHash
                 )
-                session.messageProcessor = processor
-                sessionReadyCallbacks[session.sessionUUID]?.invoke(processor)
-            } catch (_: Exception) {
-                session.ephemeralKeyPair = null
             }
+            session.ephemeralKeyPair = null
+            session.ourOfferPacket = null
+
+            val sendRatchet = HashRatchet(sendRoot)
+            val recvRatchet = HashRatchet(recvRoot)
+            sendRoot.fill(0)   // HashRatchet copied the seed; zeroize the original
+            recvRoot.fill(0)
+
+            val processor = MessageProcessor(
+                sendRatchet = sendRatchet,
+                recvRatchet = recvRatchet,
+                identityKeyManager = identityKeyManager,
+                peerPublicKeyBytes = contact.publicKeyBytes,
+                myIdentityHash = identity.identityHash
+            )
+            session.messageProcessor = processor
+            Log.i(TAG, "Session established successfully for ${session.sessionUUID}!")
+            sessionReadyCallbacks[session.sessionUUID]?.invoke(processor)
+        } catch (e: Exception) {
+            Log.e(TAG, "Handshake failed for session ${session.sessionUUID}", e)
+            session.ephemeralKeyPair = null
+            session.ourOfferPacket = null
         }
     }
 
@@ -374,7 +426,7 @@ class EphemeralSessionManager @Inject constructor(
                     val contact = contactRepository.getContact(session.contactId)
                     if (contact != null) {
                         withContext(Dispatchers.IO) {
-                            messageRepository.deletePeerMessageByCounter(
+                            messageRepository.deleteMessageByCounterAndSender(
                                 session.sessionUUID,
                                 contact.identityHex,
                                 targetCounter
@@ -432,11 +484,25 @@ class EphemeralSessionManager @Inject constructor(
         session.destroyJob?.cancel()
         session.collectionJob?.cancel()
 
+        // Clean up any ongoing or ringing call
+        callManager.get().onPeerDisconnected(sessionUUID)
+
+        // Notify peer via in-band WebSocket packet so they wipe immediately
+        try {
+            session.wsClient.send(
+                sessionUUID,
+                "force_logout_${UUID.randomUUID()}",
+                byteArrayOf(BackgroundConnectionManager.FORCE_LOGOUT_MAGIC)
+            )
+        } catch (_: Exception) {}
+
         // Close WebSocket
         session.wsClient.disconnect()
 
         // Zeroize all crypto material (ratchet keys, DH keys, identity buffers)
         session.ephemeralKeyPair?.zeroizePrivate()
+        session.ourOfferPacket?.fill(0)
+        session.ourOfferPacket = null
         session.messageProcessor?.zeroize()
         session.messageProcessor = null
 
