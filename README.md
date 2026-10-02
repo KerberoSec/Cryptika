@@ -48,6 +48,7 @@ Identity is a locally generated Ed25519 keypair. Nothing else.
 33. [Docker Deployment Guide](#33-docker-deployment-guide)
 34. [Operational Troubleshooting Guide](#34-operational-troubleshooting-guide)
 35. [License](#35-license)
+36. [Authors and Connect](#36-authors-and-connect)
 
 ***
 
@@ -681,7 +682,7 @@ All data over the wire is packed into compact, big endian binary envelopes.
 | 4 .. (3 + H) | Header Payload | UTF 8 JSON String | JSON structure: `sid`, `ts`, `ctr`, `exp`, `type` |
 | (4 + H) .. (7 + H) | Ciphertext Length | Big Endian Int32 | Length `C` of encrypted payload including MAC tag |
 | (8 + H) .. (7 + H + C) | Ciphertext Payload | Binary Bytes | ChaCha20 ciphertext + 16 byte Poly1305 tag |
-| (8 + H + C) .. End | Digital Signature | Binary 64 Bytes | Ed25519 signature over `SHA256(Header || Ciphertext)` |
+| (8 + H + C) .. End | Digital Signature | Binary 64 Bytes | Ed25519 signature over `SHA256(Header \|\| Ciphertext)` |
 
 ### Handshake Offer Packet Layouts
 
@@ -690,14 +691,14 @@ All data over the wire is packed into compact, big endian binary envelopes.
 |:---|:---|:---|:---|
 | 0 | Packet Magic | 1 Byte | `0x01` (Acceptor Handshake Type) |
 | 1 .. 32 | Ephemeral Public Key | 32 Bytes | Curve25519 public key generated for this session |
-| 33 .. 96 | Ed25519 Signature | 64 Bytes | Signature over `SHA256(0x01 || EphemeralPublicKey)` |
+| 33 .. 96 | Ed25519 Signature | 64 Bytes | Signature over `SHA256(0x01 \|\| EphemeralPublicKey)` |
 
 #### Type 0x02 Handshake with Ticket (301 Bytes Fixed Size)
 | Offset (Bytes) | Field Name | Size | Value / Description |
 |:---|:---|:---|:---|
 | 0 | Packet Magic | 1 Byte | `0x02` (Initiator Handshake Type) |
 | 1 .. 32 | Ephemeral Public Key | 32 Bytes | Curve25519 public key generated for this session |
-| 33 .. 96 | Ed25519 Signature | 64 Bytes | Signature over `SHA256(0x02 || EphemPub || TicketHash)` |
+| 33 .. 96 | Ed25519 Signature | 64 Bytes | Signature over `SHA256(0x02 \|\| EphemPub \|\| TicketHash)` |
 | 97 .. 300 | Dual Signed Ticket | 204 Bytes | Server issued dual ticket validating session |
 
 ### Voice Call Packets Layout
@@ -717,7 +718,7 @@ All data over the wire is packed into compact, big endian binary envelopes.
 |:---|:---|:---|:---|
 | 0 | Magic Byte | 1 Byte | `0x03` (AUDIO_FRAME magic identifier) |
 | 1 .. 4 | Sequence Counter | 4 Bytes | Big endian Int32 frame index |
-| 5 .. 16 | Frame Nonce | 12 Bytes | `SHA256(directionKey || seqBytes)[0..11]` |
+| 5 .. 16 | Frame Nonce | 12 Bytes | `SHA256(directionKey \|\| seqBytes)[0..11]` |
 | 17 .. 336 | Encrypted Audio | 320 Bytes | ChaCha20 encrypted 160 sample 16-bit PCM voice chunk |
 | 337 .. 352 | Poly1305 Tag | 16 Bytes | Authentication tag protecting audio frame |
 
@@ -1503,7 +1504,7 @@ Cryptika restricts manifest permissions strictly to essential security and trans
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/Cryptika.git
+git clone https://github.com/KerberoSec/Cryptika.git
 cd Cryptika
 
 # Build debug APK
@@ -1626,4 +1627,36 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+***
+
+## 36. Authors and Connect
+
+Developed and maintained by **Arun Kumar**, **Tanush Dang**, **Aniket Chauhan**, and **Sambhav Gupta**.
+
+### Custom Development & Consulting
+We design and build institutional-grade secure communication platforms, custom cryptographic systems, private end-to-end encrypted (E2EE) messaging applications, and privacy-first infrastructure tailored to your specific requirements.
+
+* **Custom Secure Messaging & VoIP Apps:** End-to-end encrypted (E2EE) mobile and cross-platform applications, ephemeral session architectures, self-destructing message systems, and encrypted WebRTC voice/video calling engines.
+* **Cryptographic Architecture & Protocols:** Implementation of Ed25519 identity keys, X25519 Diffie-Hellman key exchanges, Double Ratchet / Hash Ratchet forward secrecy, AES-256-GCM authenticated encryption, and zero-knowledge protocol designs.
+* **Client-Side Hardening & Anti-Tampering:** Android/Kotlin secure apps featuring blocked system IMEs (custom in-app secure keyboards), screenshot & screen-recording prevention (`FLAG_SECURE`), biometric/passwordless auth, local RAM wiping, and tamper-resistant encrypted local storage.
+* **Blind Relays & Serverless / Microservice Backends:** Cryptographically blind relay nodes, zero-log WebSocket servers (Ktor, Go, Node.js), ephemeral data pipelines, Docker stacks, and Linux VPS automated deployment.
+* **Tailored Privacy & Security Solutions:** Custom confidential communication networks for enterprises, private organizations, executive teams, or sovereign environments requiring complete data ownership and zero external trust dependencies.
+
+If you need a custom secure messaging application, proprietary cryptographic protocol, or secure communication infrastructure built according to your needs, feel free to reach out and connect.
+
+### Connect
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Arun%20Kumar-0A66C2?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/arunkumar31072006/)
+[![GitHub](https://img.shields.io/badge/GitHub-KerberoSec-181717?style=flat&logo=github&logoColor=white)](https://github.com/KerberoSec)
+[![Instagram](https://img.shields.io/badge/Instagram-so__far__from__your__heart-E4405F?style=flat&logo=instagram&logoColor=white)](https://www.instagram.com/so_far_from_your_heart/)
+[![X](https://img.shields.io/badge/X-@ArunKumar310706-000000?style=flat&logo=x&logoColor=white)](https://x.com/ArunKumar310706)
+
+| Platform | Profile Link | Handle |
+| :--- | :--- | :--- |
+| **LinkedIn** | [linkedin.com/in/arunkumar31072006](https://www.linkedin.com/in/arunkumar31072006/) | [Arun Kumar](https://www.linkedin.com/in/arunkumar31072006/) |
+| **GitHub** | [github.com/KerberoSec](https://github.com/KerberoSec) | [@KerberoSec](https://github.com/KerberoSec) |
+| **Instagram** | [instagram.com/so_far_from_your_heart](https://www.instagram.com/so_far_from_your_heart/) | [@so_far_from_your_heart](https://www.instagram.com/so_far_from_your_heart/) |
+| **X / Twitter** | [x.com/ArunKumar310706](https://x.com/ArunKumar310706) | [@ArunKumar310706](https://x.com/ArunKumar310706) |
+
 
