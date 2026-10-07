@@ -125,16 +125,17 @@ By default, a new keypair is generated each time the container starts. To persis
 
 ### Method 1: Environment Variable
 
-1. **Get the private key** from first run:
+1. **Generate keys beforehand:**
    ```bash
-   docker-compose logs | grep "Set SERVER_PRIVATE_KEY_HEX"
+   openssl rand -hex 32
    ```
 
-2. **Edit `docker-compose.yml`** and add:
-   ```yaml
-   environment:
-     - SERVER_PRIVATE_KEY_HEX=your_64_char_private_key_here
+2. **Add to `.env`:**
+   Copy `.env.example` to `.env` and set `SERVER_PRIVATE_KEY_HEX`:
+   ```env
+   SERVER_PRIVATE_KEY_HEX=your_64_char_private_key_here
    ```
+   *(Also generate and set `HMAC_SECRET_HEX` and `JWT_SECRET_HEX` with `openssl rand -hex 32`).*
 
 3. **Restart:**
    ```bash
@@ -303,19 +304,14 @@ networks:
 
 ### 2. Use Environment Variables
 
-Create `.env` file:
+Create `.env` file from `.env.example`:
 
 ```env
 NODE_ENV=production
 PORT=8443
-SERVER_PRIVATE_KEY_HEX=your_key_here
-```
-
-Update `docker-compose.yml`:
-
-```yaml
-env_file:
-  - .env
+HMAC_SECRET_HEX=your_64_char_hex_hmac_secret
+JWT_SECRET_HEX=your_64_char_hex_jwt_secret
+SERVER_PRIVATE_KEY_HEX=your_64_char_hex_private_key
 ```
 
 ### 3. Resource Limits

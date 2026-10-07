@@ -30,6 +30,11 @@ const USER_TTL_MS = SESSION_TTL_MS; // 30 minutes: auto-delete user record
 const MIN_USERNAME_LENGTH = 1;
 
 // Secrets: generate once per server lifetime, persist via env vars
+if (process.env.NODE_ENV === "production" && (!process.env.HMAC_SECRET_HEX || !process.env.JWT_SECRET_HEX)) {
+  console.error("FATAL: HMAC_SECRET_HEX and JWT_SECRET_HEX environment variables must be set in production mode");
+  process.exit(1);
+}
+
 const HMAC_SECRET = process.env.HMAC_SECRET_HEX
   ? Buffer.from(process.env.HMAC_SECRET_HEX, "hex")
   : crypto.randomBytes(32);
@@ -38,10 +43,10 @@ const JWT_SECRET = process.env.JWT_SECRET_HEX
   : crypto.randomBytes(32);
 
 if (!process.env.HMAC_SECRET_HEX) {
-  console.log("   Set HMAC_SECRET_HEX=" + HMAC_SECRET.toString("hex") + " to persist");
+  console.warn("WARNING: HMAC_SECRET_HEX is not set; generating ephemeral random HMAC secret.");
 }
 if (!process.env.JWT_SECRET_HEX) {
-  console.log("   Set JWT_SECRET_HEX=" + JWT_SECRET.toString("hex") + " to persist");
+  console.warn("WARNING: JWT_SECRET_HEX is not set; generating ephemeral random JWT secret.");
 }
 
 // Server Ed25519 signing keypair: generate once, hardcode public key in app
@@ -121,6 +126,58 @@ function timingSafeEqual(a, b) {
   return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
 }
 
+/**
+ * Verify detached Ed25519 signature proof of possession for auth enter.
+ * Signs SHA-256("Cryptika-Auth:" + username + ":" + timestamp_ms)
+ */
+function verifyAuthProof(pubKeyBytes, username, timestamp_ms, signatureB64) {
+  if (!signatureB64 || typeof signatureB64 !== "string") {
+    return false;
+  }
+  if (timestamp_ms === undefined || timestamp_ms === null) {
+    return false;
+  }
+  let ts = timestamp_ms;
+  if (typeof ts === "string" && /^\d+$/.test(ts)) {
+    ts = Number(ts);
+  }
+  if (typeof ts !== "number" || !Number.isInteger(ts)) {
+    return false;
+  }
+  const now = Date.now();
+  if (Math.abs(now - ts) > 300_000) {
+    return false;
+  }
+  if (!pubKeyBytes || pubKeyBytes.length !== 32) {
+    return false;
+  }
+  let sigBytes;
+  try {
+    sigBytes = Buffer.from(signatureB64, "base64");
+  } catch (_) {
+    return false;
+  }
+  if (sigBytes.length !== 64) {
+    return false;
+  }
+
+  const authPayload = "Cryptika-Auth:" + username + ":" + timestamp_ms;
+  const hash = crypto.createHash("sha256").update(authPayload).digest();
+  if (nacl.sign.detached.verify(hash, sigBytes, pubKeyBytes)) {
+    return true;
+  }
+
+  if (typeof username === "string" && username.trim() !== username) {
+    const trimmedPayload = "Cryptika-Auth:" + username.trim() + ":" + timestamp_ms;
+    const trimmedHash = crypto.createHash("sha256").update(trimmedPayload).digest();
+    if (nacl.sign.detached.verify(trimmedHash, sigBytes, pubKeyBytes)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 /** Artificial delay to prevent timing side-channels on auth: no longer needed (passwordless) */
 
 //
@@ -168,7 +225,8 @@ function authenticateToken(req, res, next) {
     }
     req.user = decoded; // { username, contactToken, jti, iat, exp }
     const u = users.get(decoded.username);
-    if (u) u.lastActive = Date.now();
+    if (!u) return res.status(401).json({ error: "User account no longer exists or has been burned" });
+    u.lastActive = Date.now();
     next();
   } catch (e) {
     return res.status(401).json({ error: "Invalid or expired token" });
@@ -195,6 +253,15 @@ function findUserByIdentityHash(identityHashHex) {
 const app = express();
 app.use(helmet());
 app.use(express.json({ limit: "16kb" }));
+
+// Global rate limiter for API endpoints (120 req / min per IP)
+app.use("/api/v1", (req, res, next) => {
+  const clientIp = req.ip || req.socket.remoteAddress || "unknown";
+  if (isRateLimited(`api_v1_global_${clientIp}`, 120, 60_000)) {
+    return res.status(429).json({ error: "Too many requests" });
+  }
+  next();
+});
 
 // Health check
 const healthCheckHandler = (req, res) => {
@@ -226,7 +293,7 @@ app.post("/api/v1/auth/enter", (req, res) => {
   }
 
   try {
-    const { username, identityHashHex, publicKeyB64 } = req.body;
+    const { username, identityHashHex, publicKeyB64, signatureB64, timestamp_ms } = req.body;
 
     if (!username || typeof username !== "string" || username.trim().length < MIN_USERNAME_LENGTH) {
       return res.status(400).json({ error: `Username must be at least ${MIN_USERNAME_LENGTH} character` });
@@ -241,11 +308,11 @@ app.post("/api/v1/auth/enter", (req, res) => {
       return res.status(400).json({ error: "Invalid identityHashHex format" });
     }
 
+    let pubBytes = null;
     if (publicKeyB64) {
       if (typeof publicKeyB64 !== "string") {
         return res.status(400).json({ error: "Invalid publicKeyB64 format" });
       }
-      let pubBytes;
       try {
         pubBytes = Buffer.from(publicKeyB64, "base64");
       } catch (_) {
@@ -255,25 +322,46 @@ app.post("/api/v1/auth/enter", (req, res) => {
         return res.status(400).json({ error: "Invalid publicKeyB64 length (must be 32 bytes)" });
       }
       const computedHash = crypto.createHash("sha256").update(pubBytes).digest("hex");
-      if (identityHashHex && identityHashHex.toLowerCase() !== computedHash.toLowerCase()) {
+      if (identityHashHex && !timingSafeEqual(identityHashHex.toLowerCase(), computedHash.toLowerCase())) {
         return res.status(400).json({ error: "identityHashHex does not match publicKeyB64" });
       }
     }
 
     // Check if username is already taken by an active user
     const existingUser = users.get(trimmed);
-    if (existingUser) {
-      const isExpired = Date.now() - (existingUser.lastActive || existingUser.createdAt) > USER_TTL_MS;
-      if (!isExpired) {
-        // Active user: only allow re-entry if the exact same identity hash is provided
-        if (existingUser.identityHashHex && existingUser.identityHashHex !== identityHashHex) {
-          return res.status(409).json({
-            error: "Username is currently in use by another user. Please try a different username."
+    const isExistingActive = existingUser && (Date.now() - (existingUser.lastActive || existingUser.createdAt) <= USER_TTL_MS);
+
+    if (isExistingActive) {
+      if (!identityHashHex && existingUser.identityHashHex) {
+        return res.status(409).json({
+          error: "Username is currently registered with an active cryptographic identity."
+        });
+      }
+      if (existingUser.identityHashHex && !timingSafeEqual(existingUser.identityHashHex.toLowerCase(), (identityHashHex || "").toLowerCase())) {
+        return res.status(409).json({
+          error: "Username is currently in use by another user. Please try a different username."
+        });
+      }
+
+      // Re-authentication of active identity requires Ed25519 proof of possession
+      if (existingUser.identityHashHex) {
+        const userPubKeyBytes = existingUser.publicKeyB64
+          ? Buffer.from(existingUser.publicKeyB64, "base64")
+          : pubBytes;
+
+        if (!signatureB64 || timestamp_ms === undefined || timestamp_ms === null || !verifyAuthProof(userPubKeyBytes, username, timestamp_ms, signatureB64)) {
+          return res.status(401).json({
+            error: "Ed25519 signature required to verify identity ownership"
           });
         }
-        if (!identityHashHex && existingUser.identityHashHex) {
-          return res.status(409).json({
-            error: "Username is currently registered with an active cryptographic identity."
+      }
+    } else {
+      // Initial entry (or existing user has expired):
+      // If signatureB64 or timestamp_ms is provided, also verify it
+      if (signatureB64 !== undefined || timestamp_ms !== undefined) {
+        if (!verifyAuthProof(pubBytes, username, timestamp_ms, signatureB64)) {
+          return res.status(401).json({
+            error: "Ed25519 signature required to verify identity ownership"
           });
         }
       }
@@ -285,9 +373,9 @@ app.post("/api/v1/auth/enter", (req, res) => {
     // Store/replace user (purely ephemeral, no password)
     users.set(trimmed, {
       contactToken,
-      identityHashHex: identityHashHex || "",
-      publicKeyB64: publicKeyB64 || "",
-      createdAt: Date.now(),
+      identityHashHex: identityHashHex || existingUser?.identityHashHex || "",
+      publicKeyB64: publicKeyB64 || existingUser?.publicKeyB64 || "",
+      createdAt: existingUser?.createdAt || Date.now(),
       lastActive: Date.now(),
     });
 
@@ -316,6 +404,11 @@ app.post("/api/v1/auth/enter", (req, res) => {
  * contact requests associated with this user's contactToken.
  */
 app.post("/api/v1/auth/burn", authenticateToken, (req, res) => {
+  const clientIp = req.ip || req.socket.remoteAddress;
+  if (isRateLimited(`burn_${clientIp}`, 10, 60_000)) {
+    return res.status(429).json({ error: "Too many requests" });
+  }
+
   try {
     const username = req.user.username;
     const contactToken = req.user.contactToken;
@@ -326,24 +419,21 @@ app.post("/api/v1/auth/burn", authenticateToken, (req, res) => {
     // Delete user record so handle is burned from server memory
     users.delete(username);
 
-    // Only blacklist JWT and disconnect sockets if an explicit full disconnect/wipe was requested
-    const forceDisconnect = req.body && req.body.forceDisconnect === true;
-    if (forceDisconnect) {
-      if (jti) burnedTokens.set(jti, Date.now());
+    // Unconditionally blacklist JWT and disconnect sockets
+    if (jti) burnedTokens.set(jti, Date.now());
 
-      // Disconnect active WebSockets belonging to this user
-      for (const [convId, room] of conversationSockets.entries()) {
-        for (const ws of room) {
-          if (ws.contactToken === contactToken || (userHash && ws.identityHash === userHash)) {
-            try { ws.close(4001, "Account burned"); } catch (_) {}
-            room.delete(ws);
-            wsIdentityMap.delete(ws);
-          }
+    // Disconnect active WebSockets belonging to this user
+    for (const [convId, room] of conversationSockets.entries()) {
+      for (const ws of room) {
+        if (ws.contactToken === contactToken || (userHash && ws.identityHash === userHash)) {
+          try { ws.close(4001, "Account burned"); } catch (_) {}
+          room.delete(ws);
+          wsIdentityMap.delete(ws);
         }
-        if (room.size === 0) conversationSockets.delete(convId);
       }
-      if (userHash) presenceMap.delete(userHash);
+      if (room.size === 0) conversationSockets.delete(convId);
     }
+    if (userHash) presenceMap.delete(userHash);
 
     // Cascade delete contact requests involving this user
     for (const [rid, r] of contactRequests.entries()) {
@@ -355,6 +445,10 @@ app.post("/api/v1/auth/burn", authenticateToken, (req, res) => {
         }
         contactRequests.delete(rid);
       }
+    }
+
+    if (process.env.DEBUG) {
+      console.log(`[DEBUG] User burned: ${safeLog(username)}`);
     }
 
     res.json({ status: "burned" });
@@ -519,6 +613,11 @@ app.post("/api/v1/contact/request-by-fingerprint", authenticateToken, async (req
  * List pending incoming contact requests for the authenticated user.
  */
 app.get("/api/v1/contact/requests", authenticateToken, (req, res) => {
+  const clientIp = req.ip || req.socket.remoteAddress;
+  if (isRateLimited(`creq_get_${clientIp}`, 60, 60_000)) {
+    return res.status(429).json({ error: "Too many requests" });
+  }
+
   try {
     const myToken = req.user.contactToken;
     const requestIds = pendingByToken.get(myToken);
@@ -555,6 +654,11 @@ app.get("/api/v1/contact/requests", authenticateToken, (req, res) => {
  * Returns the session UUID and server-issued expiry timestamp.
  */
 app.post("/api/v1/contact/accept", authenticateToken, async (req, res) => {
+  const clientIp = req.ip || req.socket.remoteAddress;
+  if (isRateLimited(`accept_${clientIp}`, 20, 60_000)) {
+    return res.status(429).json({ error: "Too many requests" });
+  }
+
   try {
     const { requestId } = req.body;
     if (!requestId) return res.status(400).json({ error: "requestId required" });
@@ -653,6 +757,11 @@ app.post("/api/v1/contact/accept", authenticateToken, async (req, res) => {
  * Reject a contact request.
  */
 app.post("/api/v1/contact/reject", authenticateToken, (req, res) => {
+  const clientIp = req.ip || req.socket.remoteAddress;
+  if (isRateLimited(`reject_${clientIp}`, 20, 60_000)) {
+    return res.status(429).json({ error: "Too many requests" });
+  }
+
   try {
     const { requestId } = req.body;
     if (!requestId) return res.status(400).json({ error: "requestId required" });
@@ -688,6 +797,11 @@ app.post("/api/v1/contact/reject", authenticateToken, (req, res) => {
  * originally sent BY the authenticated user.
  */
 app.get("/api/v1/contact/accepted", authenticateToken, (req, res) => {
+  const clientIp = req.ip || req.socket.remoteAddress;
+  if (isRateLimited(`accepted_get_${clientIp}`, 60, 60_000)) {
+    return res.status(429).json({ error: "Too many requests" });
+  }
+
   try {
     const myToken = req.user.contactToken;
     const results = [];
@@ -739,8 +853,9 @@ app.get("/api/v1/contact/accepted", authenticateToken, (req, res) => {
  * Response:     { ticket_b64 }  — 204-byte ticket (payload + userASig + serverSig)
  */
 app.post("/api/v1/ticket", authenticateToken, (req, res) => {
-  // Rate limit: 10 ticket requests per user per minute
-  if (isRateLimited(`ticket_${req.user.username}`, 10, 60_000)) {
+  const clientIp = req.ip || req.socket.remoteAddress;
+  // Rate limit: 20 ticket requests per IP per minute and 10 per user per minute
+  if (isRateLimited(`ticket_ip_${clientIp}`, 20, 60_000) || isRateLimited(`ticket_${req.user.username}`, 10, 60_000)) {
     return res.status(429).json({ error: "Too many requests" });
   }
 
@@ -830,7 +945,9 @@ app.post("/api/v1/ticket", authenticateToken, (req, res) => {
     // Full 204-byte ticket: payload(76) + userASig(64) + serverSig(64)
     const ticket = Buffer.concat([payload, userASig, Buffer.from(serverSig)]);
 
-    /* blind: no logging of participant identities */
+    if (process.env.DEBUG) {
+      console.log(`[DEBUG] Ticket issued for: ${safeLog(a_id)} -> ${safeLog(b_id)}`);
+    }
 
     res.json({ ticket_b64: ticket.toString("base64") });
   } catch (e) {
@@ -843,6 +960,11 @@ app.post("/api/v1/ticket", authenticateToken, (req, res) => {
  * POST /api/v1/presence
  */
 app.post("/api/v1/presence", authenticateToken, (req, res) => {
+  const clientIp = req.ip || req.socket.remoteAddress;
+  if (isRateLimited(`presence_${clientIp}`, 60, 60_000)) {
+    return res.status(429).json({ error: "Too many requests" });
+  }
+
   const { identity_hash, connection_token } = req.body;
   if (!identity_hash) return res.status(400).json({ error: "identity_hash required" });
 
@@ -861,6 +983,11 @@ app.post("/api/v1/presence", authenticateToken, (req, res) => {
  * GET /api/v1/presence/:hash
  */
 app.get("/api/v1/presence/:hash", (req, res) => {
+  const clientIp = req.ip || req.socket.remoteAddress;
+  if (isRateLimited(`get_presence_${clientIp}`, 120, 60_000)) {
+    return res.status(429).json({ error: "Too many requests" });
+  }
+
   const hash = req.params.hash;
   if (!hash || !/^[a-f0-9]{64}$/.test(hash))
     return res.status(400).json({ error: "invalid hash" });
@@ -880,6 +1007,9 @@ app.get("/api/v1/presence/:hash", (req, res) => {
  * unrecoverable even if the server is fully compromised.
  */
 function destroySession(sessionUUID) {
+  if (process.env.DEBUG) {
+    console.log(`[DEBUG] Ephemeral session destroyed: ${safeLog(sessionUUID)}`);
+  }
   const session = ephemeralSessions.get(sessionUUID);
   if (!session) return;
 
@@ -931,6 +1061,10 @@ wss.on("connection", (ws, req) => {
     return;
   }
 
+  if (process.env.DEBUG) {
+    console.log(`[DEBUG] WS connected to room: ${safeLog(roomKey)}`);
+  }
+
   // Ephemeral session connection
   if (sessionId) {
     const session = ephemeralSessions.get(sessionId);
@@ -958,6 +1092,11 @@ wss.on("connection", (ws, req) => {
     }
     if (decoded.jti && burnedTokens.has(decoded.jti)) {
       ws.close(4013, "Token has been revoked");
+      return;
+    }
+    const sessionUser = users.get(decoded.username);
+    if (!sessionUser) {
+      ws.close(4013, "User account no longer exists");
       return;
     }
     if (!session.participants.has(decoded.contactToken)) {
@@ -1089,10 +1228,15 @@ wss.on("connection", (ws, req) => {
     return;
   }
 
+  const convCaller = users.get(convDecoded.username);
+  if (!convCaller) {
+    ws.close(4013, "User account no longer exists");
+    return;
+  }
+
   // Best-effort membership check: if the caller's identity is known, verify they are
   // one of the two participants embedded in the standard conv ID ("<hash64>_<hash64>").
-  const convCaller = users.get(convDecoded.username);
-  if (convCaller?.identityHashHex) {
+  if (convCaller.identityHashHex) {
     const parts = conversationId.split("_");
     if (parts.length === 2 && parts[0].length === 64 && parts[1].length === 64) {
       if (convCaller.identityHashHex !== parts[0] && convCaller.identityHashHex !== parts[1]) {
@@ -1305,9 +1449,25 @@ setInterval(() => {
   }
 }, 60_000);
 
-server.listen(PORT, () => {
-  console.log(`\nCryptika Relay Server v3.0.0`);
-  console.log(`   Listening on port ${PORT}`);
-  console.log(`   Auth: POST /api/v1/auth/enter (passwordless)`);
-  console.log(`   Server is BLIND -- no passwords, no logs, only ciphertext relay\n`);
-});
+if (require.main === module) {
+  server.listen(PORT, () => {
+    console.log(`\nCryptika Relay Server v3.0.0`);
+    console.log(`   Listening on port ${PORT}`);
+    console.log(`   Auth: POST /api/v1/auth/enter (passwordless)`);
+    console.log(`   Server is BLIND -- no passwords, no logs, only ciphertext relay\n`);
+  });
+} else {
+  module.exports = {
+    app,
+    server,
+    safeLog,
+    timingSafeEqual,
+    deriveContactToken,
+    isRateLimited,
+    verifyAuthProof,
+    users,
+    burnedTokens,
+    ephemeralSessions,
+    presenceMap,
+  };
+}

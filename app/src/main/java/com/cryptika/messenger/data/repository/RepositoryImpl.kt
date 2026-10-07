@@ -48,6 +48,10 @@ class IdentityRepositoryImpl @Inject constructor(
         dao.deleteAll()
     }
 
+    override suspend fun sign(data: ByteArray): ByteArray {
+        return identityKeyManager.sign(data)
+    }
+
     private fun ByteArray.toHexString() = joinToString("") { "%02x".format(it) }
     private fun String.hexToByteArray(): ByteArray {
         check(length % 2 == 0)

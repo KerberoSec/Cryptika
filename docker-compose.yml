@@ -8,10 +8,16 @@
 #   docker-compose logs -f      # follow logs
 #   docker-compose down         # stop and remove containers
 #
-# To persist the server Ed25519 signing keypair across restarts, set:
-#   SERVER_PRIVATE_KEY_HEX=<64-char hex>
+# Configuration:
+#   Copy .env.example to .env and populate with secure random keys:
+#     cp .env.example .env
+#   Generate 64-character (32-byte) hex keys using OpenSSL:
+#     openssl rand -hex 32
+#
+# To persist the server Ed25519 signing keypair and secrets across restarts, set:
 #   HMAC_SECRET_HEX=<64-char hex>
 #   JWT_SECRET_HEX=<64-char hex>
+#   SERVER_PRIVATE_KEY_HEX=<64-char hex>
 
 version: '3.8'
 
@@ -25,10 +31,11 @@ services:
     ports:
       - "8443:8443"
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=${NODE_ENV:-production}
       - PORT=8443
-      # Optional: Set server private key to persist across restarts
-      # - SERVER_PRIVATE_KEY_HEX=your_64_char_hex_key_here
+      - HMAC_SECRET_HEX=${HMAC_SECRET_HEX}
+      - JWT_SECRET_HEX=${JWT_SECRET_HEX}
+      - SERVER_PRIVATE_KEY_HEX=${SERVER_PRIVATE_KEY_HEX}
     volumes:
       # Optional: Mount volume to persist server keys
       - server-data:/usr/src/app/data

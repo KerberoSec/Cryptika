@@ -136,8 +136,9 @@ object AppModule {
         authApi: AuthApi,
         authStore: AuthStore,
         serverConfig: ServerConfig,
-        identityRepository: IdentityRepository
-    ): AuthRepository = AuthRepositoryImpl(authApi, authStore, serverConfig, identityRepository)
+        identityRepository: IdentityRepository,
+        identityKeyManager: IdentityKeyManager
+    ): AuthRepository = AuthRepositoryImpl(authApi, authStore, serverConfig, identityRepository, identityKeyManager)
 }
 
 private fun String.hexToByteArray(): ByteArray {

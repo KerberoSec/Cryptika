@@ -8,6 +8,7 @@ interface IdentityRepository {
     suspend fun getLocalIdentity(): LocalIdentity?
     suspend fun generateIdentity(): LocalIdentity
     suspend fun deleteIdentity()
+    suspend fun sign(data: ByteArray): ByteArray = throw UnsupportedOperationException("Identity signing not supported")
 }
 
 interface ContactRepository {

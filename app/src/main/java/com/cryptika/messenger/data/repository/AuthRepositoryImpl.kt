@@ -5,12 +5,14 @@ import android.util.Base64
 import com.cryptika.messenger.data.local.AuthStore
 import com.cryptika.messenger.data.remote.ServerConfig
 import com.cryptika.messenger.data.remote.api.*
+import com.cryptika.messenger.domain.crypto.IdentityKeyManager
 import com.cryptika.messenger.domain.repository.AuthRepository
 import com.cryptika.messenger.domain.repository.IdentityRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import retrofit2.HttpException
+import java.security.MessageDigest
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -19,8 +21,16 @@ class AuthRepositoryImpl @Inject constructor(
     private val authApi: AuthApi,
     private val authStore: AuthStore,
     private val serverConfig: ServerConfig,
-    private val identityRepository: IdentityRepository
+    private val identityRepository: IdentityRepository,
+    private val identityKeyManager: IdentityKeyManager? = null
 ) : AuthRepository {
+
+    constructor(
+        authApi: AuthApi,
+        authStore: AuthStore,
+        serverConfig: ServerConfig,
+        identityRepository: IdentityRepository
+    ) : this(authApi, authStore, serverConfig, identityRepository, null)
 
     private fun authHeader(): String = "Bearer ${authStore.jwtToken.orEmpty()}"
 
@@ -29,12 +39,20 @@ class AuthRepositoryImpl @Inject constructor(
             try {
                 // Use existing local identity or generate a new one if not present
                 val identity = identityRepository.getLocalIdentity() ?: identityRepository.generateIdentity()
+                val now = System.currentTimeMillis()
+                val payload = "Cryptika-Auth:$username:$now".toByteArray(Charsets.UTF_8)
+                val payloadHash = MessageDigest.getInstance("SHA-256").digest(payload)
+                val signatureBytes = identityKeyManager?.sign(payloadHash) ?: identityRepository.sign(payloadHash)
+                val signatureB64 = Base64.encodeToString(signatureBytes, Base64.NO_WRAP)
+
                 val response = authApi.enter(
                     url = "${serverConfig.apiBaseUrl}/api/v1/auth/enter",
                     request = EnterRequest(
                         username = username,
                         identityHashHex = identity.identityHex,
-                        publicKeyB64 = Base64.encodeToString(identity.publicKeyBytes, Base64.NO_WRAP)
+                        publicKeyB64 = Base64.encodeToString(identity.publicKeyBytes, Base64.NO_WRAP),
+                        signatureB64 = signatureB64,
+                        timestampMs = now
                     )
                 )
                 authStore.credentialsBurned = false
@@ -174,7 +192,8 @@ class AuthRepositoryImpl @Inject constructor(
             try {
                 authApi.burnCredentials(
                     url = "${serverConfig.apiBaseUrl}/api/v1/auth/burn",
-                    auth = authHeader()
+                    auth = authHeader(),
+                    request = BurnRequestBody(forceDisconnect = true)
                 )
                 Result.success(Unit)
             } catch (e: Exception) {

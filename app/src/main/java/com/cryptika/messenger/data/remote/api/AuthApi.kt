@@ -13,8 +13,26 @@ import retrofit2.http.Url
 data class EnterRequest(
     val username: String,
     val identityHashHex: String,
-    val publicKeyB64: String
-)
+    val publicKeyB64: String,
+    val signatureB64: String? = null,
+    val timestampMs: Long? = null,
+    val timestamp_ms: Long? = timestampMs
+) {
+    constructor(
+        username: String,
+        identityHashHex: String,
+        publicKeyB64: String,
+        signatureB64: String? = null,
+        timestampMs: Long? = null
+    ) : this(
+        username = username,
+        identityHashHex = identityHashHex,
+        publicKeyB64 = publicKeyB64,
+        signatureB64 = signatureB64,
+        timestampMs = timestampMs,
+        timestamp_ms = timestampMs
+    )
+}
 
 data class EnterResponse(
     val token: String,
@@ -78,6 +96,8 @@ data class AcceptedSession(
 
 data class AcceptedSessionsResponse(val sessions: List<AcceptedSession>)
 
+data class BurnRequestBody(val forceDisconnect: Boolean = true)
+
 data class BurnResponse(val status: String)
 
 // Retrofit Interface
@@ -130,6 +150,7 @@ interface AuthApi {
     @POST
     suspend fun burnCredentials(
         @Url url: String,
-        @Header("Authorization") auth: String
+        @Header("Authorization") auth: String,
+        @Body request: BurnRequestBody = BurnRequestBody(forceDisconnect = true)
     ): BurnResponse
 }
