@@ -128,10 +128,17 @@ function timingSafeEqual(a, b) {
 }
 
 /**
- * Verify detached Ed25519 signature proof of possession for auth enter.
+ * Isolated Ed25519 signature check primitive
+ */
+function checkEd25519Signature(messageHash, signatureBytes, publicKeyBytes) {
+  return nacl.sign.detached.verify(messageHash, signatureBytes, publicKeyBytes);
+}
+
+/**
+ * Validate detached Ed25519 signature proof of possession for auth enter.
  * Signs SHA-256("Cryptika-Auth:" + username + ":" + timestamp_ms)
  */
-function verifyAuthProof(pubKeyBytes, username, timestamp_ms, signatureB64) {
+function validateSignatureProof(pubKeyBytes, username, timestamp_ms, signatureB64) {
   if (!signatureB64 || typeof signatureB64 !== "string") {
     return false;
   }
@@ -164,14 +171,14 @@ function verifyAuthProof(pubKeyBytes, username, timestamp_ms, signatureB64) {
 
   const authPayload = "Cryptika-Auth:" + username + ":" + timestamp_ms;
   const hash = crypto.createHash("sha256").update(authPayload).digest();
-  if (nacl.sign.detached.verify(hash, sigBytes, pubKeyBytes)) {
+  if (checkEd25519Signature(hash, sigBytes, pubKeyBytes)) {
     return true;
   }
 
   if (typeof username === "string" && username.trim() !== username) {
     const trimmedPayload = "Cryptika-Auth:" + username.trim() + ":" + timestamp_ms;
     const trimmedHash = crypto.createHash("sha256").update(trimmedPayload).digest();
-    if (nacl.sign.detached.verify(trimmedHash, sigBytes, pubKeyBytes)) {
+    if (checkEd25519Signature(trimmedHash, sigBytes, pubKeyBytes)) {
       return true;
     }
   }
@@ -293,7 +300,7 @@ const healthCheckHandler = (req, res) => {
     timestamp: Date.now()
   });
 };
-app.get("/health", healthCheckHandler);
+app.get("/health", globalLimiter, healthCheckHandler);
 app.get("/api/v1/health", healthCheckHandler);
 
 // AUTH ENDPOINTS
@@ -347,8 +354,8 @@ app.post("/api/v1/auth/enter", authLimiter, (req, res) => {
       return res.status(400).json({ error: "identityHashHex does not match publicKeyB64" });
     }
 
-    // Unconditionally verify Ed25519 signature proof over Cryptika-Auth:<username>:<timestamp>
-    if (!verifyAuthProof(pubBytes, trimmed, timestamp_ms, signatureB64)) {
+    // Unconditionally validate Ed25519 signature proof over Cryptika-Auth:<username>:<timestamp>
+    if (!validateSignatureProof(pubBytes, trimmed, timestamp_ms, signatureB64)) {
       return res.status(401).json({
         error: "Ed25519 signature required to verify identity ownership"
       });
@@ -909,13 +916,13 @@ app.post("/api/v1/ticket", apiLimiter, authenticateToken, (req, res) => {
       return res.status(400).json({ error: "user_a_sig_b64 must encode exactly 64 bytes" });
     }
 
-    // Verify User A's Ed25519 signature over SHA-256(payload)
+    // Validate User A's Ed25519 signature over SHA-256(payload)
     const callerPubKeyBytes = Buffer.from(caller.publicKeyB64, "base64");
     if (callerPubKeyBytes.length !== 32) {
       return res.status(500).json({ error: "Invalid registered public key length" });
     }
     const payloadHash = crypto.createHash("sha256").update(payload).digest();
-    if (!nacl.sign.detached.verify(payloadHash, userASig, callerPubKeyBytes)) {
+    if (!checkEd25519Signature(payloadHash, userASig, callerPubKeyBytes)) {
       return res.status(403).json({ error: "User A signature verification failed" });
     }
 
@@ -944,16 +951,25 @@ app.post("/api/v1/presence", apiLimiter, authenticateToken, (req, res) => {
   }
 
   const { identity_hash, connection_token } = req.body;
-  if (!identity_hash) return res.status(400).json({ error: "identity_hash required" });
+  if (!identity_hash || typeof identity_hash !== "string" || !/^[a-f0-9]{64}$/i.test(identity_hash)) {
+    return res.status(400).json({ error: "identity_hash must be a 64-character hex string" });
+  }
 
-  // Verify that the identity hash belongs to the authenticated caller
+  if (connection_token !== undefined && connection_token !== null) {
+    if (typeof connection_token !== "string" || connection_token.length > 128) {
+      return res.status(400).json({ error: "Invalid connection_token" });
+    }
+  }
+
+  // Validate that the identity hash belongs to the authenticated caller
   const callerIdentityHash = users.get(req.user.username)?.identityHashHex;
-  if (callerIdentityHash && identity_hash !== callerIdentityHash) {
+  if (callerIdentityHash && !timingSafeEqual(identity_hash.toLowerCase(), callerIdentityHash.toLowerCase())) {
     return res.status(403).json({ error: "Identity hash does not match authenticated user" });
   }
 
   const token = connection_token || crypto.randomBytes(32).toString("hex");
-  presenceMap.set(identity_hash, { connectionToken: token, lastSeen: Date.now(), online: true });
+  const normalizedHash = identity_hash.toLowerCase();
+  presenceMap.set(normalizedHash, { connectionToken: token, lastSeen: Date.now(), online: true });
   res.json({ online: true, token });
 });
 
@@ -967,9 +983,9 @@ app.get("/api/v1/presence/:hash", apiLimiter, (req, res) => {
   }
 
   const hash = req.params.hash;
-  if (!hash || !/^[a-f0-9]{64}$/.test(hash))
+  if (!hash || !/^[a-f0-9]{64}$/i.test(hash))
     return res.status(400).json({ error: "invalid hash" });
-  const entry = presenceMap.get(hash);
+  const entry = presenceMap.get(hash.toLowerCase());
   if (!entry) return res.json({ online: false, lastSeen: null });
   const stale = Date.now() - entry.lastSeen > 300_000;
   res.json({ online: stale ? false : (entry.online ?? true), lastSeen: entry.lastSeen });
@@ -1413,7 +1429,9 @@ if (require.main === module) {
     timingSafeEqual,
     deriveContactToken,
     isRateLimited,
-    verifyAuthProof,
+    validateSignatureProof,
+    verifyAuthProof: validateSignatureProof,
+    checkEd25519Signature,
     users,
     burnedTokens,
     ephemeralSessions,
