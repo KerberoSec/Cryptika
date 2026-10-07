@@ -7,31 +7,28 @@ updates:
   - package-ecosystem: "gradle"
     directory: "/"
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-    reviewers:
-      - "KerberoSec"
-    commit-message:
-      prefix: "build(deps)"
+      interval: "monthly"
+    open-pull-requests-limit: 0
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   # Blind Relay Server Dependencies (npm)
   - package-ecosystem: "npm"
     directory: "/server"
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-    reviewers:
-      - "KerberoSec"
-    commit-message:
-      prefix: "server(deps)"
+      interval: "monthly"
+    open-pull-requests-limit: 0
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   # GitHub Actions Workflows
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "monthly"
-    open-pull-requests-limit: 3
-    reviewers:
-      - "KerberoSec"
-    commit-message:
-      prefix: "ci(deps)"
+    open-pull-requests-limit: 0
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
