@@ -247,8 +247,10 @@ function extractBearerToken(headers) {
 }
 
 function findUserByIdentityHash(identityHashHex) {
+  if (!identityHashHex || typeof identityHashHex !== "string") return null;
+  const target = identityHashHex.toLowerCase();
   for (const [username, user] of users.entries()) {
-    if (user?.identityHashHex === identityHashHex) {
+    if (user?.identityHashHex && timingSafeEqual(user.identityHashHex.toLowerCase(), target)) {
       return { username, user };
     }
   }
@@ -667,7 +669,7 @@ app.post("/api/v1/contact/accept", apiLimiter, authenticateToken, async (req, re
 
     // Verify this request belongs to the authenticated user
     const myToken = req.user.contactToken;
-    if (r.toToken !== myToken) {
+    if (!timingSafeEqual(r.toToken, myToken)) {
       return res.status(403).json({ error: "Not authorized" });
     }
 
@@ -768,7 +770,7 @@ app.post("/api/v1/contact/reject", apiLimiter, authenticateToken, (req, res) => 
       return res.status(404).json({ error: "Request not found" });
     }
 
-    if (r.toToken !== req.user.contactToken) {
+    if (!timingSafeEqual(r.toToken, req.user.contactToken)) {
       return res.status(403).json({ error: "Not authorized" });
     }
 
@@ -1164,7 +1166,8 @@ function handleConversationSocket(ws, conversationId, caller, identityHash) {
   if (caller.identityHashHex) {
     const parts = conversationId.split("_");
     if (parts.length === 2 && parts[0].length === 64 && parts[1].length === 64) {
-      if (caller.identityHashHex !== parts[0] && caller.identityHashHex !== parts[1]) {
+      const callerHash = caller.identityHashHex.toLowerCase();
+      if (!timingSafeEqual(callerHash, parts[0].toLowerCase()) && !timingSafeEqual(callerHash, parts[1].toLowerCase())) {
         ws.close(4014, "Not a participant of this conversation");
         return;
       }
