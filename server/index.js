@@ -123,8 +123,10 @@ function safeLog(id) {
 /** Constant-time string comparison */
 function timingSafeEqual(a, b) {
   if (typeof a !== "string" || typeof b !== "string") return false;
-  if (a.length !== b.length) return false;
-  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
 }
 
 /**
@@ -169,14 +171,14 @@ function validateSignatureProof(pubKeyBytes, username, timestamp_ms, signatureB6
     return false;
   }
 
-  const authPayload = "Cryptika-Auth:" + username + ":" + timestamp_ms;
+  const authPayload = "Cryptika-Auth:" + username + ":" + ts;
   const hash = crypto.createHash("sha256").update(authPayload).digest();
   if (checkEd25519Signature(hash, sigBytes, pubKeyBytes)) {
     return true;
   }
 
   if (typeof username === "string" && username.trim() !== username) {
-    const trimmedPayload = "Cryptika-Auth:" + username.trim() + ":" + timestamp_ms;
+    const trimmedPayload = "Cryptika-Auth:" + username.trim() + ":" + ts;
     const trimmedHash = crypto.createHash("sha256").update(trimmedPayload).digest();
     if (checkEd25519Signature(trimmedHash, sigBytes, pubKeyBytes)) {
       return true;
@@ -315,7 +317,10 @@ app.get("/api/v1/health", healthCheckHandler);
  */
 app.post("/api/v1/auth/enter", authLimiter, (req, res) => {
   try {
-    const { username, identityHashHex, publicKeyB64, signatureB64, timestamp_ms } = req.body;
+    const { username, identityHashHex, publicKeyB64, signatureB64 } = req.body;
+    const rawTs = req.body.timestamp_ms !== undefined && req.body.timestamp_ms !== null
+      ? req.body.timestamp_ms
+      : req.body.timestampMs;
 
     if (!username || typeof username !== "string" || username.trim().length < MIN_USERNAME_LENGTH) {
       return res.status(400).json({ error: `Username must be at least ${MIN_USERNAME_LENGTH} character` });
@@ -327,7 +332,7 @@ app.post("/api/v1/auth/enter", authLimiter, (req, res) => {
     }
 
     // Require cryptographic identity and proof of possession unconditionally
-    if (!identityHashHex || !publicKeyB64 || !signatureB64 || timestamp_ms === undefined || timestamp_ms === null) {
+    if (!identityHashHex || !publicKeyB64 || !signatureB64 || rawTs === undefined || rawTs === null) {
       return res.status(400).json({
         error: "identityHashHex, publicKeyB64, signatureB64, and timestamp_ms are required"
       });
@@ -351,13 +356,14 @@ app.post("/api/v1/auth/enter", authLimiter, (req, res) => {
       return res.status(400).json({ error: "Invalid publicKeyB64 length (must be 32 bytes)" });
     }
 
-    const computedHash = crypto.createHash("sha256").update(pubBytes).digest("hex");
-    if (!timingSafeEqual(identityHashHex.toLowerCase(), computedHash.toLowerCase())) {
+    const normalizedIdHash = identityHashHex.toLowerCase();
+    const computedHash = crypto.createHash("sha256").update(pubBytes).digest("hex").toLowerCase();
+    if (!timingSafeEqual(normalizedIdHash, computedHash)) {
       return res.status(400).json({ error: "identityHashHex does not match publicKeyB64" });
     }
 
     // Unconditionally validate Ed25519 signature proof over Cryptika-Auth:<username>:<timestamp>
-    if (!validateSignatureProof(pubBytes, trimmed, timestamp_ms, signatureB64)) {
+    if (!validateSignatureProof(pubBytes, username, rawTs, signatureB64)) {
       return res.status(401).json({
         error: "Ed25519 signature required to verify identity ownership"
       });
@@ -368,7 +374,7 @@ app.post("/api/v1/auth/enter", authLimiter, (req, res) => {
     const isExistingActive = existingUser && (Date.now() - (existingUser.lastActive || existingUser.createdAt) <= USER_TTL_MS);
 
     if (isExistingActive) {
-      if (existingUser.identityHashHex && !timingSafeEqual(existingUser.identityHashHex.toLowerCase(), identityHashHex.toLowerCase())) {
+      if (existingUser.identityHashHex && !timingSafeEqual(existingUser.identityHashHex.toLowerCase(), normalizedIdHash)) {
         return res.status(409).json({
           error: "Username is currently in use by another user. Please try a different username."
         });
@@ -381,9 +387,9 @@ app.post("/api/v1/auth/enter", authLimiter, (req, res) => {
     // Store/replace user (purely ephemeral, no password)
     users.set(trimmed, {
       contactToken,
-      identityHashHex,
+      identityHashHex: normalizedIdHash,
       publicKeyB64,
-      createdAt: existingUser?.createdAt || Date.now(),
+      createdAt: existingUser && isExistingActive ? existingUser.createdAt : Date.now(),
       lastActive: Date.now(),
     });
 
@@ -428,7 +434,9 @@ app.post("/api/v1/auth/burn", authLimiter, authenticateToken, (req, res) => {
     // Disconnect active WebSockets belonging to this user
     for (const [convId, room] of conversationSockets.entries()) {
       for (const ws of room) {
-        if (ws.contactToken === contactToken || (userHash && ws.identityHash === userHash)) {
+        const matchesToken = ws.contactToken && timingSafeEqual(ws.contactToken, contactToken);
+        const matchesHash = userHash && ws.identityHash && timingSafeEqual(ws.identityHash, userHash);
+        if (matchesToken || matchesHash) {
           try { ws.close(4001, "Account burned"); } catch (_) {}
           room.delete(ws);
           wsIdentityMap.delete(ws);
@@ -440,7 +448,7 @@ app.post("/api/v1/auth/burn", authLimiter, authenticateToken, (req, res) => {
 
     // Cascade delete contact requests involving this user
     for (const [rid, r] of contactRequests.entries()) {
-      if (r.fromToken === contactToken || r.toToken === contactToken) {
+      if (timingSafeEqual(r.fromToken, contactToken) || timingSafeEqual(r.toToken, contactToken)) {
         const pending = pendingByToken.get(r.toToken);
         if (pending) {
           pending.delete(rid);
@@ -448,6 +456,15 @@ app.post("/api/v1/auth/burn", authLimiter, authenticateToken, (req, res) => {
         }
         contactRequests.delete(rid);
       }
+    }
+
+    // Destroy active ephemeral sessions involving this user
+    const userSessions = tokenToSession.get(contactToken);
+    if (userSessions) {
+      for (const sessId of Array.from(userSessions)) {
+        destroySession(sessId);
+      }
+      tokenToSession.delete(contactToken);
     }
 
     res.json({ status: "burned" });
@@ -506,10 +523,10 @@ app.post("/api/v1/contact/request", apiLimiter, authenticateToken, async (req, r
       }
     }
 
-    // Get sender's identity info
+    // Get sender's identity info: always prioritize verified registered identity
     const senderUser = users.get(req.user.username);
-    const fromIdentityHash = req.body.identityHashHex || (senderUser ? senderUser.identityHashHex : "");
-    const fromPublicKeyB64 = req.body.publicKeyB64 || (senderUser ? senderUser.publicKeyB64 : "");
+    const fromIdentityHash = senderUser?.identityHashHex || (req.body.identityHashHex ? req.body.identityHashHex.toLowerCase() : "");
+    const fromPublicKeyB64 = senderUser?.publicKeyB64 || req.body.publicKeyB64 || "";
 
     const requestId = uuidv4();
     contactRequests.set(requestId, {
@@ -554,16 +571,17 @@ app.post("/api/v1/contact/request-by-fingerprint", apiLimiter, authenticateToken
 
   try {
     const { targetIdentityHash, nickname } = req.body;
-    if (!targetIdentityHash || typeof targetIdentityHash !== "string" || !/^[a-f0-9]{64}$/.test(targetIdentityHash)) {
+    if (!targetIdentityHash || typeof targetIdentityHash !== "string" || !/^[a-f0-9]{64}$/i.test(targetIdentityHash)) {
       return res.json({ status: "request_sent" });
     }
+    const targetNorm = targetIdentityHash.toLowerCase();
 
     const senderUser = users.get(req.user.username);
-    if (senderUser?.identityHashHex && timingSafeEqual(senderUser.identityHashHex, targetIdentityHash)) {
+    if (senderUser?.identityHashHex && timingSafeEqual(senderUser.identityHashHex.toLowerCase(), targetNorm)) {
       return res.json({ status: "request_sent" });
     }
 
-    const found = findUserByIdentityHash(targetIdentityHash);
+    const found = findUserByIdentityHash(targetNorm);
     if (!found) {
       return res.json({ status: "request_sent" });
     }
@@ -583,8 +601,8 @@ app.post("/api/v1/contact/request-by-fingerprint", apiLimiter, authenticateToken
       }
     }
 
-    const fromIdentityHash = req.body.identityHashHex || (senderUser ? senderUser.identityHashHex : "");
-    const fromPublicKeyB64 = req.body.publicKeyB64 || (senderUser ? senderUser.publicKeyB64 : "");
+    const fromIdentityHash = senderUser?.identityHashHex || (req.body.identityHashHex ? req.body.identityHashHex.toLowerCase() : "");
+    const fromPublicKeyB64 = senderUser?.publicKeyB64 || req.body.publicKeyB64 || "";
 
     const requestId = uuidv4();
     contactRequests.set(requestId, {
@@ -673,17 +691,30 @@ app.post("/api/v1/contact/accept", apiLimiter, authenticateToken, async (req, re
       return res.status(403).json({ error: "Not authorized" });
     }
 
+    // Helper to get non-expired session count for a token
+    function getActiveSessionCount(token) {
+      const sessSet = tokenToSession.get(token);
+      if (!sessSet) return 0;
+      const nowMs = Date.now();
+      for (const sessId of Array.from(sessSet)) {
+        const s = ephemeralSessions.get(sessId);
+        if (!s || nowMs > s.expiresAt) {
+          sessSet.delete(sessId);
+        }
+      }
+      if (sessSet.size === 0) tokenToSession.delete(token);
+      return sessSet ? sessSet.size : 0;
+    }
+
     // Enforce max active sessions per user (5)
-    const mySessions = tokenToSession.get(myToken);
-    if (mySessions && mySessions.size >= 5) {
+    if (getActiveSessionCount(myToken) >= 5) {
       return res.status(429).json({ error: "Too many active sessions" });
     }
-    const theirSessions = tokenToSession.get(r.fromToken);
-    if (theirSessions && theirSessions.size >= 5) {
+    if (getActiveSessionCount(r.fromToken) >= 5) {
       return res.status(429).json({ error: "Peer has too many active sessions" });
     }
 
-    // Get accepter's identity info
+    // Get accepter's identity info: prioritize verified registered identity
     const accepterUser = users.get(req.user.username);
 
     // Mark request as accepted
@@ -707,8 +738,8 @@ app.post("/api/v1/contact/accept", apiLimiter, authenticateToken, async (req, re
       publicKeyB64: r.fromPublicKeyB64,
       nickname: r.fromNickname,
     });
-    const accepterIdentityHash = req.body.identityHashHex || (accepterUser ? accepterUser.identityHashHex : "");
-    const accepterPublicKeyB64 = req.body.publicKeyB64 || (accepterUser ? accepterUser.publicKeyB64 : "");
+    const accepterIdentityHash = accepterUser?.identityHashHex || (req.body.identityHashHex ? req.body.identityHashHex.toLowerCase() : "");
+    const accepterPublicKeyB64 = accepterUser?.publicKeyB64 || req.body.publicKeyB64 || "";
 
     participants.set(myToken, {
       identityHash: accepterIdentityHash,
@@ -720,6 +751,7 @@ app.post("/api/v1/contact/accept", apiLimiter, authenticateToken, async (req, re
 
     ephemeralSessions.set(sessionUUID, {
       participants,
+      requesterToken: r.fromToken,
       createdAt: now,
       expiresAt,
       joinedTokens: new Set(),
@@ -807,13 +839,17 @@ app.get("/api/v1/contact/accepted", apiLimiter, authenticateToken, (req, res) =>
 
     for (const [sessionUUID, session] of ephemeralSessions) {
       if (!session.participants.has(myToken)) continue;
+      // Only return sessions to the requester
+      if (session.requesterToken && !timingSafeEqual(session.requesterToken, myToken)) continue;
+      // Once the requester has connected/joined, do not keep returning in pending polls
+      if (session.joinedTokens && session.joinedTokens.has(myToken)) continue;
 
       // Find peer info
       let peerIdentityHash = "";
       let peerPublicKeyB64 = "";
       let peerNickname = "";
       for (const [token, info] of session.participants) {
-        if (token !== myToken) {
+        if (!timingSafeEqual(token, myToken)) {
           peerIdentityHash = info.identityHash;
           peerPublicKeyB64 = info.publicKeyB64;
           peerNickname = info.nickname || "";
@@ -868,14 +904,17 @@ app.post("/api/v1/ticket", apiLimiter, authenticateToken, (req, res) => {
     return res.status(400).json({ error: "expiry_seconds must be an integer" });
   }
 
-  // Enforce strict lowercase hex — Buffer.from(x,"hex") silently drops invalid chars otherwise
-  const hexPattern = /^[a-f0-9]{64}$/;
+  // Enforce 64-char hex
+  const hexPattern = /^[a-f0-9]{64}$/i;
   if (!hexPattern.test(a_id) || !hexPattern.test(b_id)) {
-    return res.status(400).json({ error: "Identity hashes must be 64-char lowercase hex" });
+    return res.status(400).json({ error: "Identity hashes must be 64-char hex strings" });
   }
 
+  const normA = a_id.toLowerCase();
+  const normB = b_id.toLowerCase();
+
   // Participants must be distinct
-  if (a_id === b_id) {
+  if (timingSafeEqual(normA, normB)) {
     return res.status(400).json({ error: "a_id and b_id must differ" });
   }
 
@@ -887,7 +926,7 @@ app.post("/api/v1/ticket", apiLimiter, authenticateToken, (req, res) => {
 
     // Only the initiator (caller) may request a ticket.
     // Verifying that a_id matches caller's registered identity hash
-    if (!timingSafeEqual(caller.identityHashHex.toLowerCase(), a_id.toLowerCase())) {
+    if (!timingSafeEqual(caller.identityHashHex.toLowerCase(), normA)) {
       return res.status(403).json({ error: "Only the initiator (a_id) may request a ticket" });
     }
 
@@ -904,8 +943,8 @@ app.post("/api/v1/ticket", apiLimiter, authenticateToken, (req, res) => {
     }
 
     // Build the 76-byte payload using the verified caller identity
-    const aIdBytes = Buffer.from(caller.identityHashHex, "hex");
-    const bIdBytes = Buffer.from(b_id, "hex");
+    const aIdBytes = Buffer.from(caller.identityHashHex.toLowerCase(), "hex");
+    const bIdBytes = Buffer.from(normB, "hex");
     const payload = Buffer.alloc(76);
     aIdBytes.copy(payload, 0);
     bIdBytes.copy(payload, 32);
@@ -1065,6 +1104,7 @@ function handleEphemeralSessionSocket(ws, sessionId, decoded) {
   // Replace any stale connection from the same participant (e.g. rapid reconnect or network switch)
   for (const oldWs of room) {
     if (oldWs.contactToken === decoded.contactToken) {
+      oldWs.isReplaced = true;
       try { oldWs.close(4000, "Replaced by new connection"); } catch (_) {}
       room.delete(oldWs);
       wsIdentityMap.delete(oldWs);
@@ -1078,9 +1118,17 @@ function handleEphemeralSessionSocket(ws, sessionId, decoded) {
   room.add(ws);
   ws.conversationId = sessionId;
   ws.contactToken = decoded.contactToken;
+  ws.username = decoded.username;
   ws.isEphemeral = true;
   ws.isAlive = true;
-  ws.on("pong", () => { ws.isAlive = true; });
+  const initialUser = users.get(decoded.username);
+  if (initialUser) initialUser.lastActive = Date.now();
+
+  ws.on("pong", () => {
+    ws.isAlive = true;
+    const u = users.get(decoded.username);
+    if (u) u.lastActive = Date.now();
+  });
 
   session.joinedTokens = session.joinedTokens || new Set();
   session.joinedTokens.add(decoded.contactToken);
@@ -1092,7 +1140,11 @@ function handleEphemeralSessionSocket(ws, sessionId, decoded) {
     const remaining = [];
     for (const entry of backlog) {
       if (entry.senderToken !== decoded.contactToken && now - entry.ts < BUFFER_TTL_MS && ws.readyState === WebSocket.OPEN) {
-        ws.send(entry.data, { binary: true });
+        try {
+          ws.send(entry.data, { binary: true });
+        } catch (_) {
+          remaining.push(entry);
+        }
       } else if (entry.senderToken === decoded.contactToken && now - entry.ts < BUFFER_TTL_MS) {
         remaining.push(entry);
       }
@@ -1106,9 +1158,16 @@ function handleEphemeralSessionSocket(ws, sessionId, decoded) {
 
   // Message relay for session
   ws.on("message", (data, isBinary) => {
+    const u = users.get(decoded.username);
+    if (u) u.lastActive = Date.now();
+
     if (!isBinary) { ws.close(4004, "Binary only"); return; }
 
-    const bytes = Buffer.isBuffer(data) ? data : Buffer.from(data);
+    const bytes = Buffer.isBuffer(data)
+      ? data
+      : Array.isArray(data)
+      ? Buffer.concat(data)
+      : Buffer.from(data);
     if (bytes.length < 6) return;
 
     let relayed = 0;
@@ -1117,8 +1176,10 @@ function handleEphemeralSessionSocket(ws, sessionId, decoded) {
         if (peer.bufferedAmount > 512 * 1024) {
           continue; // Avoid flooding slow consumer
         }
-        peer.send(data, { binary: true });
-        relayed++;
+        try {
+          peer.send(data, { binary: true });
+          relayed++;
+        } catch (_) {}
       }
     }
     if (relayed === 0) {
@@ -1130,14 +1191,16 @@ function handleEphemeralSessionSocket(ws, sessionId, decoded) {
     }
   });
 
-  ws.on("close", () => {
+  ws.on("close", (code) => {
     room.delete(ws);
     wsIdentityMap.delete(ws);
-    // Notify remaining peer that this user disconnected
-    const PEER_DISCONNECTED = Buffer.from([0xFF, 0xFE, ...Buffer.from("PEER_DISCONNECTED")]);
-    for (const peer of room) {
-      if (peer.readyState === WebSocket.OPEN) {
-        try { peer.send(PEER_DISCONNECTED, { binary: true }); } catch (_) {}
+    if (!ws.isReplaced && code !== 4000) {
+      // Notify remaining peer that this user disconnected
+      const PEER_DISCONNECTED = Buffer.from([0xFF, 0xFE, ...Buffer.from("PEER_DISCONNECTED")]);
+      for (const peer of room) {
+        if (peer.readyState === WebSocket.OPEN) {
+          try { peer.send(PEER_DISCONNECTED, { binary: true }); } catch (_) {}
+        }
       }
     }
     if (room.size === 0) {
@@ -1187,23 +1250,30 @@ function handleConversationSocket(ws, conversationId, caller, identityHash) {
   room.add(ws);
   ws.conversationId = conversationId;
   ws.isAlive = true;
-  ws.on("pong", () => { ws.isAlive = true; });
+  ws.username = caller.username;
+  if (caller) caller.lastActive = Date.now();
 
-  if (identityHash && /^[a-f0-9]{64}$/.test(identityHash)) {
+  ws.on("pong", () => {
+    ws.isAlive = true;
+    if (caller) caller.lastActive = Date.now();
+  });
+
+  let effectiveIdentityHash = caller?.identityHashHex ? caller.identityHashHex.toLowerCase() : null;
+  if (identityHash && /^[a-f0-9]{64}$/i.test(identityHash)) {
+    const normId = identityHash.toLowerCase();
     // If authenticated user has a registered identity hash, prevent spoofing a different ID
-    if (caller?.identityHashHex && !timingSafeEqual(caller.identityHashHex, identityHash)) {
+    if (caller?.identityHashHex && !timingSafeEqual(caller.identityHashHex.toLowerCase(), normId)) {
       ws.close(4014, "Identity hash mismatch");
       return;
     }
-    ws.identityHash = identityHash;
-    wsIdentityMap.set(ws, identityHash);
-    const existing = presenceMap.get(identityHash) || {};
-    presenceMap.set(identityHash, { ...existing, lastSeen: Date.now(), online: true });
-  } else if (caller?.identityHashHex) {
-    ws.identityHash = caller.identityHashHex;
-    wsIdentityMap.set(ws, caller.identityHashHex);
-    const existing = presenceMap.get(caller.identityHashHex) || {};
-    presenceMap.set(caller.identityHashHex, { ...existing, lastSeen: Date.now(), online: true });
+    effectiveIdentityHash = normId;
+  }
+
+  if (effectiveIdentityHash) {
+    ws.identityHash = effectiveIdentityHash;
+    wsIdentityMap.set(ws, effectiveIdentityHash);
+    const existing = presenceMap.get(effectiveIdentityHash) || {};
+    presenceMap.set(effectiveIdentityHash, { ...existing, lastSeen: Date.now(), online: true });
   }
 
   // Deliver buffered messages intended for this participant
@@ -1212,10 +1282,14 @@ function handleConversationSocket(ws, conversationId, caller, identityHash) {
     const now = Date.now();
     const remaining = [];
     for (const entry of backlog) {
-      if ((!identityHash || entry.senderHash !== identityHash) && now - entry.ts < BUFFER_TTL_MS && ws.readyState === WebSocket.OPEN) {
-        ws.send(entry.data, { binary: true });
-      } else if (identityHash && entry.senderHash === identityHash && now - entry.ts < BUFFER_TTL_MS) {
-        remaining.push(entry);
+      if (effectiveIdentityHash && entry.senderHash === effectiveIdentityHash) {
+        if (now - entry.ts < BUFFER_TTL_MS) remaining.push(entry);
+      } else if (now - entry.ts < BUFFER_TTL_MS && ws.readyState === WebSocket.OPEN) {
+        try {
+          ws.send(entry.data, { binary: true });
+        } catch (_) {
+          remaining.push(entry);
+        }
       }
     }
     if (remaining.length > 0) {
@@ -1226,9 +1300,14 @@ function handleConversationSocket(ws, conversationId, caller, identityHash) {
   }
 
   ws.on("message", (data, isBinary) => {
+    if (caller) caller.lastActive = Date.now();
     if (!isBinary) { ws.close(4004, "Binary only"); return; }
 
-    const bytes = Buffer.isBuffer(data) ? data : Buffer.from(data);
+    const bytes = Buffer.isBuffer(data)
+      ? data
+      : Array.isArray(data)
+      ? Buffer.concat(data)
+      : Buffer.from(data);
     if (bytes.length < 6) return;
 
     let relayed = 0;
@@ -1237,14 +1316,16 @@ function handleConversationSocket(ws, conversationId, caller, identityHash) {
         if (peer.bufferedAmount > 512 * 1024) {
           continue; // Avoid flooding slow consumer
         }
-        peer.send(data, { binary: true });
-        relayed++;
+        try {
+          peer.send(data, { binary: true });
+          relayed++;
+        } catch (_) {}
       }
     }
     if (relayed === 0) {
       const buf = messageBuffer.get(conversationId) || [];
       if (buf.length < MAX_BUFFER_PER_CONV) {
-        buf.push({ senderHash: identityHash || "", data: Buffer.from(bytes), ts: Date.now() });
+        buf.push({ senderHash: effectiveIdentityHash || "", data: Buffer.from(bytes), ts: Date.now() });
         messageBuffer.set(conversationId, buf);
       }
     }
@@ -1252,10 +1333,15 @@ function handleConversationSocket(ws, conversationId, caller, identityHash) {
 
   ws.on("close", () => {
     room.delete(ws);
-    const PEER_DISCONNECTED = Buffer.from([0xFF, 0xFE, ...Buffer.from("PEER_DISCONNECTED")]);
-    for (const peer of room) {
-      if (peer !== ws && peer.readyState === WebSocket.OPEN) {
-        try { peer.send(PEER_DISCONNECTED, { binary: true }); } catch (_) {}
+    // Only send PEER_DISCONNECTED if no other open socket from the same user remains in the room
+    const hasRemainingSameUser = effectiveIdentityHash &&
+      [...room].some(s => s !== ws && s.identityHash === effectiveIdentityHash && s.readyState === WebSocket.OPEN);
+    if (!hasRemainingSameUser) {
+      const PEER_DISCONNECTED = Buffer.from([0xFF, 0xFE, ...Buffer.from("PEER_DISCONNECTED")]);
+      for (const peer of room) {
+        if (peer !== ws && peer.readyState === WebSocket.OPEN) {
+          try { peer.send(PEER_DISCONNECTED, { binary: true }); } catch (_) {}
+        }
       }
     }
     if (room.size === 0) conversationSockets.delete(conversationId);
@@ -1280,9 +1366,12 @@ function handleConversationSocket(ws, conversationId, caller, identityHash) {
 }
 
 wss.on("connection", (ws, req) => {
+  // Prevent unhandled error event crash on aborted connections
+  ws.on("error", () => {});
+
   const authToken = extractBearerToken(req.headers);
   if (!authToken) {
-    ws.close(4012, "Authentication required");
+    try { ws.close(4012, "Authentication required"); } catch (_) {}
     return;
   }
 
@@ -1290,32 +1379,40 @@ wss.on("connection", (ws, req) => {
   try {
     decoded = jwt.verify(authToken, JWT_SECRET, { algorithms: ["HS256"] });
   } catch (e) {
-    ws.close(4013, "Invalid token");
+    try { ws.close(4013, "Invalid token"); } catch (_) {}
     return;
   }
 
   if (decoded.jti && burnedTokens.has(decoded.jti)) {
-    ws.close(4013, "Token has been revoked");
+    try { ws.close(4013, "Token has been revoked"); } catch (_) {}
     return;
   }
 
   const caller = users.get(decoded.username);
   if (!caller) {
-    ws.close(4013, "User account no longer exists");
+    try { ws.close(4013, "User account no longer exists"); } catch (_) {}
     return;
   }
 
-  const url = new URL(req.url, "http://localhost");
-  const conversationId = url.searchParams.get("conv");
-  const sessionId = url.searchParams.get("session");
+  let conversationId;
+  let sessionId;
+  let identityHash;
+  try {
+    const url = new URL(req.url, "http://localhost");
+    conversationId = url.searchParams.get("conv");
+    sessionId = url.searchParams.get("session");
+    identityHash = url.searchParams.get("id");
+  } catch (_) {
+    try { ws.close(4002, "Invalid URL"); } catch (_) {}
+    return;
+  }
 
   if (sessionId) {
     handleEphemeralSessionSocket(ws, sessionId, decoded);
   } else if (conversationId) {
-    const identityHash = url.searchParams.get("id");
     handleConversationSocket(ws, conversationId, caller, identityHash);
   } else {
-    ws.close(4001, "Missing conv or session parameter");
+    try { ws.close(4001, "Missing conv or session parameter"); } catch (_) {}
   }
 });
 
@@ -1389,13 +1486,31 @@ setInterval(() => {
 
   // Auto-delete user records after USER_TTL_MS of inactivity
   for (const [username, user] of users.entries()) {
+    // Check if user currently has an active WebSocket connection
+    let hasActiveConnection = false;
+    for (const room of conversationSockets.values()) {
+      for (const s of room) {
+        const matchesToken = s.contactToken && timingSafeEqual(s.contactToken, user.contactToken);
+        const matchesHash = user.identityHashHex && s.identityHash && timingSafeEqual(s.identityHash, user.identityHashHex);
+        if (s.readyState === WebSocket.OPEN && (matchesToken || matchesHash)) {
+          hasActiveConnection = true;
+          break;
+        }
+      }
+      if (hasActiveConnection) break;
+    }
+    if (hasActiveConnection) {
+      user.lastActive = now;
+      continue;
+    }
+
     const ref = user.lastActive || user.createdAt;
     if (now - ref > USER_TTL_MS) {
       const contactToken = user.contactToken;
       users.delete(username);
       // Cascade: delete dangling contact requests for this user
       for (const [rid, r] of contactRequests.entries()) {
-        if (r.fromToken === contactToken || r.toToken === contactToken) {
+        if (timingSafeEqual(r.fromToken, contactToken) || timingSafeEqual(r.toToken, contactToken)) {
           const pending = pendingByToken.get(r.toToken);
           if (pending) {
             pending.delete(rid);
@@ -1416,6 +1531,14 @@ setInterval(() => {
     if (nowBurned - burnedAt > REVOCATION_GRACE_MS) burnedTokens.delete(jti);
   }
 }, 60_000);
+
+// Global error handler for JSON parsing and uncaught Express errors
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
+    return res.status(400).json({ error: "Invalid JSON payload" });
+  }
+  res.status(err.status || 500).json({ error: "Internal server error" });
+});
 
 if (require.main === module) {
   server.listen(PORT, () => {
