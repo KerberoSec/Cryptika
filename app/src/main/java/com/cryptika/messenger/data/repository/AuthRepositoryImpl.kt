@@ -195,6 +195,7 @@ class AuthRepositoryImpl @Inject constructor(
                     auth = authHeader(),
                     request = BurnRequestBody(forceDisconnect = true)
                 )
+                authStore.burnCredentials()
                 Result.success(Unit)
             } catch (e: Exception) {
                 Result.failure(e)

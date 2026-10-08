@@ -7,7 +7,7 @@ FROM node:20-alpine
 # Set maintainer label
 LABEL maintainer="Cryptika Messenger Team"
 LABEL description="Cryptika Blind Relay Server - Routes encrypted messages without inspecting content"
-LABEL version="3.0.0"
+LABEL version="3.0.1"
 
 # Create app directory
 WORKDIR /usr/src/app

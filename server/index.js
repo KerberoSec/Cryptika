@@ -1,5 +1,5 @@
 // server/index.js
-// Cryptika Relay Server v3.0.0
+// Cryptika Relay Server v3.0.1
 // Blind relay: routes encrypted packets without inspecting content
 // Auth layer: username-only entry, contact tokens, ephemeral anonymous sessions
 // No passwords, no logs, no stored data: pure ephemeral blind relay
@@ -71,6 +71,7 @@ try {
     console.log("   Set SERVER_PRIVATE_KEY_HEX env var to persist across restarts");
   }
 } catch (e) {
+  console.error("WARNING: Failed to load SERVER_PRIVATE_KEY_HEX:", e.message);
   serverKeyPair = nacl.sign.keyPair();
 }
 
@@ -298,7 +299,7 @@ app.use("/api/v1", globalLimiter);
 const healthCheckHandler = (req, res) => {
   res.json({
     status: "ok",
-    version: "2.0.0",
+    version: "3.0.1",
     connections: getTotalConnections(),
     activeSessions: ephemeralSessions.size,
     timestamp: Date.now()
@@ -431,15 +432,17 @@ app.post("/api/v1/auth/burn", authLimiter, authenticateToken, (req, res) => {
     // Unconditionally blacklist JWT and disconnect sockets
     if (jti) burnedTokens.set(jti, Date.now());
 
-    // Disconnect active WebSockets belonging to this user
+    // Disconnect active non-ephemeral WebSockets belonging to this user
     for (const [convId, room] of conversationSockets.entries()) {
       for (const ws of room) {
-        const matchesToken = ws.contactToken && timingSafeEqual(ws.contactToken, contactToken);
-        const matchesHash = userHash && ws.identityHash && timingSafeEqual(ws.identityHash, userHash);
-        if (matchesToken || matchesHash) {
-          try { ws.close(4001, "Account burned"); } catch (_) {}
-          room.delete(ws);
-          wsIdentityMap.delete(ws);
+        if (!ws.isEphemeral) {
+          const matchesToken = ws.contactToken && timingSafeEqual(ws.contactToken, contactToken);
+          const matchesHash = userHash && ws.identityHash && timingSafeEqual(ws.identityHash, userHash);
+          if (matchesToken || matchesHash) {
+            try { ws.close(4001, "Account burned"); } catch (_) {}
+            room.delete(ws);
+            wsIdentityMap.delete(ws);
+          }
         }
       }
       if (room.size === 0) conversationSockets.delete(convId);
@@ -456,15 +459,6 @@ app.post("/api/v1/auth/burn", authLimiter, authenticateToken, (req, res) => {
         }
         contactRequests.delete(rid);
       }
-    }
-
-    // Destroy active ephemeral sessions involving this user
-    const userSessions = tokenToSession.get(contactToken);
-    if (userSessions) {
-      for (const sessId of Array.from(userSessions)) {
-        destroySession(sessId);
-      }
-      tokenToSession.delete(contactToken);
     }
 
     res.json({ status: "burned" });
@@ -1542,7 +1536,7 @@ app.use((err, req, res, next) => {
 
 if (require.main === module) {
   server.listen(PORT, () => {
-    console.log(`\nCryptika Relay Server v3.0.0`);
+    console.log(`\nCryptika Relay Server v3.0.1`);
     console.log(`   Listening on port ${PORT}`);
     console.log(`   Auth: POST /api/v1/auth/enter (passwordless)`);
     console.log(`   Server is BLIND -- no passwords, no logs, only ciphertext relay\n`);
